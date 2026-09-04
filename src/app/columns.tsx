@@ -47,7 +47,7 @@ function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }
 
 const STATUSES = ['Not started', 'In progress', 'In review', 'Revision', 'Complete']
 
-function InlineTextEdit({ 
+export function InlineTextEdit({ 
   value, 
   locked, 
   onUpdate,
@@ -104,7 +104,7 @@ function InlineTextEdit({
   )
 }
 
-function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void }) {
+export function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void }) {
   const [isEditing, setIsEditing] = useState(false)
   const [dateStr, setDateStr] = useState("")
 

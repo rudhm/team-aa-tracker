@@ -10,12 +10,12 @@ interface BoardViewProps {
 
 export function BoardView({ data, onUpdateStatus }: BoardViewProps) {
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 pt-2">
+    <div className="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x snap-mandatory">
       {STATUSES.map(status => {
         const columnTasks = data.filter(task => task.status === status)
         
         return (
-          <div key={status} className="flex-shrink-0 w-72 rounded-[24px] bg-white p-4 shadow-sm border border-[#E6EAE0]">
+          <div key={status} className="flex-shrink-0 w-[85vw] sm:w-72 snap-center rounded-[24px] bg-white p-4 shadow-sm border border-[#E6EAE0]">
             <div className="mb-4 flex items-center justify-between px-2">
               <h3 className="text-[13px] font-bold text-[#11161B]">{status}</h3>
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3F5EE] text-[11px] font-semibold text-[#11161B]/50">

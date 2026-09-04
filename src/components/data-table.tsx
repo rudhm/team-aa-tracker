@@ -23,8 +23,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Search, Loader2 } from "lucide-react"
+import { Search, Loader2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 import { BoardView } from "@/components/board-view"
 import { LayoutGrid, List } from "lucide-react"
@@ -238,7 +245,61 @@ export function DataTable({ columns, data }: DataTableProps) {
       {viewMode === 'board' ? (
         <BoardView data={table.getCoreRowModel().rows.map(r => r.original)} />
       ) : (
-      <div className="overflow-hidden rounded-[28px] border border-[#E6EAE0] bg-white shadow-sm overflow-x-auto w-full">
+      <>
+        {/* Mobile View (Cards) */}
+        <div className="md:hidden flex flex-col gap-4 pb-24">
+          {table.getRowModel().rows?.length ? (
+             table.getRowModel().rows.map(row => (
+                <div key={row.id} className="rounded-[24px] bg-white p-5 shadow-sm border border-[#E6EAE0] flex flex-col relative overflow-hidden transition-all duration-200">
+                   <div className="flex items-start justify-between mb-4 gap-2">
+                      <div className="flex items-center gap-3 flex-1">
+                        {row.getVisibleCells().find(c => c.column.id === 'select') && row.original.status !== 'Complete' && (
+                          <div className="scale-125 transform-gpu -mt-0.5">
+                            {flexRender(row.getVisibleCells().find(c => c.column.id === 'select')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'select')?.getContext()!)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          {flexRender(row.getVisibleCells().find(c => c.column.id === 'client')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'client')?.getContext()!)}
+                        </div>
+                      </div>
+                      <div className="shrink-0 scale-90 origin-top-right">
+                        {flexRender(row.getVisibleCells().find(c => c.column.id === 'status')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'status')?.getContext()!)}
+                      </div>
+                   </div>
+                   
+                   <div className="mb-5 text-[15px]">
+                     {flexRender(row.getVisibleCells().find(c => c.column.id === 'video_title')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'video_title')?.getContext()!)}
+                   </div>
+                   
+                   <div className="flex items-end justify-between mt-auto">
+                     <div>
+                       {flexRender(row.getVisibleCells().find(c => c.column.id === 'editor')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'editor')?.getContext()!)}
+                     </div>
+                     <div className="flex flex-col gap-1.5 items-end text-[11.5px]">
+                       <div className="flex items-center gap-2 bg-[#F3F5EE]/50 px-2 py-0.5 rounded-md">
+                         <span className="text-[#11161B]/40 font-bold uppercase tracking-wider text-[9px]">Start</span>
+                         {flexRender(row.getVisibleCells().find(c => c.column.id === 'start_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'start_date')?.getContext()!)}
+                       </div>
+                       <div className="flex items-center gap-2 bg-[#F3F5EE]/50 px-2 py-0.5 rounded-md">
+                         <span className="text-[#11161B]/40 font-bold uppercase tracking-wider text-[9px]">Done</span>
+                         {flexRender(row.getVisibleCells().find(c => c.column.id === 'complete_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'complete_date')?.getContext()!)}
+                       </div>
+                     </div>
+                   </div>
+                   
+                   {/* Mobile Link Rendering */}
+                   <div className="mt-4 pt-3 border-t border-[#E6EAE0]/50">
+                     {flexRender(row.getVisibleCells().find(c => c.column.id === 'link')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'link')?.getContext()!)}
+                   </div>
+                </div>
+             ))
+          ) : (
+            <div className="text-center py-10 text-[13px] font-medium text-[#11161B]/30">No tasks found.</div>
+          )}
+        </div>
+
+        {/* Desktop View (Table) */}
+        <div className="hidden md:block overflow-hidden rounded-[28px] border border-[#E6EAE0] bg-white shadow-sm overflow-x-auto w-full">
         <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow className="border-b border-[#E6EAE0]/60 hover:bg-transparent">
@@ -338,11 +399,88 @@ export function DataTable({ columns, data }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
+      </>
       )}
+
+      {/* Mobile Add Task FAB & Sheet */}
+      <div className="md:hidden fixed bottom-6 right-6 z-40">
+        <Sheet>
+          <SheetTrigger className="flex items-center justify-center h-14 w-14 rounded-full bg-[#11161B] text-white shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all p-0">
+            <Plus className="h-6 w-6" />
+          </SheetTrigger>
+          <SheetContent side="bottom" className="rounded-t-[32px] p-6 pb-12 outline-none">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-left text-[18px] font-bold text-[#11161B]">Add new task</SheetTitle>
+            </SheetHeader>
+            
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Client</label>
+                <Input 
+                  placeholder="Client..." 
+                  list="client-suggestions"
+                  value={client} onChange={e => setClient(e.target.value)}
+                  className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Title</label>
+                <Input 
+                  placeholder="Video Title..." 
+                  value={title} onChange={e => setTitle(e.target.value)}
+                  className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Editor</label>
+                <Input 
+                  placeholder="Editor..." 
+                  list="editor-suggestions"
+                  value={editor} onChange={e => setEditor(e.target.value)}
+                  className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="space-y-1.5 flex-1">
+                  <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Start Date</label>
+                  <Input 
+                    placeholder="MM/DD"
+                    value={startDay} 
+                    onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
+                    className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white text-center"
+                  />
+                </div>
+                <div className="space-y-1.5 flex-1">
+                  <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Complete Date</label>
+                  <Input 
+                    placeholder="MM/DD"
+                    value={completeDay} 
+                    onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
+                    className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white text-center"
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-2">
+                <Button 
+                  onClick={(e) => {
+                     handleQuickAdd(e)
+                     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+                  }}
+                  disabled={!client || !title || !editor || isAdding}
+                  className="h-12 w-full rounded-xl bg-[#11161B] text-[14px] font-bold text-white transition-all hover:bg-[#11161B]/80 disabled:opacity-30"
+                >
+                  {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Task"}
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {/* Floating Bulk Action Bar */}
       {selectedCount > 0 && viewMode === 'table' && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200">
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200 w-[90vw] md:w-auto flex justify-center">
           <div className="flex items-center gap-4 rounded-full bg-[#11161B]/95 backdrop-blur-xl px-6 py-3 shadow-2xl border border-white/10">
             <span className="text-[13px] font-medium text-white/80">
               {selectedCount} {selectedCount === 1 ? 'video' : 'videos'} selected
