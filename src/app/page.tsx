@@ -26,30 +26,31 @@ export default async function Page() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E6EAE0] dark:border-white/10/60 bg-white/80 dark:bg-[#0d1117]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 theme-header backdrop-blur-xl bg-[var(--surface-header)]/90">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8">
           <div className="flex items-center gap-3">
             <a href="/" className="group flex items-center gap-3 outline-none">
               {/* Text block */}
               <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-left-4 duration-500">
-                <span className="text-[15px] font-bold tracking-tight text-[#11161B] dark:text-[#E6EAE0]">
+                <span className="badge-accent">AA</span>
+                <span className="text-[15px] font-bold tracking-tight text-[var(--text-on-header)]">
                   Team AA Studios
                 </span>
-                <div className="h-3.5 w-px bg-[#11161B]/20"></div>
-                <span className="text-[11px] font-semibold tracking-wider text-[#11161B] dark:text-[#E6EAE0]/40 uppercase">
+                <div className="h-3.5 w-px bg-[var(--border)]"></div>
+                <span className="text-[11px] font-semibold tracking-wider subtle uppercase">
                   Dashboard
                 </span>
               </div>
             </a>
-            <div className="ml-2 border-l border-[#E6EAE0] dark:border-white/10 pl-4 animate-in fade-in duration-500 hidden sm:block">
-              <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/40 whitespace-nowrap">
+            <div className="ml-2 border-l border-[var(--border)] pl-4 animate-in fade-in duration-500 hidden sm:block">
+              <p className="text-[12px] font-semibold subtle whitespace-nowrap">
                 {data.length} {data.length === 1 ? "video" : "videos"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <a href="/payroll" className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/50 hover:text-[#11161B] dark:text-[#E6EAE0] dark:text-white/60 dark:hover:text-white transition-colors">
+            <a href="/payroll" className="theme-link text-[13px] font-semibold">
               Wrap-up →
             </a>
           </div>
@@ -62,9 +63,8 @@ export default async function Page() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-white/20 py-6 mt-auto bg-transparent">
-        <div className="mx-auto max-w-6xl px-6 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/50 sm:px-8">
-          // yeah we defo cooking sth tgt
+      <footer className="w-full border-t border-[var(--border)] py-6 mt-auto">
+        <div className="mx-auto max-w-6xl px-6 text-center text-[13px] font-medium text-[var(--text-muted)] sm:px-8">
         </div>
       </footer>
     </div>

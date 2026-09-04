@@ -21,13 +21,12 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
       let dateStr = task.complete_date
       if (dateStr.length === 10) dateStr += "T12:00:00Z"
       const date = new Date(dateStr)
-      const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}` // e.g. 2026-09
+      const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
       
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(task)
     })
     
-    // Sort descending
     return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]))
   }, [data])
 
@@ -41,7 +40,6 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     return months.find(m => m[0] === selectedMonth)?.[1] || []
   }, [months, selectedMonth])
 
-  // Group current month data by Editor
   const editorGroups = React.useMemo(() => {
     const map = new Map<string, VideoTask[]>()
     currentMonthData.forEach(task => {
@@ -91,7 +89,6 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     document.body.removeChild(link)
   }
 
-  // Format YYYY-MM to readable month (e.g., September 2026)
   const formatMonth = (yyyyMm: string) => {
     const [y, m] = yyyyMm.split('-')
     const date = new Date(parseInt(y), parseInt(m) - 1, 1)
@@ -100,9 +97,9 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="theme-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <select 
-          className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-5 pr-12 text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-4 pr-10 text-[13px] font-bold text-[var(--text-primary)] focus-visible:outline-none"
           value={selectedMonth}
           onChange={e => setSelectedMonth(e.target.value)}
         >
@@ -116,23 +113,22 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
           <Button 
             onClick={exportCSV}
             variant="outline"
-            className="h-11 w-full sm:w-auto rounded-full border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-md px-5 text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm hover:bg-white/60 dark:bg-black/50"
+            className="h-[34px] w-full sm:w-auto rounded-lg border-[var(--border-strong)] bg-transparent px-4 text-[12px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-page)]"
           >
-            <Download className="mr-2 h-4 w-4 text-[#11161B] dark:text-[#E6EAE0]/70" />
+            <Download className="mr-2 h-4 w-4 text-[var(--text-secondary)]" />
             Export CSV
           </Button>
 
-          {/* Only show lock controls between the 1st and 5th of the month */}
           {new Date().getDate() >= 1 && new Date().getDate() <= 5 && (
             isMonthLocked ? (
-              <span className="inline-flex h-11 w-full sm:w-auto justify-center items-center rounded-full border border-emerald-200 bg-[#E2F8EB] px-5 text-[13px] font-semibold text-emerald-700">
+              <span className="inline-flex h-[34px] w-full sm:w-auto justify-center items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold bg-[#E2F8EB] text-emerald-700">
                 <Lock className="mr-2 h-4 w-4" /> Locked
               </span>
             ) : (
               <Button 
                 onClick={handleLockMonth}
                 disabled={isLocking || currentMonthData.length === 0}
-                className="h-11 w-full sm:w-auto rounded-full bg-[#11161B] px-5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#11161B]/85"
+                className="btn-primary h-[34px] w-full sm:w-auto rounded-lg px-4 text-[12px]"
               >
                 {isLocking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
                 Lock Month
@@ -144,26 +140,26 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
       <div className="grid gap-6">
         {editorGroups.map(([editor, tasks]) => (
-          <div key={editor} className="overflow-hidden rounded-[28px] border border-white/40 bg-white/60 dark:bg-black/50 backdrop-blur-md shadow-sm">
-            <div className="border-b border-white/40 bg-white/30 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-[15px] font-bold text-[#11161B] dark:text-[#E6EAE0]">{editor}</h2>
-              <span className="flex h-7 items-center justify-center rounded-full bg-white/50 dark:bg-black/40 px-3 text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/80 shadow-sm border border-white/30">
+          <div key={editor} className="overflow-hidden rounded-xl theme-card">
+            <div className="border-b border-[var(--border)] bg-[var(--surface-page)] px-6 py-4 flex items-center justify-between">
+              <h2 className="text-[13px] font-bold text-[var(--text-primary)]">{editor}</h2>
+              <span className="inline-flex items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold bg-[var(--theme-accent-tint)] text-[var(--theme-accent-hover)]">
                 {tasks.length} {tasks.length === 1 ? 'video' : 'videos'}
               </span>
             </div>
-            <div className="divide-y divide-white/40">
+            <div className="divide-y divide-[var(--border)]">
               {tasks.map(task => (
-                <div key={task.id} className="flex items-center justify-between px-6 py-4">
+                <div key={task.id} className="flex items-center justify-between px-6 py-4 hover:bg-[var(--surface-page)] transition-colors">
                   <div>
-                    <p className="text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0]">{task.video_title}</p>
-                    <p className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70 mt-0.5">{task.client}</p>
+                    <p className="text-[13px] font-bold text-[var(--text-primary)]">{task.video_title}</p>
+                    <p className="text-[12px] font-medium text-[var(--text-secondary)] mt-0.5">{task.client}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70 tabular-nums">
+                    <p className="text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">
                       Completed: {new Date(task.complete_date!.length === 10 ? task.complete_date + "T12:00:00Z" : task.complete_date!).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })}
                     </p>
                     {task.link && (
-                      <a href={task.link} target="_blank" rel="noreferrer" className="text-[12px] font-medium text-blue-500 hover:underline mt-0.5 block">
+                      <a href={task.link} target="_blank" rel="noreferrer" className="theme-link text-[12px] font-medium mt-0.5 block">
                         View link
                       </a>
                     )}
@@ -176,7 +172,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
       </div>
       
       {months.length === 0 && (
-         <div className="text-center py-20 text-[14px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
+         <div className="text-center py-20 text-[13px] font-medium text-[var(--text-secondary)]">
            No completed videos yet.
          </div>
       )}

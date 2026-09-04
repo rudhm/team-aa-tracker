@@ -178,7 +178,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div id="delivery-stage" className="absolute top-16 left-0 right-0 z-50 pointer-events-none"></div>
 
       {/* Top Bar: Search & Editor Filter & View Toggle */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="theme-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-auto">
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/70" />
@@ -188,13 +188,13 @@ export function DataTable({ columns, data }: DataTableProps) {
               onChange={(event) =>
                 table.getColumn("video_title")?.setFilterValue(event.target.value)
               }
-              className="h-11 w-full sm:w-[280px] rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm placeholder:text-[#11161B] dark:text-[#E6EAE0]/70 focus-visible:ring-2 focus-visible:ring-white"
+              className="h-[34px] w-full sm:w-[280px] rounded-lg border-none bg-[var(--surface-page)] pl-11 pr-4 text-[13px] font-medium text-[var(--text-primary)] shadow-sm placeholder:text-[var(--text-secondary)] focus-visible:ring-2 focus-visible:ring-black/10"
             />
           </div>
           
           <div className="relative w-full sm:w-auto">
             <select 
-              className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-4 pr-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="h-[34px] w-full sm:w-auto appearance-none rounded-lg border-none bg-[var(--surface-page)] pl-4 pr-10 text-[13px] font-medium text-[var(--text-primary)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
               value={(table.getColumn("editor")?.getFilterValue() as string) ?? ""}
               onChange={(e) => table.getColumn("editor")?.setFilterValue(e.target.value)}
             >
@@ -211,17 +211,17 @@ export function DataTable({ columns, data }: DataTableProps) {
 
         <div className="flex justify-start sm:justify-end w-full sm:w-auto">
           {/* View Toggle */}
-          <div className="flex items-center rounded-full border border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-md p-1 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
+          <div className="flex items-center rounded-lg border border-[var(--border)] p-[3px] w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0]/70'}`}
+              className={`flex h-7 flex-1 sm:flex-none items-center justify-center px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'tab-active' : 'tab-inactive'}`}
             >
               <List className="mr-2 h-4 w-4" />
               Table
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0]/70'}`}
+              className={`flex h-7 flex-1 sm:flex-none items-center justify-center px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'tab-active' : 'tab-inactive'}`}
             >
               <LayoutGrid className="mr-2 h-4 w-4" />
               Board
@@ -245,7 +245,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         <div className="md:hidden flex flex-col gap-4 pb-24">
           {table.getRowModel().rows?.length ? (
              table.getRowModel().rows.map(row => (
-                <div key={row.id} className="rounded-[24px] bg-white dark:bg-[#161b22] p-5 shadow-sm border border-[#E6EAE0] dark:border-white/10 flex flex-col relative overflow-hidden transition-all duration-200">
+                <div key={row.id} className="rounded-xl theme-card p-5 shadow-sm flex flex-col relative overflow-hidden transition-all duration-200">
                    <div className="flex items-start justify-between mb-4 gap-2">
                       <div className="flex items-center gap-3 flex-1">
                         {row.getVisibleCells().find(c => c.column.id === 'select') && row.original.status !== 'Complete' && (
@@ -294,7 +294,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         </div>
 
         {/* Desktop View (Table) */}
-        <div className="hidden md:block overflow-hidden rounded-[28px] border border-[#E6EAE0] dark:border-white/10 bg-white dark:bg-[#161b22] shadow-sm overflow-x-auto w-full">
+        <div className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full">
         <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
@@ -360,7 +360,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <Button 
                   onClick={handleQuickAdd} 
                   disabled={!title || !editor || isAdding}
-                  className="h-7 w-16 rounded-full bg-[#11161B] text-[11px] font-semibold text-white transition-all hover:bg-[#11161B]/80 disabled:opacity-30"
+                  className="btn-primary h-7 w-16 text-[11px] disabled:opacity-30"
                 >
                   {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
                 </Button>
@@ -400,7 +400,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       {/* Mobile Add Task FAB & Sheet */}
       <div className="md:hidden fixed bottom-6 right-4 z-40">
         <Sheet>
-          <SheetTrigger className="flex items-center justify-center h-14 w-14 rounded-full bg-[#11161B] text-white shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all p-0">
+          <SheetTrigger className="btn-primary flex items-center justify-center h-14 w-14 rounded-full shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all p-0">
             <Plus className="h-6 w-6" />
           </SheetTrigger>
           <SheetContent side="bottom" className="rounded-t-[32px] p-6 pb-12 outline-none">
@@ -463,7 +463,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
                   }}
                   disabled={!title || !editor || isAdding}
-                  className="h-12 w-full rounded-xl bg-[#11161B] text-[14px] font-bold text-white transition-all hover:bg-[#11161B]/80 disabled:opacity-30"
+                  className="btn-primary h-12 w-full text-[14px] disabled:opacity-30"
                 >
                   {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Video"}
                 </Button>
@@ -476,7 +476,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       {/* Floating Bulk Action Bar */}
       {selectedCount > 0 && viewMode === 'table' && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200 w-[90vw] md:w-auto flex justify-center">
-          <div className="flex items-center gap-4 rounded-full bg-[#11161B]/95 backdrop-blur-xl px-6 py-3 shadow-2xl border border-white/10">
+          <div className="flex items-center gap-4 rounded-full theme-header px-6 py-3 shadow-2xl border border-[var(--border)]">
             <span className="text-[13px] font-medium text-white/80">
               {selectedCount} {selectedCount === 1 ? 'video' : 'videos'} selected
             </span>

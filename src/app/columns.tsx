@@ -30,16 +30,16 @@ declare module '@tanstack/react-table' {
 
 function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }) {
   const config: Record<string, { bg: string; text: string }> = {
-    "Complete":    { bg: "bg-[#E2F8EB]", text: "text-emerald-700" },
-    "In progress": { bg: "bg-[#FEF9C3]", text: "text-amber-700" },
-    "In review":   { bg: "bg-blue-50",    text: "text-blue-600" },
-    "Revision":    { bg: "bg-purple-50",  text: "text-purple-600" },
-    "Not started": { bg: "bg-[#F3F5EE] dark:bg-white/10",  text: "text-[#11161B] dark:text-[#E6EAE0]/70" },
+    "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#E2F8EB]/10", text: "text-emerald-700 dark:text-emerald-400" },
+    "In progress": { bg: "bg-[var(--theme-accent-tint)]", text: "text-[var(--theme-accent-hover)]" },
+    "In review":   { bg: "bg-blue-50 dark:bg-blue-500/10",    text: "text-blue-600 dark:text-blue-400" },
+    "Revision":    { bg: "bg-purple-50 dark:bg-purple-500/10",  text: "text-purple-600 dark:text-purple-400" },
+    "Not started": { bg: "bg-[var(--surface-page)]",  text: "text-[var(--text-secondary)]" },
   }
   const style = config[status] || config["Not started"]
   
   return (
-    <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ${style.bg} ${style.text} ${isLocked ? 'opacity-60' : ''}`}>
+    <span className={`inline-flex items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold ${style.bg} ${style.text}`}>
       {status}
     </span>
   )
@@ -133,15 +133,16 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
 
   if (isEditing) {
      return (
-       <input
-         type="date"
-         autoFocus
-         className="h-7 w-[110px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
-         value={dateStr}
-         onChange={e => setDateStr(e.target.value)}
-         onBlur={saveEdit}
-         onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
-       />
+         <input
+           type="date"
+           autoFocus
+           className="h-7 w-[110px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
+           value={dateStr}
+           onChange={e => setDateStr(e.target.value)}
+           onBlur={saveEdit}
+           onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
+           onClick={e => (e.target as HTMLInputElement).showPicker?.()}
+         />
      )
   }
 

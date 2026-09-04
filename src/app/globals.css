@@ -134,42 +134,133 @@
 }
 
 @layer base {
+  :root {
+    /* ---- Grays: structure ---- */
+    --surface-page:    #f4f4f2;
+    --surface-card:     #ffffff;
+    --surface-header:   #1f1f1e;
+    --border:           #e2e0da;
+    --border-strong:    #c9c7c0;
+
+    --text-primary:     #1a1a19;
+    --text-secondary:   #6b6a64;
+    --text-muted:        #a3a199;
+    --text-on-header:   #f4f4f2;
+    --text-on-header-muted: #9b9a93;
+
+    /* ---- Yellow: accent (use sparingly) ---- */
+    --theme-accent:           #d9a400;
+    --theme-accent-hover:     #c29200;
+    --theme-accent-tint:      #fdf3d6;
+    --theme-on-accent:        #2c2400;
+
+    --radius: 8px;
+  }
+
+  .dark {
+    --surface-page:      #1c1c1b;
+    --surface-card:      #262624;
+    --surface-header:   #141413;
+    --border:            #38372f;
+    --border-strong:     #4a4940;
+
+    --text-primary:      #f2f1ec;
+    --text-secondary:    #b3b1a8;
+    --text-muted:         #7d7b74;
+    --text-on-header:    #f4f4f2;
+    --text-on-header-muted: #8a897f;
+
+    --theme-accent:            #f2b705;
+    --theme-accent-hover:      #ffca2c;
+    --theme-accent-tint:       #3a3208;
+    --theme-on-accent:         #1a1500;
+  }
+
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
-    @apply text-foreground bg-background;
-    background-attachment: fixed;
+    background: var(--surface-page) !important;
+    color: var(--text-primary) !important;
     min-height: 100vh;
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
-  body:not(.dark) {
-    background-color: #fffdf2; 
-    background: linear-gradient(
-        to bottom, 
-        #fffdf2 0%,
-        #ffdf59 35%,
-        #ff8c3b 75%,
-        #b23b8c 100%
-    );
-    background-attachment: fixed;
-  }
-  
-  body.dark {
-    background-color: #0d1117;
-    background: linear-gradient(
-        to bottom,
-        #0d1117 0%,
-        #161b22 35%,
-        #24152f 75%,
-        #3b1b36 100%
-    );
-    background-attachment: fixed;
-  }
   html {
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .theme-header {
+    background-color: var(--surface-header) !important;
+    color: var(--text-on-header) !important;
+  }
+  .theme-header .subtle {
+    color: var(--text-on-header-muted) !important;
+  }
+
+  .theme-card {
+    background-color: var(--surface-card) !important;
+    border: 1px solid var(--border) !important;
+  }
+
+  .btn-primary {
+    background-color: var(--theme-accent) !important;
+    color: var(--theme-on-accent) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s !important;
+  }
+  .btn-primary:hover {
+    background-color: var(--theme-accent-hover) !important;
+  }
+
+  .tab-active {
+    background-color: var(--theme-accent-tint) !important;
+    color: var(--theme-accent-hover) !important;
+    border-radius: 8px !important;
+  }
+  .tab-inactive {
+    background-color: transparent !important;
+    color: var(--text-secondary) !important;
+  }
+
+  .badge-accent {
+    background-color: var(--theme-accent-tint) !important;
+    color: var(--theme-accent-hover) !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 13px !important;
+  }
+
+  .theme-toolbar {
+    background-color: var(--surface-card) !important;
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+  }
+  .theme-toolbar input,
+  .theme-toolbar select {
+    background-color: var(--surface-page) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-primary) !important;
+    border-radius: 8px !important;
+  }
+
+  .theme-link {
+    color: var(--theme-accent-hover) !important;
+    text-decoration: none !important;
+  }
+  .theme-link:hover {
+    text-decoration: underline !important;
+  }
+}
+
