@@ -180,7 +180,8 @@
     @apply border-border;
   }
   body {
-    background: var(--surface-page) !important;
+    background: linear-gradient(135deg, var(--surface-page) 0%, var(--theme-accent-tint) 100%) !important;
+    background-attachment: fixed !important;
     color: var(--text-primary) !important;
     min-height: 100vh;
     margin: 0;
