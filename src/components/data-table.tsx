@@ -403,7 +403,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       )}
 
       {/* Mobile Add Task FAB & Sheet */}
-      <div className="md:hidden fixed bottom-6 right-6 z-40">
+      <div className="md:hidden fixed bottom-8 right-8 z-40">
         <Sheet>
           <SheetTrigger className="flex items-center justify-center h-14 w-14 rounded-full bg-[#11161B] text-white shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all p-0">
             <Plus className="h-6 w-6" />
