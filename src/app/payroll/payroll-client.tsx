@@ -98,9 +98,9 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <select 
-          className="h-11 appearance-none rounded-full border-none bg-white/50 backdrop-blur-md pl-5 pr-12 text-[14px] font-bold text-[#11161B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 backdrop-blur-md pl-5 pr-12 text-[14px] font-bold text-[#11161B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           value={selectedMonth}
           onChange={e => setSelectedMonth(e.target.value)}
         >
@@ -110,11 +110,11 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
           ))}
         </select>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Button 
             onClick={exportCSV}
             variant="outline"
-            className="h-11 rounded-full border-white/20 bg-white/40 backdrop-blur-md px-5 text-[13px] font-semibold text-[#11161B] shadow-sm hover:bg-white/60"
+            className="h-11 w-full sm:w-auto rounded-full border-white/20 bg-white/40 backdrop-blur-md px-5 text-[13px] font-semibold text-[#11161B] shadow-sm hover:bg-white/60"
           >
             <Download className="mr-2 h-4 w-4 text-[#11161B]/50" />
             Export CSV
@@ -123,14 +123,14 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
           {/* Only show lock controls between the 1st and 5th of the month */}
           {new Date().getDate() >= 1 && new Date().getDate() <= 5 && (
             isMonthLocked ? (
-              <span className="inline-flex h-11 items-center rounded-full border border-emerald-200 bg-[#E2F8EB] px-5 text-[13px] font-semibold text-emerald-700">
+              <span className="inline-flex h-11 w-full sm:w-auto justify-center items-center rounded-full border border-emerald-200 bg-[#E2F8EB] px-5 text-[13px] font-semibold text-emerald-700">
                 <Lock className="mr-2 h-4 w-4" /> Locked
               </span>
             ) : (
               <Button 
                 onClick={handleLockMonth}
                 disabled={isLocking || currentMonthData.length === 0}
-                className="h-11 rounded-full bg-[#11161B] px-5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#11161B]/85"
+                className="h-11 w-full sm:w-auto rounded-full bg-[#11161B] px-5 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-[#11161B]/85"
               >
                 {isLocking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
                 Lock Month

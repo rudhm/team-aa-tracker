@@ -176,9 +176,9 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div id="delivery-stage" className="absolute top-16 left-0 right-0 z-50 pointer-events-none"></div>
 
       {/* Top Bar: Search & Editor Filter & View Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative max-w-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B]/30" />
             <Input
               placeholder="Search video titles…"
@@ -186,13 +186,13 @@ export function DataTable({ columns, data }: DataTableProps) {
               onChange={(event) =>
                 table.getColumn("video_title")?.setFilterValue(event.target.value)
               }
-              className="h-11 w-[280px] rounded-full border-none bg-white/50 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] shadow-sm placeholder:text-[#11161B]/50 focus-visible:ring-2 focus-visible:ring-white"
+              className="h-11 w-full sm:w-[280px] rounded-full border-none bg-white/50 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] shadow-sm placeholder:text-[#11161B]/50 focus-visible:ring-2 focus-visible:ring-white"
             />
           </div>
           
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select 
-              className="h-11 appearance-none rounded-full border-none bg-white/50 backdrop-blur-md pl-4 pr-10 text-[13px] font-medium text-[#11161B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 backdrop-blur-md pl-4 pr-10 text-[13px] font-medium text-[#11161B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               value={(table.getColumn("editor")?.getFilterValue() as string) ?? ""}
               onChange={(e) => table.getColumn("editor")?.setFilterValue(e.target.value)}
             >
@@ -207,19 +207,19 @@ export function DataTable({ columns, data }: DataTableProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex justify-start sm:justify-end w-full sm:w-auto">
           {/* View Toggle */}
-          <div className="flex items-center rounded-full border border-white/20 bg-white/40 backdrop-blur-md p-1 shadow-sm">
+          <div className="flex items-center rounded-full border border-white/20 bg-white/40 backdrop-blur-md p-1 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] text-[#11161B]' : 'text-[#11161B]/40 hover:text-[#11161B]/70'}`}
+              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] text-[#11161B]' : 'text-[#11161B]/40 hover:text-[#11161B]/70'}`}
             >
               <List className="mr-2 h-4 w-4" />
               Table
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] text-[#11161B]' : 'text-[#11161B]/40 hover:text-[#11161B]/70'}`}
+              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] text-[#11161B]' : 'text-[#11161B]/40 hover:text-[#11161B]/70'}`}
             >
               <LayoutGrid className="mr-2 h-4 w-4" />
               Board
@@ -238,8 +238,8 @@ export function DataTable({ columns, data }: DataTableProps) {
       {viewMode === 'board' ? (
         <BoardView data={table.getCoreRowModel().rows.map(r => r.original)} />
       ) : (
-      <div className="overflow-hidden rounded-[28px] border border-[#E6EAE0] bg-white shadow-sm">
-        <Table>
+      <div className="overflow-hidden rounded-[28px] border border-[#E6EAE0] bg-white shadow-sm overflow-x-auto w-full">
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow className="border-b border-[#E6EAE0]/60 hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (

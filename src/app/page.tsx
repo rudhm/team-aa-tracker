@@ -40,8 +40,8 @@ export default async function Page() {
                 </span>
               </div>
             </a>
-            <div className="ml-2 border-l border-[#E6EAE0] pl-4 animate-in fade-in duration-500">
-              <p className="text-[12px] font-semibold text-[#11161B]/40">
+            <div className="ml-2 border-l border-[#E6EAE0] pl-4 animate-in fade-in duration-500 hidden sm:block">
+              <p className="text-[12px] font-semibold text-[#11161B]/40 whitespace-nowrap">
                 {data.length} {data.length === 1 ? "task" : "tasks"}
               </p>
             </div>
