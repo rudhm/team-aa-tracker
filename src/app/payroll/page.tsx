@@ -31,7 +31,7 @@ export default async function PayrollPage() {
             <a href="/" className="group flex items-center gap-3 outline-none">
               <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-left-4 duration-500">
                 <span className="text-[15px] font-bold tracking-tight text-[var(--text-on-header)]">
-                  Team AA Studios
+                  Team <span className="text-[var(--theme-accent)]">AA</span> Studios
                 </span>
                 <div className="h-3.5 w-px bg-[var(--border)]"></div>
                 <span className="text-[11px] font-semibold tracking-wider subtle uppercase">
