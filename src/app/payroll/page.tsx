@@ -42,7 +42,7 @@ export default async function PayrollPage() {
             </a>
           </div>
           
-          <div className="flex items-center gap-4"><ThemeToggle /><a href="/" className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/50 hover:text-[#11161B] dark:text-[#E6EAE0] dark:text-white/60 dark:hover:text-white transition-colors">← Back to Tasks</a></div>
+          <div className="flex items-center gap-4"><ThemeToggle /><a href="/" className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/50 hover:text-[#11161B] dark:text-[#E6EAE0] dark:text-white/60 dark:hover:text-white transition-colors">← Back to Videos</a></div>
         </div>
       </header>
 

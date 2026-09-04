@@ -11,8 +11,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Video Tasks",
-  description: "Manage and track video production tasks",
+  title: "Team AA Videos",
+  description: "Manage and track videos",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

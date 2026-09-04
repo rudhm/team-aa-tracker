@@ -43,7 +43,7 @@ export default async function Page() {
             </a>
             <div className="ml-2 border-l border-[#E6EAE0] dark:border-white/10 pl-4 animate-in fade-in duration-500 hidden sm:block">
               <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/40 whitespace-nowrap">
-                {data.length} {data.length === 1 ? "task" : "tasks"}
+                {data.length} {data.length === 1 ? "video" : "videos"}
               </p>
             </div>
           </div>

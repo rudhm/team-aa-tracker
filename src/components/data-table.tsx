@@ -294,7 +294,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 </div>
              ))
           ) : (
-            <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">No tasks found.</div>
+            <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">No videos found.</div>
           )}
         </div>
 
@@ -392,7 +392,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">
-                  No tasks found.
+                  No videos found.
                 </TableCell>
               </TableRow>
             )}
@@ -410,7 +410,7 @@ export function DataTable({ columns, data }: DataTableProps) {
           </SheetTrigger>
           <SheetContent side="bottom" className="rounded-t-[32px] p-6 pb-12 outline-none">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-left text-[18px] font-bold text-[#11161B] dark:text-[#E6EAE0]">Add new task</SheetTitle>
+              <SheetTitle className="text-left text-[18px] font-bold text-[#11161B] dark:text-[#E6EAE0]">Add new video</SheetTitle>
             </SheetHeader>
             
             <div className="space-y-4">
@@ -470,7 +470,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   disabled={!title || !editor || isAdding}
                   className="h-12 w-full rounded-xl bg-[#11161B] text-[14px] font-bold text-white transition-all hover:bg-[#11161B]/80 disabled:opacity-30"
                 >
-                  {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Task"}
+                  {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Video"}
                 </Button>
               </div>
             </div>
