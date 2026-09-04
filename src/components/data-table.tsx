@@ -45,6 +45,11 @@ interface DataTableProps {
 
 export function DataTable({ columns, data }: DataTableProps) {
   const router = useRouter()
+  const [tableData, setTableData] = React.useState(data)
+
+  React.useEffect(() => {
+    setTableData(data)
+  }, [data])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = React.useState({})
   const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
@@ -69,7 +74,7 @@ export function DataTable({ columns, data }: DataTableProps) {
   }, [data])
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
@@ -80,8 +85,8 @@ export function DataTable({ columns, data }: DataTableProps) {
       rowSelection,
     },
     meta: {
-      updateData: async (rowIndex: number, columnIdOrUpdates: string | Record<string, any>, value?: any) => {
-        const row = data[rowIndex]
+            updateData: async (rowIndex: number, columnIdOrUpdates: string | Record<string, any>, value?: any) => {
+        const row = tableData[rowIndex]
         
         let updates: any = {}
         if (typeof columnIdOrUpdates === 'string') {
@@ -93,7 +98,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         // Auto-set complete_date when status flips to Complete
         if (updates.status) {
           if (updates.status === 'Complete' && row.status !== 'Complete') {
-            updates.complete_date = new Date().toISOString()
+            updates.complete_date = new Date().toLocaleDateString("en-CA") // format as YYYY-MM-DD in local time
             
             // Trigger celebration animation!
             setTimeout(() => {
@@ -103,6 +108,13 @@ export function DataTable({ columns, data }: DataTableProps) {
             updates.complete_date = null
           }
         }
+        
+        // Optimistic UI Update
+        setTableData(old => {
+          const newData = [...old]
+          newData[rowIndex] = { ...newData[rowIndex], ...updates }
+          return newData
+        })
         
         await supabase.from('video_tasks').update(updates).eq('id', row.id)
         router.refresh()
@@ -134,13 +146,14 @@ export function DataTable({ columns, data }: DataTableProps) {
     setIsAdding(true)
 
     const parsedComplete = createDateFromInput(completeDay)
+    const localToday = new Date().toLocaleDateString("en-CA")
 
     const payload = {
       client,
       video_title: title,
       editor: formatName(editor),
       start_date: createDateFromInput(startDay),
-      complete_date: parsedComplete,
+      complete_date: parsedComplete ? parsedComplete : null,
       status: parsedComplete ? 'Complete' : 'In progress',
     }
 

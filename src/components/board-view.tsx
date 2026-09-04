@@ -39,12 +39,12 @@ export function BoardView({ data, onUpdateStatus }: BoardViewProps) {
                     <div className="flex flex-col items-end gap-0.5">
                       {task.start_date && (
                         <span className="text-[10px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70 tabular-nums">
-                          S: {new Date(task.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          S: {new Date(task.start_date.length === 10 ? task.start_date + "T12:00:00Z" : task.start_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })}
                         </span>
                       )}
                       {task.complete_date && (
                         <span className="text-[10px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70 tabular-nums">
-                          C: {new Date(task.complete_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          C: {new Date(task.complete_date.length === 10 ? task.complete_date + "T12:00:00Z" : task.complete_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })}
                         </span>
                       )}
                     </div>

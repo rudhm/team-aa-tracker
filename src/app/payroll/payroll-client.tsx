@@ -18,8 +18,10 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     const map = new Map<string, VideoTask[]>()
     data.forEach(task => {
       if (!task.complete_date) return
-      const date = new Date(task.complete_date)
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` // e.g. 2026-09
+      let dateStr = task.complete_date
+      if (dateStr.length === 10) dateStr += "T12:00:00Z"
+      const date = new Date(dateStr)
+      const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}` // e.g. 2026-09
       
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(task)
@@ -158,7 +160,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
                   </div>
                   <div className="text-right">
                     <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70 tabular-nums">
-                      Completed: {new Date(task.complete_date!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      Completed: {new Date(task.complete_date!.length === 10 ? task.complete_date + "T12:00:00Z" : task.complete_date!).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })}
                     </p>
                     {task.link && (
                       <a href={task.link} target="_blank" rel="noreferrer" className="text-[12px] font-medium text-blue-500 hover:underline mt-0.5 block">
