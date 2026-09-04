@@ -102,11 +102,22 @@ export function DataTable({ columns, data }: DataTableProps) {
     }
   })
 
-  const createDateFromDay = (dayStr: string) => {
-    const day = parseInt(dayStr)
-    if (isNaN(day) || day < 1 || day > 31) return null
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const createDateFromInput = (str: string) => {
+    if (!str) return null
+    const parts = str.split('/')
+    let y = new Date().getFullYear()
+    let m = new Date().getMonth() + 1
+    let d = parseInt(str)
+    
+    if (parts.length === 2) {
+       m = parseInt(parts[0])
+       d = parseInt(parts[1])
+    } else {
+       d = parseInt(parts[0])
+    }
+    
+    if (isNaN(m) || isNaN(d) || d < 1 || d > 31 || m < 1 || m > 12) return null
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
   }
 
   const handleQuickAdd = async (e: React.FormEvent) => {
@@ -114,13 +125,13 @@ export function DataTable({ columns, data }: DataTableProps) {
     if (!client || !title || !editor) return
     setIsAdding(true)
 
-    const parsedComplete = createDateFromDay(completeDay)
+    const parsedComplete = createDateFromInput(completeDay)
 
     const payload = {
       client,
       video_title: title,
       editor,
-      start_date: createDateFromDay(startDay),
+      start_date: createDateFromInput(startDay),
       complete_date: parsedComplete,
       status: parsedComplete ? 'Complete' : 'In progress',
     }
@@ -269,18 +280,18 @@ export function DataTable({ columns, data }: DataTableProps) {
               </TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
-                  placeholder="DD"
+                  placeholder="MM/DD"
                   value={startDay} 
-                  onChange={e => setStartDay(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                  className="h-8 w-12 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
+                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
-                  placeholder="DD"
+                  placeholder="MM/DD"
                   value={completeDay} 
-                  onChange={e => setCompleteDay(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                  className="h-8 w-12 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
+                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">

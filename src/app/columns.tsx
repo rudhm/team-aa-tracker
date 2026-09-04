@@ -53,7 +53,7 @@ const STATUSES = ['Not started', 'In progress', 'In review', 'Revision', 'Comple
 
 function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [day, setDay] = useState("")
+  const [dateStr, setDateStr] = useState("")
 
   const displayValue = value ? new Date(value).toLocaleDateString("en-US", { timeZone: 'UTC', month: "short", day: "numeric" }) : "—"
 
@@ -61,34 +61,43 @@ function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, lock
      if (locked) return
      setIsEditing(true)
      if (value && value.length >= 10) {
-        setDay(value.substring(8, 10))
+        const m = value.substring(5, 7)
+        const d = value.substring(8, 10)
+        setDateStr(`${m.replace(/^0/, '')}/${d.replace(/^0/, '')}`)
      } else {
-        setDay("")
+        setDateStr("")
      }
   }
 
   const saveEdit = () => {
      setIsEditing(false)
-     if (!day) {
+     if (!dateStr) {
         if (value !== null) onUpdate(null)
         return
      }
      
      let year = new Date().getFullYear()
      let month = new Date().getMonth() + 1
+     let day = parseInt(dateStr)
      
      if (value && value.length >= 10) {
         year = parseInt(value.substring(0, 4))
         month = parseInt(value.substring(5, 7))
      }
      
-     const parsedDay = parseInt(day)
-     if (isNaN(parsedDay) || parsedDay < 1 || parsedDay > 31) {
-       // Invalid day, silently revert
-       return
+     const parts = dateStr.split('/')
+     if (parts.length === 2) {
+        month = parseInt(parts[0])
+        day = parseInt(parts[1])
+     } else {
+        day = parseInt(parts[0])
+     }
+     
+     if (isNaN(month) || isNaN(day) || day < 1 || day > 31 || month < 1 || month > 12) {
+       return // Invalid, revert
      }
 
-     const newDate = `${year}-${String(month).padStart(2, '0')}-${String(parsedDay).padStart(2, '0')}`
+     const newDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
      
      if (newDate !== value?.substring(0, 10)) {
         onUpdate(newDate)
@@ -99,10 +108,10 @@ function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, lock
      return (
        <input
          autoFocus
-         placeholder="DD"
-         className="h-7 w-12 rounded-md bg-white border border-[#E6EAE0] px-1 text-center text-[12px] font-semibold text-[#11161B] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
-         value={day}
-         onChange={e => setDay(e.target.value.replace(/\D/g, '').slice(0, 2))}
+         placeholder="MM/DD"
+         className="h-7 w-14 rounded-md bg-white border border-[#E6EAE0] px-1 text-center text-[12px] font-semibold text-[#11161B] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+         value={dateStr}
+         onChange={e => setDateStr(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
          onBlur={saveEdit}
          onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
        />
@@ -113,7 +122,7 @@ function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, lock
     <span 
       onClick={startEdit} 
       className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B]/60 hover:text-[#11161B] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B]/40'}`}
-      title={!locked ? "Click to edit day" : ""}
+      title={!locked ? "Click to edit date" : ""}
     >
       {displayValue}
     </span>
@@ -131,15 +140,22 @@ export const columns: ColumnDef<VideoTask>[] = [
         onChange={table.getToggleAllPageRowsSelectedHandler()}
       />
     ),
-    cell: ({ row }) => (
-      <input
-        type="checkbox"
-        className="rounded border-[#E6EAE0] text-[#11161B] focus:ring-[#11161B]"
-        checked={row.getIsSelected()}
-        onChange={row.getToggleSelectedHandler()}
-        disabled={row.original.payroll_locked}
-      />
-    ),
+    cell: ({ row }) => {
+      const task = row.original
+      if (task.status === 'Complete') {
+        return <div className="w-3.5 h-3.5" />
+      }
+      
+      return (
+        <input
+          type="checkbox"
+          className="rounded border-[#E6EAE0] text-[#11161B] focus:ring-[#11161B]"
+          checked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          disabled={task.payroll_locked}
+        />
+      )
+    },
   },
   {
     accessorKey: "client",
