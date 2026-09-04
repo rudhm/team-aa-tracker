@@ -114,9 +114,7 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
      if (locked) return
      setIsEditing(true)
      if (value && value.length >= 10) {
-        const m = value.substring(5, 7)
-        const d = value.substring(8, 10)
-        setDateStr(`${m.replace(/^0/, '')}/${d.replace(/^0/, '')}`)
+        setDateStr(value.substring(0, 10))
      } else {
         setDateStr("")
      }
@@ -128,43 +126,19 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
         if (value !== null) onUpdate(null)
         return
      }
-     
-     let year = new Date().getFullYear()
-     let month = new Date().getMonth() + 1
-     let day = parseInt(dateStr)
-     
-     if (value && value.length >= 10) {
-        year = parseInt(value.substring(0, 4))
-        month = parseInt(value.substring(5, 7))
-     }
-     
-     const parts = dateStr.split('/')
-     if (parts.length === 2) {
-        month = parseInt(parts[0])
-        day = parseInt(parts[1])
-     } else {
-        day = parseInt(parts[0])
-     }
-     
-     if (isNaN(month) || isNaN(day) || day < 1 || day > 31 || month < 1 || month > 12) {
-       return // Invalid, revert
-     }
-
-     const newDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-     
-     if (newDate !== value?.substring(0, 10)) {
-        onUpdate(newDate)
+     if (dateStr !== value?.substring(0, 10)) {
+        onUpdate(dateStr)
      }
   }
 
   if (isEditing) {
      return (
        <input
+         type="date"
          autoFocus
-         placeholder="MM/DD"
-         className="h-7 w-14 rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+         className="h-7 w-[110px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
          value={dateStr}
-         onChange={e => setDateStr(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
+         onChange={e => setDateStr(e.target.value)}
          onBlur={saveEdit}
          onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
        />

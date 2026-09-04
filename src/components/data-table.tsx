@@ -122,38 +122,20 @@ export function DataTable({ columns, data }: DataTableProps) {
     }
   })
 
-  const createDateFromInput = (str: string) => {
-    if (!str) return null
-    const parts = str.split('/')
-    let y = new Date().getFullYear()
-    let m = new Date().getMonth() + 1
-    let d = parseInt(str)
-    
-    if (parts.length === 2) {
-       m = parseInt(parts[0])
-       d = parseInt(parts[1])
-    } else {
-       d = parseInt(parts[0])
-    }
-    
-    if (isNaN(m) || isNaN(d) || d < 1 || d > 31 || m < 1 || m > 12) return null
-    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-  }
-
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !editor) return
     setIsAdding(true)
 
-    const parsedComplete = createDateFromInput(completeDay)
+    const parsedComplete = completeDay || null
     const localToday = new Date().toLocaleDateString("en-CA")
 
     const payload = {
       client,
       video_title: title,
       editor: formatName(editor),
-      start_date: createDateFromInput(startDay),
-      complete_date: parsedComplete ? parsedComplete : null,
+      start_date: startDay || null,
+      complete_date: parsedComplete,
       status: parsedComplete ? 'Complete' : 'In progress',
     }
 
@@ -457,19 +439,19 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <div className="space-y-1.5 flex-1">
                   <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Start Date</label>
                   <Input 
-                    placeholder="MM/DD"
+                    type="date"
                     value={startDay} 
-                    onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
+                    onChange={e => setStartDay(e.target.value)}
+                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
                   <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Complete Date</label>
                   <Input 
-                    placeholder="MM/DD"
+                    type="date"
                     value={completeDay} 
-                    onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
+                    onChange={e => setCompleteDay(e.target.value)}
+                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
                   />
                 </div>
               </div>
