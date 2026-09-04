@@ -5,13 +5,14 @@ import { ColumnDef, RowData } from "@tanstack/react-table"
 import { supabase } from "@/lib/supabase"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { formatName, getEditorColorClass } from "@/lib/utils"
+import { createEntityColor, type EntityColorMaps, formatName } from "@/lib/utils"
 import { LinkIcon } from "lucide-react"
 
 export type VideoTask = {
   id: string
   created_at: string
   client: string
+  sub_client: string | null
   video_title: string
   editor: string
   start_date: string | null
@@ -25,6 +26,7 @@ export type VideoTask = {
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
     updateData: (rowIndex: number, columnIdOrUpdates: string | Record<string, any>, value?: any) => Promise<void>
+    colorMaps?: EntityColorMaps
   }
 }
 
@@ -53,14 +55,18 @@ export function InlineTextEdit({
   onUpdate,
   placeholder = "",
   listId,
-  className = ""
+  className = "",
+  emptyContent = "—",
+  style,
 }: { 
   value: string | null, 
   locked: boolean, 
   onUpdate: (val: string) => void,
   placeholder?: string,
   listId?: string,
-  className?: string
+  className?: string,
+  emptyContent?: React.ReactNode,
+  style?: React.CSSProperties,
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState("")
@@ -97,9 +103,10 @@ export function InlineTextEdit({
     <span 
       onClick={startEdit} 
       className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
+      style={style}
       title={!locked ? "Click to edit" : ""}
     >
-      {value || "—"}
+      {value || emptyContent}
     </span>
   )
 }
@@ -269,13 +276,38 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: "Client",
     cell: ({ row, table }) => {
       const task = row.original
+      const clientColor = table.options.meta?.colorMaps?.clients[task.client] ?? createEntityColor(task.client, "client")
       return (
         <InlineTextEdit 
           value={task.client}
           locked={task.payroll_locked}
           listId="client-suggestions"
-          className="font-semibold text-[#11161B] dark:text-[#E6EAE0]"
+          className="inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+          style={clientColor}
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val)}
+        />
+      )
+    },
+  },
+  {
+    accessorKey: "sub_client",
+    header: "Subclient",
+    cell: ({ row, table }) => {
+      const task = row.original
+      const subClientColor = task.sub_client
+        ? table.options.meta?.colorMaps?.subClients[task.sub_client] ?? createEntityColor(task.sub_client, "subclient")
+        : undefined
+      return (
+        <InlineTextEdit
+          value={task.sub_client}
+          locked={task.payroll_locked}
+          listId="subclient-suggestions"
+          className={task.sub_client
+            ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+            : "font-medium text-[#11161B] dark:text-[#E6EAE0]/70"
+          }
+          style={subClientColor}
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
         />
       )
     },
@@ -301,12 +333,20 @@ export const columns: ColumnDef<VideoTask>[] = [
     cell: ({ row, table }) => {
       const task = row.original
       const formattedName = formatName(task.editor)
+      const editorColor = formattedName
+        ? table.options.meta?.colorMaps?.editors[formattedName] ?? createEntityColor(formattedName, "editor")
+        : undefined
+      const editorClassName = formattedName
+        ? "inline-flex max-w-[160px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+        : "inline-block h-6 min-w-16"
       return (
         <InlineTextEdit 
           value={formattedName}
           locked={task.payroll_locked}
           listId="editor-suggestions"
-          className={`inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${getEditorColorClass(formattedName)}`}
+          className={editorClassName}
+          emptyContent=""
+          style={editorColor}
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', formatName(val))}
         />
       )

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { formatName } from "@/lib/utils"
+import { createEntityColorMaps, formatName } from "@/lib/utils"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Search, Loader2, Plus } from "lucide-react"
+import { ChevronDown, Loader2, Plus, RotateCcw, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -37,6 +37,8 @@ import { BoardView } from "@/components/board-view"
 import { LayoutGrid, List } from "lucide-react"
 
 import { celebrateDelivery } from "@/lib/delivery-celebration"
+
+const HIDDEN_EDITORS_STORAGE_KEY = "team-aa-hidden-editors"
 
 interface DataTableProps {
   columns: ColumnDef<VideoTask, any>[]
@@ -53,9 +55,13 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = React.useState({})
   const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
+  const [editorMenuOpen, setEditorMenuOpen] = React.useState(false)
+  const [hiddenEditors, setHiddenEditors] = React.useState<string[]>([])
+  const [hiddenEditorsLoaded, setHiddenEditorsLoaded] = React.useState(false)
   
   // Quick-Add State
   const [client, setClient] = React.useState("")
+  const [subClient, setSubClient] = React.useState("")
   const [title, setTitle] = React.useState("")
   const [editor, setEditor] = React.useState("")
   const [startDay, setStartDay] = React.useState("")
@@ -68,10 +74,53 @@ export function DataTable({ columns, data }: DataTableProps) {
     return Array.from(editors)
   }, [data])
 
+  React.useEffect(() => {
+    try {
+      const storedHiddenEditors = window.localStorage.getItem(HIDDEN_EDITORS_STORAGE_KEY)
+      if (storedHiddenEditors) {
+        const parsedHiddenEditors = JSON.parse(storedHiddenEditors)
+        if (Array.isArray(parsedHiddenEditors)) {
+          setHiddenEditors(parsedHiddenEditors.filter((editorName): editorName is string => typeof editorName === "string"))
+        }
+      }
+    } catch {
+      setHiddenEditors([])
+    } finally {
+      setHiddenEditorsLoaded(true)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (!hiddenEditorsLoaded) return
+    window.localStorage.setItem(HIDDEN_EDITORS_STORAGE_KEY, JSON.stringify(hiddenEditors))
+  }, [hiddenEditors, hiddenEditorsLoaded])
+
+  const visibleEditors = React.useMemo(() => {
+    const hiddenEditorSet = new Set(hiddenEditors)
+    return uniqueEditors.filter(editorName => !hiddenEditorSet.has(editorName))
+  }, [hiddenEditors, uniqueEditors])
+
+  const hiddenEditorCount = React.useMemo(() => {
+    return hiddenEditors.filter(editorName => uniqueEditors.includes(editorName)).length
+  }, [hiddenEditors, uniqueEditors])
+
   const uniqueClients = React.useMemo(() => {
     const clients = new Set(data.map(d => d.client).filter(Boolean))
     return Array.from(clients)
   }, [data])
+
+  const uniqueSubClients = React.useMemo(() => {
+    const subClients = new Set(data.map(d => d.sub_client).filter((subClient): subClient is string => Boolean(subClient)))
+    return Array.from(subClients)
+  }, [data])
+
+  const colorMaps = React.useMemo(() => {
+    return createEntityColorMaps({
+      clients: tableData.map(task => task.client),
+      subClients: tableData.map(task => task.sub_client),
+      editors: tableData.map(task => formatName(task.editor)),
+    })
+  }, [tableData])
 
   const table = useReactTable({
     data: tableData,
@@ -85,6 +134,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       rowSelection,
     },
     meta: {
+      colorMaps,
             updateData: async (rowIndex: number, columnIdOrUpdates: string | Record<string, any>, value?: any) => {
         const row = tableData[rowIndex]
         
@@ -122,6 +172,23 @@ export function DataTable({ columns, data }: DataTableProps) {
     }
   })
 
+  const editorFilter = (table.getColumn("editor")?.getFilterValue() as string) ?? ""
+
+  const handleHideEditor = (editorName: string) => {
+    if (editorFilter === editorName) {
+      table.getColumn("editor")?.setFilterValue("")
+    }
+
+    setHiddenEditors(oldHiddenEditors => {
+      if (oldHiddenEditors.includes(editorName)) return oldHiddenEditors
+      return [...oldHiddenEditors, editorName]
+    })
+  }
+
+  const handleRestoreHiddenEditors = () => {
+    setHiddenEditors([])
+  }
+
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !editor) return
@@ -132,6 +199,7 @@ export function DataTable({ columns, data }: DataTableProps) {
 
     const payload = {
       client,
+      sub_client: subClient.trim() || null,
       video_title: title,
       editor: formatName(editor),
       start_date: startDay || null,
@@ -142,6 +210,7 @@ export function DataTable({ columns, data }: DataTableProps) {
     await supabase.from('video_tasks').insert([payload])
     
     setClient("")
+    setSubClient("")
     setTitle("")
     setStartDay("")
     setCompleteDay("")
@@ -193,19 +262,105 @@ export function DataTable({ columns, data }: DataTableProps) {
           </div>
           
           <div className="relative w-full sm:w-auto">
-            <select 
-              className="h-[34px] w-full sm:w-auto appearance-none rounded-lg border-none bg-[var(--surface-page)] pl-4 pr-10 text-[13px] font-medium text-[var(--text-primary)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
-              value={(table.getColumn("editor")?.getFilterValue() as string) ?? ""}
-              onChange={(e) => table.getColumn("editor")?.setFilterValue(e.target.value)}
+            <button
+              type="button"
+              className="flex h-[34px] w-full items-center justify-between gap-3 rounded-lg border-none bg-[var(--surface-page)] pl-4 pr-3 text-left text-[13px] font-medium text-[var(--text-primary)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 sm:w-[190px]"
+              onClick={() => setEditorMenuOpen(isOpen => !isOpen)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setEditorMenuOpen(false)
+              }}
+              onBlur={(event) => {
+                if (!event.currentTarget.parentElement?.contains(event.relatedTarget as Node | null)) {
+                  setEditorMenuOpen(false)
+                }
+              }}
             >
-              <option value="">All Editors</option>
-              {uniqueEditors.map(ed => (
-                <option key={ed} value={ed}>{ed}</option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/70">
-              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 1L5 5L9 1"/></svg>
-            </div>
+              {editorFilter ? (
+                <span
+                  className="inline-flex max-w-[135px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                  style={colorMaps.editors[editorFilter]}
+                >
+                  {editorFilter}
+                </span>
+              ) : (
+                <span className="truncate">All Editors</span>
+              )}
+              <ChevronDown className="h-4 w-4 shrink-0 text-[#11161B] dark:text-[#E6EAE0]/70" />
+            </button>
+
+            {editorMenuOpen && (
+              <div
+                className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]"
+                onBlur={(event) => {
+                  if (!event.currentTarget.parentElement?.contains(event.relatedTarget as Node | null)) {
+                    setEditorMenuOpen(false)
+                  }
+                }}
+              >
+                <button
+                  type="button"
+                  className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    table.getColumn("editor")?.setFilterValue("")
+                    setEditorMenuOpen(false)
+                  }}
+                >
+                  All Editors
+                </button>
+
+                {visibleEditors.length ? (
+                  visibleEditors.map(editorName => (
+                    <div key={editorName} className="group flex items-center rounded-lg hover:bg-[#F3F5EE] dark:hover:bg-white/10">
+                      <button
+                        type="button"
+                        className={`h-8 min-w-0 flex-1 truncate px-3 text-left font-medium ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                          table.getColumn("editor")?.setFilterValue(editorName)
+                          setEditorMenuOpen(false)
+                        }}
+                      >
+                        <span
+                          className="inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                          style={colorMaps.editors[editorName]}
+                        >
+                          {editorName}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] opacity-100 transition-colors hover:bg-white hover:text-[var(--text-primary)] dark:hover:bg-[#0d1117] sm:opacity-0 sm:group-hover:opacity-100"
+                        title={`Hide ${editorName}`}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          handleHideEditor(editorName)
+                        }}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)]">
+                    No editors
+                  </div>
+                )}
+
+                {hiddenEditorCount > 0 && (
+                  <button
+                    type="button"
+                    className="mt-1 flex h-8 w-full items-center gap-2 rounded-lg border-t border-[var(--border)] px-3 text-left text-[12px] font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[#F3F5EE] hover:text-[var(--text-primary)] dark:hover:bg-white/10"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={handleRestoreHiddenEditors}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Restore hidden
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -231,14 +386,17 @@ export function DataTable({ columns, data }: DataTableProps) {
       </div>
 
       <datalist id="editor-suggestions">
-        {uniqueEditors.map(ed => <option key={ed} value={ed} />)}
+        {visibleEditors.map(ed => <option key={ed} value={ed} />)}
       </datalist>
       <datalist id="client-suggestions">
         {uniqueClients.map(c => <option key={c} value={c} />)}
       </datalist>
+      <datalist id="subclient-suggestions">
+        {uniqueSubClients.map(c => <option key={c} value={c} />)}
+      </datalist>
 
       {viewMode === 'board' ? (
-        <BoardView data={table.getCoreRowModel().rows.map(r => r.original)} />
+        <BoardView data={table.getCoreRowModel().rows.map(r => r.original)} colorMaps={colorMaps} />
       ) : (
       <>
         {/* Mobile View (Cards) */}
@@ -255,6 +413,9 @@ export function DataTable({ columns, data }: DataTableProps) {
                         )}
                         <div className="flex-1 min-w-0">
                           {flexRender(row.getVisibleCells().find(c => c.column.id === 'client')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'client')?.getContext()!)}
+                          <div className="mt-1 text-[12px]">
+                            {flexRender(row.getVisibleCells().find(c => c.column.id === 'sub_client')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'sub_client')?.getContext()!)}
+                          </div>
                         </div>
                       </div>
                       <div className="shrink-0 scale-90 origin-top-right">
@@ -295,7 +456,7 @@ export function DataTable({ columns, data }: DataTableProps) {
 
         {/* Desktop View (Table) */}
         <div className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full">
-        <Table className="min-w-[800px]">
+        <Table className="min-w-[920px]">
           <TableHeader>
             <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -317,6 +478,14 @@ export function DataTable({ columns, data }: DataTableProps) {
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
                   className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-none focus-visible:bg-white dark:focus-visible:bg-[#161b22] focus-visible:ring-1"
+                />
+              </TableCell>
+              <TableCell className="px-6 py-3">
+                <Input
+                  placeholder="Subclient..."
+                  list="subclient-suggestions"
+                  value={subClient} onChange={e => setSubClient(e.target.value)}
+                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
@@ -416,6 +585,15 @@ export function DataTable({ columns, data }: DataTableProps) {
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
                   className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Subclient</label>
+                <Input
+                  placeholder="Subclient..."
+                  list="subclient-suggestions"
+                  value={subClient} onChange={e => setSubClient(e.target.value)}
+                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">

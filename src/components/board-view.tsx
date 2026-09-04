@@ -1,14 +1,15 @@
 import { VideoTask } from "@/app/columns"
-import { Badge } from "@/components/ui/badge"
+import { createEntityColor, type EntityColorMaps, formatName } from "@/lib/utils"
 
 const STATUSES = ['Not started', 'In progress', 'In review', 'Revision', 'Complete']
 
 interface BoardViewProps {
   data: VideoTask[]
+  colorMaps?: EntityColorMaps
   onUpdateStatus?: (id: string, newStatus: string) => void
 }
 
-export function BoardView({ data, onUpdateStatus }: BoardViewProps) {
+export function BoardView({ data, colorMaps, onUpdateStatus }: BoardViewProps) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x snap-mandatory">
       {STATUSES.map(status => {
@@ -26,16 +27,36 @@ export function BoardView({ data, onUpdateStatus }: BoardViewProps) {
             <div className="space-y-3">
               {columnTasks.map(task => (
                 <div key={task.id} className="group rounded-[20px] border border-[#E6EAE0] dark:border-white/10/50 bg-[#F3F5EE] dark:bg-white/10 p-4 transition-all hover:border-[#E6EAE0] dark:border-white/10 hover:bg-white dark:bg-[#161b22] hover:shadow-sm">
-                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#11161B] dark:text-[#E6EAE0]/70">
+                  <div
+                    className="mb-2 inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase"
+                    style={colorMaps?.clients[task.client] ?? createEntityColor(task.client, "client")}
+                  >
                     {task.client}
                   </div>
+                  {task.sub_client && (
+                    <div
+                      className="mb-2 inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                      style={colorMaps?.subClients[task.sub_client] ?? createEntityColor(task.sub_client, "subclient")}
+                    >
+                      {task.sub_client}
+                    </div>
+                  )}
                   <div className="mb-3 text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0]">
                     {task.video_title}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
-                      {task.editor || 'Unassigned'}
-                    </span>
+                    {task.editor ? (
+                      <span
+                        className="inline-flex max-w-[130px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                        style={colorMaps?.editors[formatName(task.editor)] ?? createEntityColor(formatName(task.editor), "editor")}
+                      >
+                        {formatName(task.editor)}
+                      </span>
+                    ) : (
+                      <span className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
+                        Unassigned
+                      </span>
+                    )}
                     <div className="flex flex-col items-end gap-0.5">
                       {task.start_date && (
                         <span className="text-[10px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70 tabular-nums">

@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Download, Lock, Loader2 } from "lucide-react"
-import { formatName } from "@/lib/utils"
+import { createEntityColor, createEntityColorMaps, formatName } from "@/lib/utils"
 
 export function PayrollClient({ data }: { data: VideoTask[] }) {
   const router = useRouter()
@@ -50,6 +50,14 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]))
   }, [currentMonthData])
 
+  const colorMaps = React.useMemo(() => {
+    return createEntityColorMaps({
+      clients: currentMonthData.map(task => task.client),
+      subClients: currentMonthData.map(task => task.sub_client),
+      editors: currentMonthData.map(task => formatName(task.editor)),
+    })
+  }, [currentMonthData])
+
   const isMonthLocked = currentMonthData.length > 0 && currentMonthData.every(t => t.payroll_locked)
 
   const handleLockMonth = async () => {
@@ -66,10 +74,11 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
   const exportCSV = () => {
     if (currentMonthData.length === 0) return
 
-    const headers = ["Editor", "Client", "Video Title", "Completed At"]
+    const headers = ["Editor", "Client", "Subclient", "Video Title", "Completed At"]
     const rows = currentMonthData.map(t => [
       t.editor, 
       t.client, 
+      t.sub_client,
       t.video_title, 
       t.complete_date ? new Date(t.complete_date).toISOString() : ""
     ])
@@ -142,7 +151,16 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
         {editorGroups.map(([editor, tasks]) => (
           <div key={editor} className="overflow-hidden rounded-xl theme-card">
             <div className="border-b border-[var(--border)] bg-[var(--surface-page)] px-6 py-4 flex items-center justify-between">
-              <h2 className="text-[13px] font-bold text-[var(--text-primary)]">{editor}</h2>
+              {editor === "Unassigned" ? (
+                <h2 className="text-[13px] font-bold text-[var(--text-primary)]">{editor}</h2>
+              ) : (
+                <h2
+                  className="inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                  style={colorMaps.editors[editor] ?? createEntityColor(editor, "editor")}
+                >
+                  {editor}
+                </h2>
+              )}
               <span className="inline-flex items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold bg-[var(--theme-accent-tint)] text-[var(--theme-accent-hover)]">
                 {tasks.length} {tasks.length === 1 ? 'video' : 'videos'}
               </span>
@@ -152,7 +170,20 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
                 <div key={task.id} className="flex items-center justify-between px-6 py-4 hover:bg-[var(--surface-page)] transition-colors">
                   <div>
                     <p className="text-[13px] font-bold text-[var(--text-primary)]">{task.video_title}</p>
-                    <p className="text-[12px] font-medium text-[var(--text-secondary)] mt-0.5">{task.client}</p>
+                    <p
+                      className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                      style={colorMaps.clients[task.client] ?? createEntityColor(task.client, "client")}
+                    >
+                      {task.client}
+                    </p>
+                    {task.sub_client && (
+                      <p
+                        className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                        style={colorMaps.subClients[task.sub_client] ?? createEntityColor(task.sub_client, "subclient")}
+                      >
+                        {task.sub_client}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">
