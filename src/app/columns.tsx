@@ -51,6 +51,63 @@ function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }
 
 const STATUSES = ['Not started', 'In progress', 'In review', 'Revision', 'Complete']
 
+function InlineTextEdit({ 
+  value, 
+  locked, 
+  onUpdate,
+  placeholder = "",
+  listId,
+  className = ""
+}: { 
+  value: string | null, 
+  locked: boolean, 
+  onUpdate: (val: string) => void,
+  placeholder?: string,
+  listId?: string,
+  className?: string
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [text, setText] = useState("")
+
+  const startEdit = () => {
+     if (locked) return
+     setIsEditing(true)
+     setText(value || "")
+  }
+
+  const saveEdit = () => {
+     setIsEditing(false)
+     if (text !== (value || "")) {
+        onUpdate(text)
+     }
+  }
+
+  if (isEditing) {
+     return (
+       <input
+         autoFocus
+         list={listId}
+         placeholder={placeholder}
+         className="h-7 w-full min-w-[120px] max-w-[180px] rounded-md bg-white border border-[#E6EAE0] px-2 text-[13px] font-medium text-[#11161B] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+         value={text}
+         onChange={e => setText(e.target.value)}
+         onBlur={saveEdit}
+         onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
+       />
+     )
+  }
+
+  return (
+    <span 
+      onClick={startEdit} 
+      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
+      title={!locked ? "Click to edit" : ""}
+    >
+      {value || "—"}
+    </span>
+  )
+}
+
 function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void }) {
   const [isEditing, setIsEditing] = useState(false)
   const [dateStr, setDateStr] = useState("")
@@ -160,23 +217,49 @@ export const columns: ColumnDef<VideoTask>[] = [
   {
     accessorKey: "client",
     header: "Client",
-    cell: ({ row }) => (
-      <span className="font-semibold text-[#11161B]">{row.getValue("client")}</span>
-    ),
+    cell: ({ row, table }) => {
+      const task = row.original
+      return (
+        <InlineTextEdit 
+          value={task.client}
+          locked={task.payroll_locked}
+          listId="client-suggestions"
+          className="font-semibold text-[#11161B]"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val)}
+        />
+      )
+    },
   },
   {
     accessorKey: "video_title",
     header: "Video Title",
-    cell: ({ row }) => (
-      <span className="font-medium text-[#11161B]/70">{row.getValue("video_title")}</span>
-    ),
+    cell: ({ row, table }) => {
+      const task = row.original
+      return (
+        <InlineTextEdit 
+          value={task.video_title}
+          locked={task.payroll_locked}
+          className="font-medium text-[#11161B]/70"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'video_title', val)}
+        />
+      )
+    },
   },
   {
     accessorKey: "editor",
     header: "Editor",
-    cell: ({ row }) => (
-      <span className="font-medium text-[#11161B]/50">{row.getValue("editor")}</span>
-    ),
+    cell: ({ row, table }) => {
+      const task = row.original
+      return (
+        <InlineTextEdit 
+          value={task.editor}
+          locked={task.payroll_locked}
+          listId="editor-suggestions"
+          className="font-medium text-[#11161B]/50"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', val)}
+        />
+      )
+    },
   },
   {
     accessorKey: "start_date",
