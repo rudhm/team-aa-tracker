@@ -34,7 +34,7 @@ function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }
     "In progress": { bg: "bg-[#FEF9C3]", text: "text-amber-700" },
     "In review":   { bg: "bg-blue-50",    text: "text-blue-600" },
     "Revision":    { bg: "bg-purple-50",  text: "text-purple-600" },
-    "Not started": { bg: "bg-[#F3F5EE] dark:bg-white/10",  text: "text-[#11161B] dark:text-[#E6EAE0]/50" },
+    "Not started": { bg: "bg-[#F3F5EE] dark:bg-white/10",  text: "text-[#11161B] dark:text-[#E6EAE0]/70" },
   }
   const style = config[status] || config["Not started"]
   
@@ -96,7 +96,7 @@ export function InlineTextEdit({
   return (
     <span 
       onClick={startEdit} 
-      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
+      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
       title={!locked ? "Click to edit" : ""}
     >
       {value || "—"}
@@ -174,7 +174,7 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
   return (
     <span 
       onClick={startEdit} 
-      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B] dark:text-[#E6EAE0]/60 hover:text-[#11161B] dark:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B] dark:text-[#E6EAE0]/40'}`}
+      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B] dark:text-[#E6EAE0]/70'}`}
       title={!locked ? "Click to edit date" : ""}
     >
       {displayValue}
@@ -228,7 +228,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
     return (
       <span 
         onClick={startEdit} 
-        className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1.5 ${locked ? 'text-[#11161B] dark:text-[#E6EAE0]/20' : 'text-[#11161B] dark:text-[#E6EAE0]/40 hover:bg-[#F3F5EE] dark:bg-white/10 hover:text-[#11161B] dark:text-[#E6EAE0] cursor-pointer border border-dashed border-[#E6EAE0] dark:border-white/10'}`}
+        className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1.5 ${locked ? 'text-[#11161B] dark:text-[#E6EAE0]/20' : 'text-[#11161B] dark:text-[#E6EAE0]/70 hover:bg-[#F3F5EE] dark:bg-white/10 hover:text-[#11161B] dark:hover:text-[#E6EAE0] cursor-pointer border border-dashed border-[#E6EAE0] dark:border-white/10'}`}
       >
         <LinkIcon className="h-3 w-3" />
         Add Link
@@ -250,7 +250,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
       {!locked && (
         <button 
           onClick={startEdit}
-          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 text-[#11161B] dark:text-[#E6EAE0]/30 hover:text-[#11161B] dark:text-[#E6EAE0] hover:bg-[#F3F5EE] dark:bg-white/10 rounded-full transition-all"
+          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:bg-[#F3F5EE] dark:bg-white/10 rounded-full transition-all"
           title="Edit link"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>

@@ -116,7 +116,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
             variant="outline"
             className="h-11 w-full sm:w-auto rounded-full border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-md px-5 text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm hover:bg-white/60 dark:bg-black/50"
           >
-            <Download className="mr-2 h-4 w-4 text-[#11161B] dark:text-[#E6EAE0]/50" />
+            <Download className="mr-2 h-4 w-4 text-[#11161B] dark:text-[#E6EAE0]/70" />
             Export CSV
           </Button>
 
@@ -154,10 +154,10 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
                 <div key={task.id} className="flex items-center justify-between px-6 py-4">
                   <div>
                     <p className="text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0]">{task.video_title}</p>
-                    <p className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/50 mt-0.5">{task.client}</p>
+                    <p className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70 mt-0.5">{task.client}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/50 tabular-nums">
+                    <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70 tabular-nums">
                       Completed: {new Date(task.complete_date!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </p>
                     {task.link && (
@@ -174,7 +174,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
       </div>
       
       {months.length === 0 && (
-         <div className="text-center py-20 text-[14px] font-medium text-[#11161B] dark:text-[#E6EAE0]/40">
+         <div className="text-center py-20 text-[14px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
            No completed videos yet.
          </div>
       )}

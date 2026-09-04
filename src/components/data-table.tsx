@@ -186,14 +186,14 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/30" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/70" />
             <Input
               placeholder="Search video titles…"
               value={(table.getColumn("video_title")?.getFilterValue() as string) ?? ""}
               onChange={(event) =>
                 table.getColumn("video_title")?.setFilterValue(event.target.value)
               }
-              className="h-11 w-full sm:w-[280px] rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm placeholder:text-[#11161B] dark:text-[#E6EAE0]/50 focus-visible:ring-2 focus-visible:ring-white"
+              className="h-11 w-full sm:w-[280px] rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm placeholder:text-[#11161B] dark:text-[#E6EAE0]/70 focus-visible:ring-2 focus-visible:ring-white"
             />
           </div>
           
@@ -208,7 +208,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <option key={ed} value={ed}>{ed}</option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/60">
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/70">
               <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 1L5 5L9 1"/></svg>
             </div>
           </div>
@@ -219,14 +219,14 @@ export function DataTable({ columns, data }: DataTableProps) {
           <div className="flex items-center rounded-full border border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-md p-1 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/40 hover:text-[#11161B] dark:text-[#E6EAE0]/70'}`}
+              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0]/70'}`}
             >
               <List className="mr-2 h-4 w-4" />
               Table
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/40 hover:text-[#11161B] dark:text-[#E6EAE0]/70'}`}
+              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0]/70'}`}
             >
               <LayoutGrid className="mr-2 h-4 w-4" />
               Board
@@ -276,12 +276,12 @@ export function DataTable({ columns, data }: DataTableProps) {
                        {flexRender(row.getVisibleCells().find(c => c.column.id === 'editor')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'editor')?.getContext()!)}
                      </div>
                      <div className="flex flex-col gap-1.5 items-end text-[11.5px]">
-                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10/50 px-2 py-0.5 rounded-md">
-                         <span className="text-[#11161B] dark:text-[#E6EAE0]/40 font-bold uppercase tracking-wider text-[9px]">Start</span>
+                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
+                         <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Start</span>
                          {flexRender(row.getVisibleCells().find(c => c.column.id === 'start_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'start_date')?.getContext()!)}
                        </div>
-                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10/50 px-2 py-0.5 rounded-md">
-                         <span className="text-[#11161B] dark:text-[#E6EAE0]/40 font-bold uppercase tracking-wider text-[9px]">Done</span>
+                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
+                         <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Done</span>
                          {flexRender(row.getVisibleCells().find(c => c.column.id === 'complete_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'complete_date')?.getContext()!)}
                        </div>
                      </div>
@@ -294,7 +294,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 </div>
              ))
           ) : (
-            <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">No videos found.</div>
+            <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">No videos found.</div>
           )}
         </div>
 
@@ -305,7 +305,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
                 headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="h-12 px-6 text-[11px] font-semibold uppercase tracking-widest text-[#11161B] dark:text-[#E6EAE0]/35">
+                  <TableHead key={header.id} className="h-12 px-6 text-[11px] font-semibold uppercase tracking-widest text-[#11161B] dark:text-[#E6EAE0]/70">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))
@@ -314,7 +314,7 @@ export function DataTable({ columns, data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {/* Quick-Add Row */}
-            <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/80 bg-[#F3F5EE] dark:bg-white/10/30 hover:bg-[#F3F5EE] dark:bg-white/10/50">
+            <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/80 bg-[#F3F5EE] dark:bg-white/10 hover:bg-[#F3F5EE] dark:bg-white/10">
               <TableCell className="px-6 py-3 w-12"></TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
@@ -357,7 +357,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[#E6EAE0]/50 text-[#11161B] dark:text-[#E6EAE0]/40">
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[#E6EAE0]/50 text-[#11161B] dark:text-[#E6EAE0]/70">
                   Auto
                 </span>
               </TableCell>
@@ -378,7 +378,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:bg-white/10/50 ${
+                  className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:bg-white/10 ${
                     i < table.getRowModel().rows.length - 1 ? "border-b border-[#E6EAE0] dark:border-white/10/40" : "border-0"
                   }`}
                 >
@@ -391,7 +391,7 @@ export function DataTable({ columns, data }: DataTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">
+                <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
                   No videos found.
                 </TableCell>
               </TableRow>
@@ -415,48 +415,48 @@ export function DataTable({ columns, data }: DataTableProps) {
             
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Client</label>
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Client</label>
                 <Input 
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Title</label>
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Title</label>
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Editor</label>
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Editor</label>
                 <Input 
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="flex gap-4">
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Start Date</label>
+                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Start Date</label>
                   <Input 
                     placeholder="MM/DD"
                     value={startDay} 
                     onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
+                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Complete Date</label>
+                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Complete Date</label>
                   <Input 
                     placeholder="MM/DD"
                     value={completeDay} 
                     onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
+                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
                   />
                 </div>
               </div>
