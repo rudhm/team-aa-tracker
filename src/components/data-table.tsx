@@ -415,7 +415,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -423,7 +423,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -432,26 +432,32 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="flex gap-4">
                 <div className="space-y-1.5 flex-1">
                   <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Start Date</label>
                   <Input 
-                    type="date"
+                    type="text"
+                    placeholder="Date"
+                    onFocus={e => { e.target.type = "date"; e.target.showPicker?.(); }}
+                    onBlur={e => { if (!e.target.value) e.target.type = "text"; }}
                     value={startDay} 
                     onChange={e => setStartDay(e.target.value)}
-                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
                   <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Complete Date</label>
                   <Input 
-                    type="date"
+                    type="text"
+                    placeholder="Date"
+                    onFocus={e => { e.target.type = "date"; e.target.showPicker?.(); }}
+                    onBlur={e => { if (!e.target.value) e.target.type = "text"; }}
                     value={completeDay} 
                     onChange={e => setCompleteDay(e.target.value)}
-                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
                   />
                 </div>
               </div>
@@ -463,7 +469,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
                   }}
                   disabled={!title || !editor || isAdding}
-                  className="btn-primary h-12 w-full text-[14px] disabled:opacity-30"
+                  className="btn-primary h-[34px] w-full text-[13px] disabled:opacity-30"
                 >
                   {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Video"}
                 </Button>

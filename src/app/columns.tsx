@@ -134,15 +134,16 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
   if (isEditing) {
      return (
          <input
-           type="date"
-           autoFocus
-           className="h-7 w-[110px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
-           value={dateStr}
-           onChange={e => setDateStr(e.target.value)}
-           onBlur={saveEdit}
-           onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
-           onClick={e => (e.target as HTMLInputElement).showPicker?.()}
-         />
+         type="text"
+         placeholder="Date"
+         autoFocus
+         className="h-7 w-[110px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
+         value={dateStr}
+         onChange={e => setDateStr(e.target.value)}
+         onFocus={e => { e.target.type = "date"; e.target.showPicker?.(); }}
+         onBlur={e => { if (!e.target.value) e.target.type = "text"; saveEdit(); }}
+         onKeyDown={e => { if (e.key === "Enter") saveEdit() }}
+       />
      )
   }
 
