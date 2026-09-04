@@ -321,7 +321,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] font-semibold shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
+                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-none focus-visible:bg-white dark:focus-visible:bg-[#161b22] focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">

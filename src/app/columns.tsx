@@ -214,7 +214,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
       <input
         autoFocus
         placeholder="Paste URL..."
-        className="h-8 w-full max-w-[180px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[12px] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+        className="h-8 w-full max-w-[180px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[12px] text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10"
         value={text}
         onChange={e => setText(e.target.value)}
         onBlur={saveEdit}
