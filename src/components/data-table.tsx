@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { formatName } from "@/lib/utils"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -51,7 +52,7 @@ export function DataTable({ columns, data }: DataTableProps) {
 
   // Unique fields for datalist autocomplete
   const uniqueEditors = React.useMemo(() => {
-    const editors = new Set(data.map(d => d.editor).filter(Boolean))
+    const editors = new Set(data.map(d => formatName(d.editor)).filter(Boolean))
     return Array.from(editors)
   }, [data])
 
@@ -130,7 +131,7 @@ export function DataTable({ columns, data }: DataTableProps) {
     const payload = {
       client,
       video_title: title,
-      editor,
+      editor: formatName(editor),
       start_date: createDateFromInput(startDay),
       complete_date: parsedComplete,
       status: parsedComplete ? 'Complete' : 'In progress',

@@ -3,13 +3,9 @@
 import { useState, useEffect } from "react"
 import { ColumnDef, RowData } from "@tanstack/react-table"
 import { supabase } from "@/lib/supabase"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { formatName, getEditorColorClass } from "@/lib/utils"
 import { LinkIcon } from "lucide-react"
 
 export type VideoTask = {
@@ -250,13 +246,14 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: "Editor",
     cell: ({ row, table }) => {
       const task = row.original
+      const formattedName = formatName(task.editor)
       return (
         <InlineTextEdit 
-          value={task.editor}
+          value={formattedName}
           locked={task.payroll_locked}
           listId="editor-suggestions"
-          className="font-medium text-[#11161B]/50"
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', val)}
+          className={`inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${getEditorColorClass(formattedName)}`}
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', formatName(val))}
         />
       )
     },

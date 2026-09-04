@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Download, Lock, Loader2 } from "lucide-react"
+import { formatName } from "@/lib/utils"
 
 export function PayrollClient({ data }: { data: VideoTask[] }) {
   const router = useRouter()
@@ -42,7 +43,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
   const editorGroups = React.useMemo(() => {
     const map = new Map<string, VideoTask[]>()
     currentMonthData.forEach(task => {
-      const ed = task.editor || "Unassigned"
+      const ed = formatName(task.editor) || "Unassigned"
       if (!map.has(ed)) map.set(ed, [])
       map.get(ed)!.push(task)
     })
