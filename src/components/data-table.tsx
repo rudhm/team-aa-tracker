@@ -130,7 +130,7 @@ export function DataTable({ columns, data }: DataTableProps) {
 
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!client || !title || !editor) return
+    if (!title || !editor) return
     setIsAdding(true)
 
     const parsedComplete = createDateFromInput(completeDay)
@@ -186,20 +186,20 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B]/30" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/30" />
             <Input
               placeholder="Search video titles…"
               value={(table.getColumn("video_title")?.getFilterValue() as string) ?? ""}
               onChange={(event) =>
                 table.getColumn("video_title")?.setFilterValue(event.target.value)
               }
-              className="h-11 w-full sm:w-[280px] rounded-full border-none bg-white/50 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] shadow-sm placeholder:text-[#11161B]/50 focus-visible:ring-2 focus-visible:ring-white"
+              className="h-11 w-full sm:w-[280px] rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-11 pr-4 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm placeholder:text-[#11161B] dark:text-[#E6EAE0]/50 focus-visible:ring-2 focus-visible:ring-white"
             />
           </div>
           
           <div className="relative w-full sm:w-auto">
             <select 
-              className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 backdrop-blur-md pl-4 pr-10 text-[13px] font-medium text-[#11161B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-4 pr-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               value={(table.getColumn("editor")?.getFilterValue() as string) ?? ""}
               onChange={(e) => table.getColumn("editor")?.setFilterValue(e.target.value)}
             >
@@ -208,7 +208,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <option key={ed} value={ed}>{ed}</option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#11161B]/60">
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/60">
               <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 1L5 5L9 1"/></svg>
             </div>
           </div>
@@ -216,17 +216,17 @@ export function DataTable({ columns, data }: DataTableProps) {
 
         <div className="flex justify-start sm:justify-end w-full sm:w-auto">
           {/* View Toggle */}
-          <div className="flex items-center rounded-full border border-white/20 bg-white/40 backdrop-blur-md p-1 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
+          <div className="flex items-center rounded-full border border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-md p-1 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] text-[#11161B]' : 'text-[#11161B]/40 hover:text-[#11161B]/70'}`}
+              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/40 hover:text-[#11161B] dark:text-[#E6EAE0]/70'}`}
             >
               <List className="mr-2 h-4 w-4" />
               Table
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] text-[#11161B]' : 'text-[#11161B]/40 hover:text-[#11161B]/70'}`}
+              className={`flex h-9 flex-1 sm:flex-none items-center justify-center rounded-full px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[#F3F5EE] dark:bg-white/10 text-[#11161B] dark:text-[#E6EAE0]' : 'text-[#11161B] dark:text-[#E6EAE0]/40 hover:text-[#11161B] dark:text-[#E6EAE0]/70'}`}
             >
               <LayoutGrid className="mr-2 h-4 w-4" />
               Board
@@ -250,7 +250,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         <div className="md:hidden flex flex-col gap-4 pb-24">
           {table.getRowModel().rows?.length ? (
              table.getRowModel().rows.map(row => (
-                <div key={row.id} className="rounded-[24px] bg-white p-5 shadow-sm border border-[#E6EAE0] flex flex-col relative overflow-hidden transition-all duration-200">
+                <div key={row.id} className="rounded-[24px] bg-white dark:bg-[#161b22] p-5 shadow-sm border border-[#E6EAE0] dark:border-white/10 flex flex-col relative overflow-hidden transition-all duration-200">
                    <div className="flex items-start justify-between mb-4 gap-2">
                       <div className="flex items-center gap-3 flex-1">
                         {row.getVisibleCells().find(c => c.column.id === 'select') && row.original.status !== 'Complete' && (
@@ -276,36 +276,36 @@ export function DataTable({ columns, data }: DataTableProps) {
                        {flexRender(row.getVisibleCells().find(c => c.column.id === 'editor')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'editor')?.getContext()!)}
                      </div>
                      <div className="flex flex-col gap-1.5 items-end text-[11.5px]">
-                       <div className="flex items-center gap-2 bg-[#F3F5EE]/50 px-2 py-0.5 rounded-md">
-                         <span className="text-[#11161B]/40 font-bold uppercase tracking-wider text-[9px]">Start</span>
+                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10/50 px-2 py-0.5 rounded-md">
+                         <span className="text-[#11161B] dark:text-[#E6EAE0]/40 font-bold uppercase tracking-wider text-[9px]">Start</span>
                          {flexRender(row.getVisibleCells().find(c => c.column.id === 'start_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'start_date')?.getContext()!)}
                        </div>
-                       <div className="flex items-center gap-2 bg-[#F3F5EE]/50 px-2 py-0.5 rounded-md">
-                         <span className="text-[#11161B]/40 font-bold uppercase tracking-wider text-[9px]">Done</span>
+                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10/50 px-2 py-0.5 rounded-md">
+                         <span className="text-[#11161B] dark:text-[#E6EAE0]/40 font-bold uppercase tracking-wider text-[9px]">Done</span>
                          {flexRender(row.getVisibleCells().find(c => c.column.id === 'complete_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'complete_date')?.getContext()!)}
                        </div>
                      </div>
                    </div>
                    
                    {/* Mobile Link Rendering */}
-                   <div className="mt-4 pt-3 border-t border-[#E6EAE0]/50">
+                   <div className="mt-4 pt-3 border-t border-[#E6EAE0] dark:border-white/10/50">
                      {flexRender(row.getVisibleCells().find(c => c.column.id === 'link')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'link')?.getContext()!)}
                    </div>
                 </div>
              ))
           ) : (
-            <div className="text-center py-10 text-[13px] font-medium text-[#11161B]/30">No tasks found.</div>
+            <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">No tasks found.</div>
           )}
         </div>
 
         {/* Desktop View (Table) */}
-        <div className="hidden md:block overflow-hidden rounded-[28px] border border-[#E6EAE0] bg-white shadow-sm overflow-x-auto w-full">
+        <div className="hidden md:block overflow-hidden rounded-[28px] border border-[#E6EAE0] dark:border-white/10 bg-white dark:bg-[#161b22] shadow-sm overflow-x-auto w-full">
         <Table className="min-w-[800px]">
           <TableHeader>
-            <TableRow className="border-b border-[#E6EAE0]/60 hover:bg-transparent">
+            <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
                 headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="h-12 px-6 text-[11px] font-semibold uppercase tracking-widest text-[#11161B]/35">
+                  <TableHead key={header.id} className="h-12 px-6 text-[11px] font-semibold uppercase tracking-widest text-[#11161B] dark:text-[#E6EAE0]/35">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))
@@ -314,21 +314,21 @@ export function DataTable({ columns, data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {/* Quick-Add Row */}
-            <TableRow className="border-b border-[#E6EAE0]/80 bg-[#F3F5EE]/30 hover:bg-[#F3F5EE]/50">
+            <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/80 bg-[#F3F5EE] dark:bg-white/10/30 hover:bg-[#F3F5EE] dark:bg-white/10/50">
               <TableCell className="px-6 py-3 w-12"></TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] font-semibold shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] font-semibold shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
                 />
               </TableCell>
@@ -337,7 +337,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
@@ -345,7 +345,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="MM/DD"
                   value={startDay} 
                   onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
@@ -353,18 +353,18 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="MM/DD"
                   value={completeDay} 
                   onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white focus-visible:ring-1"
+                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[#E6EAE0]/50 text-[#11161B]/40">
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[#E6EAE0]/50 text-[#11161B] dark:text-[#E6EAE0]/40">
                   Auto
                 </span>
               </TableCell>
               <TableCell className="px-6 py-3">
                 <Button 
                   onClick={handleQuickAdd} 
-                  disabled={!client || !title || !editor || isAdding}
+                  disabled={!title || !editor || isAdding}
                   className="h-7 w-16 rounded-full bg-[#11161B] text-[11px] font-semibold text-white transition-all hover:bg-[#11161B]/80 disabled:opacity-30"
                 >
                   {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
@@ -378,8 +378,8 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={`transition-colors duration-150 hover:bg-[#F3F5EE]/50 ${
-                    i < table.getRowModel().rows.length - 1 ? "border-b border-[#E6EAE0]/40" : "border-0"
+                  className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:bg-white/10/50 ${
+                    i < table.getRowModel().rows.length - 1 ? "border-b border-[#E6EAE0] dark:border-white/10/40" : "border-0"
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -391,7 +391,7 @@ export function DataTable({ columns, data }: DataTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B]/30">
+                <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/30">
                   No tasks found.
                 </TableCell>
               </TableRow>
@@ -410,53 +410,53 @@ export function DataTable({ columns, data }: DataTableProps) {
           </SheetTrigger>
           <SheetContent side="bottom" className="rounded-t-[32px] p-6 pb-12 outline-none">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-left text-[18px] font-bold text-[#11161B]">Add new task</SheetTitle>
+              <SheetTitle className="text-left text-[18px] font-bold text-[#11161B] dark:text-[#E6EAE0]">Add new task</SheetTitle>
             </SheetHeader>
             
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Client</label>
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Client</label>
                 <Input 
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white"
+                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Title</label>
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Title</label>
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white"
+                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Editor</label>
+                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Editor</label>
                 <Input 
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white"
+                  className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
                 />
               </div>
               <div className="flex gap-4">
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Start Date</label>
+                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Start Date</label>
                   <Input 
                     placeholder="MM/DD"
                     value={startDay} 
                     onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                    className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white text-center"
+                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[#11161B]/60 uppercase tracking-wider ml-1">Complete Date</label>
+                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/60 uppercase tracking-wider ml-1">Complete Date</label>
                   <Input 
                     placeholder="MM/DD"
                     value={completeDay} 
                     onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                    className="h-12 rounded-xl bg-[#F3F5EE]/50 border-[#E6EAE0] px-4 text-[14px] shadow-sm focus-visible:bg-white text-center"
+                    className="h-12 rounded-xl bg-[#F3F5EE] dark:bg-white/10/50 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center"
                   />
                 </div>
               </div>
@@ -467,7 +467,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                      handleQuickAdd(e)
                      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
                   }}
-                  disabled={!client || !title || !editor || isAdding}
+                  disabled={!title || !editor || isAdding}
                   className="h-12 w-full rounded-xl bg-[#11161B] text-[14px] font-bold text-white transition-all hover:bg-[#11161B]/80 disabled:opacity-30"
                 >
                   {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Task"}
@@ -485,7 +485,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             <span className="text-[13px] font-medium text-white/80">
               {selectedCount} {selectedCount === 1 ? 'video' : 'videos'} selected
             </span>
-            <div className="w-px h-4 bg-white/20"></div>
+            <div className="w-px h-4 bg-white/20 dark:bg-white/5"></div>
             <button 
               onClick={handleBulkComplete}
               className="text-[13px] font-bold text-[#ffdf59] hover:text-[#fffdf2] transition-colors"

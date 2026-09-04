@@ -100,7 +100,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <select 
-          className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 backdrop-blur-md pl-5 pr-12 text-[14px] font-bold text-[#11161B] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className="h-11 w-full sm:w-auto appearance-none rounded-full border-none bg-white/50 dark:bg-black/40 backdrop-blur-md pl-5 pr-12 text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           value={selectedMonth}
           onChange={e => setSelectedMonth(e.target.value)}
         >
@@ -114,9 +114,9 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
           <Button 
             onClick={exportCSV}
             variant="outline"
-            className="h-11 w-full sm:w-auto rounded-full border-white/20 bg-white/40 backdrop-blur-md px-5 text-[13px] font-semibold text-[#11161B] shadow-sm hover:bg-white/60"
+            className="h-11 w-full sm:w-auto rounded-full border-white/20 bg-white/40 dark:bg-black/30 backdrop-blur-md px-5 text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm hover:bg-white/60 dark:bg-black/50"
           >
-            <Download className="mr-2 h-4 w-4 text-[#11161B]/50" />
+            <Download className="mr-2 h-4 w-4 text-[#11161B] dark:text-[#E6EAE0]/50" />
             Export CSV
           </Button>
 
@@ -142,10 +142,10 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
       <div className="grid gap-6">
         {editorGroups.map(([editor, tasks]) => (
-          <div key={editor} className="overflow-hidden rounded-[28px] border border-white/40 bg-white/60 backdrop-blur-md shadow-sm">
+          <div key={editor} className="overflow-hidden rounded-[28px] border border-white/40 bg-white/60 dark:bg-black/50 backdrop-blur-md shadow-sm">
             <div className="border-b border-white/40 bg-white/30 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-[15px] font-bold text-[#11161B]">{editor}</h2>
-              <span className="flex h-7 items-center justify-center rounded-full bg-white/50 px-3 text-[12px] font-semibold text-[#11161B]/80 shadow-sm border border-white/30">
+              <h2 className="text-[15px] font-bold text-[#11161B] dark:text-[#E6EAE0]">{editor}</h2>
+              <span className="flex h-7 items-center justify-center rounded-full bg-white/50 dark:bg-black/40 px-3 text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/80 shadow-sm border border-white/30">
                 {tasks.length} {tasks.length === 1 ? 'video' : 'videos'}
               </span>
             </div>
@@ -153,11 +153,11 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
               {tasks.map(task => (
                 <div key={task.id} className="flex items-center justify-between px-6 py-4">
                   <div>
-                    <p className="text-[14px] font-bold text-[#11161B]">{task.video_title}</p>
-                    <p className="text-[12px] font-medium text-[#11161B]/50 mt-0.5">{task.client}</p>
+                    <p className="text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0]">{task.video_title}</p>
+                    <p className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/50 mt-0.5">{task.client}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[12px] font-semibold text-[#11161B]/50 tabular-nums">
+                    <p className="text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/50 tabular-nums">
                       Completed: {new Date(task.complete_date!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </p>
                     {task.link && (
@@ -174,7 +174,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
       </div>
       
       {months.length === 0 && (
-         <div className="text-center py-20 text-[14px] font-medium text-[#11161B]/40">
+         <div className="text-center py-20 text-[14px] font-medium text-[#11161B] dark:text-[#E6EAE0]/40">
            No completed videos yet.
          </div>
       )}

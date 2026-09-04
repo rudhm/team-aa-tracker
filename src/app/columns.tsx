@@ -34,7 +34,7 @@ function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }
     "In progress": { bg: "bg-[#FEF9C3]", text: "text-amber-700" },
     "In review":   { bg: "bg-blue-50",    text: "text-blue-600" },
     "Revision":    { bg: "bg-purple-50",  text: "text-purple-600" },
-    "Not started": { bg: "bg-[#F3F5EE]",  text: "text-[#11161B]/50" },
+    "Not started": { bg: "bg-[#F3F5EE] dark:bg-white/10",  text: "text-[#11161B] dark:text-[#E6EAE0]/50" },
   }
   const style = config[status] || config["Not started"]
   
@@ -84,7 +84,7 @@ export function InlineTextEdit({
          autoFocus
          list={listId}
          placeholder={placeholder}
-         className="h-7 w-full min-w-[120px] max-w-[180px] rounded-md bg-white border border-[#E6EAE0] px-2 text-[13px] font-medium text-[#11161B] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+         className="h-7 w-full min-w-[120px] max-w-[180px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
          value={text}
          onChange={e => setText(e.target.value)}
          onBlur={saveEdit}
@@ -96,7 +96,7 @@ export function InlineTextEdit({
   return (
     <span 
       onClick={startEdit} 
-      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
+      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
       title={!locked ? "Click to edit" : ""}
     >
       {value || "—"}
@@ -162,7 +162,7 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
        <input
          autoFocus
          placeholder="MM/DD"
-         className="h-7 w-14 rounded-md bg-white border border-[#E6EAE0] px-1 text-center text-[12px] font-semibold text-[#11161B] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+         className="h-7 w-14 rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
          value={dateStr}
          onChange={e => setDateStr(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
          onBlur={saveEdit}
@@ -174,7 +174,7 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
   return (
     <span 
       onClick={startEdit} 
-      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B]/60 hover:text-[#11161B] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B]/40'}`}
+      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B] dark:text-[#E6EAE0]/60 hover:text-[#11161B] dark:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B] dark:text-[#E6EAE0]/40'}`}
       title={!locked ? "Click to edit date" : ""}
     >
       {displayValue}
@@ -214,7 +214,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
       <input
         autoFocus
         placeholder="Paste URL..."
-        className="h-8 w-full max-w-[180px] rounded-md bg-white border border-[#E6EAE0] px-2 text-[12px] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+        className="h-8 w-full max-w-[180px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[12px] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
         value={text}
         onChange={e => setText(e.target.value)}
         onBlur={saveEdit}
@@ -228,7 +228,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
     return (
       <span 
         onClick={startEdit} 
-        className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1.5 ${locked ? 'text-[#11161B]/20' : 'text-[#11161B]/40 hover:bg-[#F3F5EE] hover:text-[#11161B] cursor-pointer border border-dashed border-[#E6EAE0]'}`}
+        className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1.5 ${locked ? 'text-[#11161B] dark:text-[#E6EAE0]/20' : 'text-[#11161B] dark:text-[#E6EAE0]/40 hover:bg-[#F3F5EE] dark:bg-white/10 hover:text-[#11161B] dark:text-[#E6EAE0] cursor-pointer border border-dashed border-[#E6EAE0] dark:border-white/10'}`}
       >
         <LinkIcon className="h-3 w-3" />
         Add Link
@@ -250,7 +250,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
       {!locked && (
         <button 
           onClick={startEdit}
-          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 text-[#11161B]/30 hover:text-[#11161B] hover:bg-[#F3F5EE] rounded-full transition-all"
+          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 text-[#11161B] dark:text-[#E6EAE0]/30 hover:text-[#11161B] dark:text-[#E6EAE0] hover:bg-[#F3F5EE] dark:bg-white/10 rounded-full transition-all"
           title="Edit link"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
@@ -266,7 +266,7 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: ({ table }) => (
       <input
         type="checkbox"
-        className="rounded border-[#E6EAE0] text-[#11161B] focus:ring-[#11161B]"
+        className="rounded border-[#E6EAE0] dark:border-white/10 text-[#11161B] dark:text-[#E6EAE0] focus:ring-[#11161B]"
         checked={table.getIsAllPageRowsSelected()}
         onChange={table.getToggleAllPageRowsSelectedHandler()}
       />
@@ -280,7 +280,7 @@ export const columns: ColumnDef<VideoTask>[] = [
       return (
         <input
           type="checkbox"
-          className="rounded border-[#E6EAE0] text-[#11161B] focus:ring-[#11161B]"
+          className="rounded border-[#E6EAE0] dark:border-white/10 text-[#11161B] dark:text-[#E6EAE0] focus:ring-[#11161B]"
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
           disabled={task.payroll_locked}
@@ -298,7 +298,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           value={task.client}
           locked={task.payroll_locked}
           listId="client-suggestions"
-          className="font-semibold text-[#11161B]"
+          className="font-semibold text-[#11161B] dark:text-[#E6EAE0]"
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val)}
         />
       )
@@ -313,7 +313,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineTextEdit 
           value={task.video_title}
           locked={task.payroll_locked}
-          className="font-medium text-[#11161B]/70"
+          className="font-medium text-[#11161B] dark:text-[#E6EAE0]/70"
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'video_title', val)}
         />
       )
@@ -385,7 +385,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           <DropdownMenuTrigger className="focus:outline-none">
             <StatusBadge status={status} isLocked={false} />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[#E6EAE0] bg-white p-1.5 shadow-lg">
+          <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[#E6EAE0] dark:border-white/10 bg-white dark:bg-[#161b22] p-1.5 shadow-lg">
             {STATUSES.map((s) => (
               <DropdownMenuItem
                 key={s}
@@ -394,7 +394,7 @@ export const columns: ColumnDef<VideoTask>[] = [
                     await table.options.meta?.updateData(row.index, 'status', s)
                   }
                 }}
-                className="rounded-xl px-2 py-1.5 text-[12px] font-medium text-[#11161B]/70 focus:bg-[#F3F5EE]"
+                className="rounded-xl px-2 py-1.5 text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70 focus:bg-[#F3F5EE] dark:bg-white/10"
               >
                 {s}
               </DropdownMenuItem>
