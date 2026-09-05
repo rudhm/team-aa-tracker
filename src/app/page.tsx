@@ -27,11 +27,13 @@ export default async function Page() {
   const currentMonthStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
   
   const filteredData = data.filter(task => {
-    const isCreatedThisMonth = task.created_at && task.created_at >= currentMonthStr;
-    const isStartedThisMonth = task.start_date && task.start_date >= currentMonthStr;
-    const isCompletedThisMonth = task.complete_date && task.complete_date >= currentMonthStr;
-    
-    return isCreatedThisMonth || isStartedThisMonth || isCompletedThisMonth;
+    if (task.status === 'Complete') {
+      // Only show completed tasks if they were completed this month
+      return task.complete_date && task.complete_date >= currentMonthStr;
+    } else {
+      // Only show active tasks if they were started this month, OR have no start date yet
+      return !task.start_date || task.start_date >= currentMonthStr;
+    }
   });
 
   return (
