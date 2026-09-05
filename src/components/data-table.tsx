@@ -75,7 +75,7 @@ const MemoizedMobileRow = React.memo(({ row, style }: { row: any, style?: React.
       <div className="flex items-start justify-between mb-4 gap-2">
         <div className="flex items-center gap-3 flex-1">
           {selectCell && row.original.status !== 'Complete' && (
-            <div className="flex items-center justify-center">
+            <div className="scale-125 transform-gpu -mt-0.5 flex-shrink-0">
               {flexRender(selectCell.column.columnDef.cell, selectCell.getContext())}
             </div>
           )}
@@ -339,10 +339,15 @@ export function DataTable({ columns, data }: DataTableProps) {
     const rows = table.getRowModel().rows
   const [scrollMargin, setScrollMargin] = React.useState(0)
   React.useEffect(() => {
-    if (scrollRef.current) {
-      setScrollMargin(scrollRef.current.offsetTop)
+    const updateMargin = () => {
+      if (scrollRef.current) {
+        setScrollMargin(scrollRef.current.offsetTop)
+      }
     }
-  }, [])
+    updateMargin()
+    window.addEventListener('resize', updateMargin)
+    return () => window.removeEventListener('resize', updateMargin)
+  }, [isMobile, viewMode])
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => isMobile ? 180 : 53,

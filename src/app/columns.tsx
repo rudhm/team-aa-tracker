@@ -100,15 +100,14 @@ export function InlineTextEdit({
   }
 
   return (
-    <div className="flex h-full min-h-[24px] w-full items-center" onClick={startEdit}>
-      <span 
-        className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
-        style={style}
-        title={!locked ? "Click to edit" : ""}
-      >
-        {value || emptyContent}
-      </span>
-    </div>
+    <span 
+      onClick={startEdit} 
+      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
+      style={style}
+      title={!locked ? "Click to edit" : ""}
+    >
+      {value || emptyContent}
+    </span>
   )
 }
 
@@ -156,14 +155,13 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
   }
 
   return (
-    <div className="flex h-full min-h-[24px] w-full items-center" onClick={startEdit}>
-      <span 
-        className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B] dark:text-[#E6EAE0]/70'}`}
-        title={!locked ? "Click to edit date" : ""}
-      >
-        {displayValue}
-      </span>
-    </div>
+    <span 
+      onClick={startEdit} 
+      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B] dark:text-[#E6EAE0]/70'}`}
+      title={!locked ? "Click to edit date" : ""}
+    >
+      {displayValue}
+    </span>
   )
 }
 
