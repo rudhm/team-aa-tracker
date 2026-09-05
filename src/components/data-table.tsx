@@ -154,6 +154,8 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
   const [editorMenuOpen, setEditorMenuOpen] = React.useState(false)
+  const [statusMenuOpen, setStatusMenuOpen] = React.useState(false)
+  const [clientMenuOpen, setClientMenuOpen] = React.useState(false)
   const [hiddenEditors, setHiddenEditors] = React.useState<string[]>([])
   const [hiddenEditorsLoaded, setHiddenEditorsLoaded] = React.useState(false)
 
@@ -300,6 +302,10 @@ export function DataTable({ columns, data }: DataTableProps) {
     }
   })
 
+  const STATUS_FILTERS = ['In progress', 'Revision', 'Complete']
+
+  const statusFilter = (table.getColumn("status")?.getFilterValue() as string) ?? ""
+  const clientFilter = (table.getColumn("client")?.getFilterValue() as string) ?? ""
   const editorFilter = (table.getColumn("editor")?.getFilterValue() as string) ?? ""
 
   const handleHideEditor = (editorName: string) => {
@@ -463,6 +469,88 @@ export function DataTable({ columns, data }: DataTableProps) {
                   <span className="inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold" style={colorMaps.editors[editorName]}>
                     {editorName}
                   </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            type="button"
+            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
+            onClick={() => setStatusMenuOpen(isOpen => !isOpen)}
+          >
+            Status : {statusFilter || "All"}
+            {statusFilter && (
+              <span
+                className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
+                onClick={(e) => { e.stopPropagation(); table.getColumn("status")?.setFilterValue("") }}
+              >
+                ✕
+              </span>
+            )}
+            {!statusFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
+          </button>
+
+          {statusMenuOpen && (
+            <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[180px] rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+              <button
+                type="button"
+                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                onClick={() => { table.getColumn("status")?.setFilterValue(""); setStatusMenuOpen(false) }}
+              >
+                All Statuses
+              </button>
+              {STATUS_FILTERS.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                  onClick={() => { table.getColumn("status")?.setFilterValue(s); setStatusMenuOpen(false) }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            type="button"
+            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
+            onClick={() => setClientMenuOpen(isOpen => !isOpen)}
+          >
+            Client : {clientFilter || "All"}
+            {clientFilter && (
+              <span
+                className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
+                onClick={(e) => { e.stopPropagation(); table.getColumn("client")?.setFilterValue("") }}
+              >
+                ✕
+              </span>
+            )}
+            {!clientFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
+          </button>
+
+          {clientMenuOpen && (
+            <div className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[200px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+              <button
+                type="button"
+                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                onClick={() => { table.getColumn("client")?.setFilterValue(""); setClientMenuOpen(false) }}
+              >
+                All Clients
+              </button>
+              {uniqueClients.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                  onClick={() => { table.getColumn("client")?.setFilterValue(c); setClientMenuOpen(false) }}
+                >
+                  {c}
                 </button>
               ))}
             </div>
