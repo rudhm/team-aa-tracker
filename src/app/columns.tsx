@@ -119,7 +119,7 @@ export function InlineTextEdit({
   )
 }
 
-export function InlineDayEdit({ value, locked, onUpdate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void }) {
+export function InlineDayEdit({ value, locked, onUpdate, otherDate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void, otherDate?: string | null }) {
   const [isEditing, setIsEditing] = useState(false)
   const [dateStr, setDateStr] = useState("")
 
@@ -137,6 +137,16 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
 
   const saveEdit = () => {
      setIsEditing(false)
+     if (dateStr && otherDate) {
+       const d1 = new Date(dateStr)
+       const d2 = new Date(otherDate)
+       if (d1.getUTCMonth() !== d2.getUTCMonth() || d1.getUTCFullYear() !== d2.getUTCFullYear()) {
+         alert("Start Date and Complete Date must belong to the same month.")
+         setDateStr(value?.substring(0, 10) || "")
+         return
+       }
+     }
+     
      if (dateStr) {
        onUpdate(dateStr)
      } else {
@@ -382,6 +392,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineDayEdit 
           value={task.start_date} 
           locked={task.payroll_locked} 
+          otherDate={task.complete_date}
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'start_date', val)} 
         />
       )
@@ -396,6 +407,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineDayEdit 
           value={task.complete_date} 
           locked={task.payroll_locked} 
+          otherDate={task.start_date}
           onUpdate={(val) => {
             // If they manually set a complete date, we should also auto-flip status to Complete!
             const updates: any = { complete_date: val }

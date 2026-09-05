@@ -382,8 +382,17 @@ export function DataTable({ columns, data }: DataTableProps) {
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !editor) return
-    setIsAdding(true)
 
+    if (startDay && completeDay) {
+      const d1 = new Date(startDay)
+      const d2 = new Date(completeDay)
+      if (d1.getUTCMonth() !== d2.getUTCMonth() || d1.getUTCFullYear() !== d2.getUTCFullYear()) {
+        alert("Start Date and Complete Date must belong to the same month.")
+        return
+      }
+    }
+
+    setIsAdding(true)
     const parsedComplete = completeDay || null
     const localToday = new Date().toLocaleDateString("en-CA")
 
