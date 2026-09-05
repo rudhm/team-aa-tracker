@@ -100,12 +100,16 @@ export function InlineTextEdit({
      )
   }
 
+  const tooltipText = value 
+    ? (locked ? value : `${value} (Click to edit)`) 
+    : (!locked ? "Click to edit" : undefined);
+
   return (
     <span 
       onClick={startEdit} 
-      className={`${className} transition-colors flex items-center gap-1.5 ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0]' : ''}`}
+      className={`${className} transition-colors ${prefix ? 'flex items-center gap-1.5' : ''} ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0]' : ''}`}
       style={style}
-      title={!locked ? "Click to edit" : ""}
+      title={tooltipText}
     >
       {prefix}
       <span className={!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}>
