@@ -402,24 +402,13 @@ export function DataTable({ columns, data }: DataTableProps) {
               Board
             </button>
           </div>
-          <button className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[14px] py-[8px] rounded-[8px] text-[13px] font-semibold flex items-center gap-[6px] cursor-pointer hidden sm:flex">
-            Sort ↕
-          </button>
-          <button className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[14px] py-[8px] rounded-[8px] text-[13px] font-semibold flex items-center gap-[6px] cursor-pointer hidden sm:flex">
-            More filters ≡
-          </button>
-          <button className="bg-[var(--theme-accent)] border border-[var(--theme-accent)] text-[var(--theme-on-accent)] px-[14px] py-[8px] rounded-[8px] text-[13px] font-semibold flex items-center gap-[6px] cursor-pointer hidden sm:flex">
-            Send Feedback
-          </button>
-          <div className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-muted)] w-[36px] h-[36px] rounded-[8px] flex items-center justify-center font-bold pb-1 hidden sm:flex cursor-pointer">
-            ...
-          </div>
+
         </div>
       </div>
 
       {/* Chip Row */}
       <div className="flex items-center gap-[10px] mb-[16px] flex-wrap">
-        <div className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-[8px] px-[12px] py-[8px] text-[13px] color-[var(--text-muted)] min-w-[220px]">
+        <div className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-[14px] py-[7px] text-[13px] text-[var(--text-muted)] min-w-[220px]">
           <Search className="h-[14px] w-[14px] text-[var(--text-muted)]" />
           <Input
             placeholder="Search video titles…"
