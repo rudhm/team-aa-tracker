@@ -1,7 +1,7 @@
 import { VideoTask } from "@/app/columns"
 import { createEntityColor, type EntityColorMaps, formatName } from "@/lib/utils"
 
-const STATUSES = ['Not started', 'In progress', 'In review', 'Revision', 'Complete']
+const STATUSES = ['In progress', 'Revision', 'Complete']
 
 interface BoardViewProps {
   data: VideoTask[]

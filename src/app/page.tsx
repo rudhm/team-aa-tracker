@@ -22,6 +22,15 @@ async function getData() {
 
 export default async function Page() {
   const data = await getData()
+  
+  const now = new Date();
+  const currentMonthStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+  
+  const filteredData = data.filter(task => {
+    if (task.status !== 'Complete') return true;
+    if (!task.complete_date) return true;
+    return task.complete_date >= currentMonthStr;
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -36,7 +45,7 @@ export default async function Page() {
             <div className="text-[#8f8c86] text-[14px] hidden sm:block">DASHBOARD</div>
             <div className="w-px h-4 bg-[#3a3936] hidden sm:block"></div>
             <div className="text-[#d8d5cd] text-[14px] hidden sm:block">
-              {data.length} {data.length === 1 ? "video" : "videos"}
+              {filteredData.length} {filteredData.length === 1 ? "video" : "videos"}
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -52,7 +61,7 @@ export default async function Page() {
 
       {/* Main content */}
       <main className="mx-auto max-w-[1920px] px-6 sm:px-8 py-7 w-full flex-1">
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={filteredData} />
       </main>
 
       {/* Footer */}

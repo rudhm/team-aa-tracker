@@ -47,7 +47,7 @@ function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }
   )
 }
 
-const STATUSES = ['Not started', 'In progress', 'In review', 'Revision', 'Complete']
+const STATUSES = ['In progress', 'Revision', 'Complete']
 
 export function InlineTextEdit({ 
   value, 
