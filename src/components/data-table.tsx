@@ -75,7 +75,7 @@ const MemoizedMobileRow = React.memo(({ row, style }: { row: any, style?: React.
       <div className="flex items-start justify-between mb-4 gap-2">
         <div className="flex items-center gap-3 flex-1">
           {selectCell && row.original.status !== 'Complete' && (
-            <div className="scale-125 transform-gpu -mt-0.5">
+            <div className="flex items-center justify-center">
               {flexRender(selectCell.column.columnDef.cell, selectCell.getContext())}
             </div>
           )}
@@ -325,7 +325,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       .from('video_tasks')
       .update({ 
         status: 'Complete', 
-        complete_date: new Date().toISOString() 
+        complete_date: new Date().toLocaleDateString("en-CA") 
       })
       .in('id', ids)
       
@@ -337,10 +337,16 @@ export function DataTable({ columns, data }: DataTableProps) {
   }
 
     const rows = table.getRowModel().rows
+  const [scrollMargin, setScrollMargin] = React.useState(0)
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      setScrollMargin(scrollRef.current.offsetTop)
+    }
+  }, [])
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => isMobile ? 180 : 53,
-    scrollMargin: scrollRef.current?.offsetTop ?? 0,
+    scrollMargin,
     overscan: 5,
   })
   const virtualItems = virtualizer.getVirtualItems()
@@ -493,9 +499,9 @@ export function DataTable({ columns, data }: DataTableProps) {
         </div>
       </div>
 
-      {/* Available Editors Bar */}
+      {/* Idle Editors Bar */}
       <div className="flex flex-wrap items-center gap-2 px-1">
-        <span className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70">Available Editors:</span>
+        <span className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70">Idle Editors:</span>
         {availableEditors.length > 0 ? (
           availableEditors.map(editor => (
             <span
@@ -604,18 +610,18 @@ export function DataTable({ columns, data }: DataTableProps) {
               </TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
-                  placeholder="MM/DD"
+                  type="date"
                   value={startDay} 
-                  onChange={e => setStartDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
+                  onChange={e => setStartDay(e.target.value)}
+                  className="h-8 w-[110px] rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
                 <Input 
-                  placeholder="MM/DD"
+                  type="date"
                   value={completeDay} 
-                  onChange={e => setCompleteDay(e.target.value.replace(/[^\d/]/g, '').slice(0, 5))}
-                  className="h-8 w-14 text-center rounded-lg border-transparent bg-transparent px-1 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
+                  onChange={e => setCompleteDay(e.target.value)}
+                  className="h-8 w-[110px] rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
               <TableCell className="px-6 py-3">
