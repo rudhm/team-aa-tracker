@@ -23,16 +23,21 @@ async function getData() {
 export default async function Page() {
   const data = await getData()
   
-  const now = new Date();
-  const currentMonthStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+  // Get current date in IST (Asia/Kolkata)
+  const nowStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const now = new Date(nowStr);
+  
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const nextMonthStr = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`;
   
   const filteredData = data.filter(task => {
     if (task.status === 'Complete') {
-      // Only show completed tasks if they were completed this month
-      return task.complete_date && task.complete_date >= currentMonthStr;
+      // Strictly completed within the current month
+      return task.complete_date && task.complete_date >= currentMonthStr && task.complete_date < nextMonthStr;
     } else {
-      // Only show active tasks if they were started this month, OR have no start date yet
-      return !task.start_date || task.start_date >= currentMonthStr;
+      // Incomplete tasks: show if started this month or have no start date
+      return !task.start_date || (task.start_date >= currentMonthStr && task.start_date < nextMonthStr);
     }
   });
 
