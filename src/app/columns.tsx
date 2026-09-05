@@ -268,10 +268,6 @@ export const columns: ColumnDef<VideoTask>[] = [
     ),
     cell: ({ row }) => {
       const task = row.original
-      if (task.status === 'Complete') {
-        return <CustomCheckbox checked={true} onChange={() => {}} disabled={true} />
-      }
-      
       return (
         <CustomCheckbox
           checked={row.getIsSelected()}

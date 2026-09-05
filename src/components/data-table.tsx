@@ -469,52 +469,43 @@ export function DataTable({ columns, data }: DataTableProps) {
           >
             {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />} Reset Data
           </Button>
-          <Button
-            onClick={() => {
-              const input = document.querySelector('input[placeholder="Client..."]') as HTMLInputElement;
-              if (input) {
-                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                input.focus();
-              }
-            }}
-            className="btn-primary h-[36px] px-4 text-[13px] hidden sm:flex items-center gap-2 font-bold shadow-sm"
-          >
-            <Plus className="w-4 h-4" /> New Video
-          </Button>
         </div>
       </div>
 
       {/* Stats Strip */}
-      <div className="flex items-center gap-6 mb-4 text-[13px] text-[var(--text-secondary)] font-medium bg-[var(--surface-card-2)] border border-[var(--border)] rounded-xl px-4 py-2.5 shadow-sm">
+      <div className="flex items-center gap-6 mb-3 text-[13px] text-[var(--text-secondary)] font-medium bg-[var(--surface-card-2)] border border-[var(--border)] rounded-xl px-4 py-2.5 shadow-sm w-max">
         <div className="flex items-center gap-6 flex-shrink-0">
           <span className="text-[var(--text-primary)] font-bold">{tableData.length} <span className="font-medium text-[var(--text-secondary)]">Videos</span></span>
           <span className="text-[var(--text-primary)] font-bold">{completedCount} <span className="font-medium text-[var(--text-secondary)]">Completed</span></span>
           <span className="text-[var(--text-primary)] font-bold">{inProgressCount} <span className="font-medium text-[var(--text-secondary)]">In Progress</span></span>
           <span className="text-[var(--text-primary)] font-bold">{revisionCount} <span className="font-medium text-[var(--text-secondary)]">Pending</span></span>
         </div>
-        
-        <div className="w-px h-5 bg-[var(--border)] flex-shrink-0 hidden md:block" />
-        
-        <div className="flex items-center gap-4 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex-1 py-1">
-          <div className="flex items-center gap-2 flex-shrink-0 text-[var(--text-primary)] font-bold">
-            <span className="w-2 h-2 rounded-full bg-[#3FA75B]"></span>
-            {availableEditors.length} <span className="font-medium text-[var(--text-secondary)]">editors idle</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {availableEditors.length > 0 ? (
-              availableEditors.map(editor => (
+      </div>
+
+      {/* Idle Editors Roster */}
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <span className="text-[13px] font-bold text-[var(--text-primary)] ml-1">Available now:</span>
+        <div className="flex items-center gap-[6px] flex-wrap">
+          {availableEditors.length > 0 ? (
+            <>
+              {availableEditors.slice(0, 5).map(editor => (
                 <div
                   key={editor}
-                  className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--text-primary)] mr-1"
+                  className="flex items-center gap-1.5 bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-2.5 py-1 text-[12px] font-semibold text-[var(--text-primary)] shadow-sm"
                 >
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editor) }} />
                   {editor}
                 </div>
-              ))
-            ) : (
-              <span className="text-[12px] text-[var(--text-muted)] italic">None</span>
-            )}
-          </div>
+              ))}
+              {availableEditors.length > 5 && (
+                <div className="flex items-center bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-2.5 py-1 text-[12px] font-bold text-[var(--text-secondary)] shadow-sm">
+                  +{availableEditors.length - 5}
+                </div>
+              )}
+            </>
+          ) : (
+            <span className="text-[12.5px] text-[var(--text-muted)] italic">None</span>
+          )}
         </div>
       </div>
 
