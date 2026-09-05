@@ -124,16 +124,31 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   const copyToClipboard = () => {
     if (filteredMonthData.length === 0) return
-    const headers = ["Editor", "Client", "Subclient", "Video Title", "Completed Date"]
-    const rows = filteredMonthData.map(t => [
-      formatName(t.editor) || "Unassigned", 
-      t.client || "", 
-      t.sub_client || "",
-      t.video_title || "", 
-      t.complete_date ? new Date(t.complete_date.length === 10 ? t.complete_date + "T12:00:00Z" : t.complete_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" }) : ""
-    ])
-    const tsv = [headers.join("\t"), ...rows.map(r => r.join("\t"))].join("\n")
-    navigator.clipboard.writeText(tsv)
+    
+    let text = `*Monthly Wrap - ${formatMonth(selectedMonth)}*\nTotal Videos: ${filteredMonthData.length}\n\n`
+    
+    const byEditor = filteredMonthData.reduce((acc, task) => {
+      const ed = formatName(task.editor) || "Unassigned"
+      if (!acc[ed]) acc[ed] = []
+      acc[ed].push(task)
+      return acc
+    }, {} as Record<string, typeof filteredMonthData>)
+
+    Object.entries(byEditor)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .forEach(([editor, tasks]) => {
+        text += `*${editor}* (${tasks.length})\n`
+        tasks.forEach(t => {
+          const clientStr = t.sub_client ? `${t.client} - ${t.sub_client}` : t.client
+          const date = t.complete_date 
+            ? new Date(t.complete_date.length === 10 ? t.complete_date + "T12:00:00Z" : t.complete_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
+            : ""
+          text += `• ${clientStr}: ${t.video_title} _(${date})_\n`
+        })
+        text += `\n`
+      })
+
+    navigator.clipboard.writeText(text.trim())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

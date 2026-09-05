@@ -36,7 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Loader2, Plus, RotateCcw, Search, X } from "lucide-react"
+import { ChevronDown, Loader2, Plus, RotateCcw, Search, X, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -59,7 +59,7 @@ interface DataTableProps {
 }
 
 
-const MemoizedMobileRow = React.memo(({ row, style }: { row: any, style?: React.CSSProperties }) => {
+const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { row: any, style?: React.CSSProperties, measureRef?: React.Ref<HTMLDivElement>, dataIndex?: number }) => {
   const selectCell = row.getVisibleCells().find((c: any) => c.column.id === 'select');
   const clientCell = row.getVisibleCells().find((c: any) => c.column.id === 'client');
   const subClientCell = row.getVisibleCells().find((c: any) => c.column.id === 'sub_client');
@@ -71,47 +71,51 @@ const MemoizedMobileRow = React.memo(({ row, style }: { row: any, style?: React.
   const linkCell = row.getVisibleCells().find((c: any) => c.column.id === 'link');
 
   return (
-    <div style={style} className="rounded-xl theme-card p-5 shadow-sm flex flex-col relative overflow-hidden transition-all duration-200">
-      <div className="flex items-start justify-between mb-4 gap-2">
-        <div className="flex items-center gap-3 flex-1">
-          {selectCell && row.original.status !== 'Complete' && (
-            <div className="scale-125 transform-gpu -mt-0.5 flex-shrink-0">
-              {flexRender(selectCell.column.columnDef.cell, selectCell.getContext())}
+    <div ref={measureRef} data-index={dataIndex} style={style} className="rounded-xl theme-card p-4 shadow-sm relative overflow-hidden transition-all duration-200">
+      {/* Title & Client tags */}
+      <div className="flex items-start gap-3">
+        {selectCell && row.original.status !== 'Complete' && (
+          <div className="scale-125 transform-gpu mt-1 flex-shrink-0">
+            {flexRender(selectCell.column.columnDef.cell, selectCell.getContext())}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-[16px] font-bold text-[#11161B] dark:text-[#E6EAE0] leading-snug">
+            {videoTitleCell && flexRender(videoTitleCell.column.columnDef.cell, videoTitleCell.getContext())}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+            <div className="scale-90 origin-left">
+              {clientCell && flexRender(clientCell.column.columnDef.cell, clientCell.getContext())}
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            {clientCell && flexRender(clientCell.column.columnDef.cell, clientCell.getContext())}
-            <div className="mt-1 text-[12px]">
-              {subClientCell && flexRender(subClientCell.column.columnDef.cell, subClientCell.getContext())}
-            </div>
+            {row.original.sub_client && subClientCell && (
+              <div className="scale-90 origin-left">
+                {flexRender(subClientCell.column.columnDef.cell, subClientCell.getContext())}
+              </div>
+            )}
           </div>
         </div>
-        <div className="shrink-0 scale-90 origin-top-right">
+      </div>
+      
+      {/* Editor & Status */}
+      <div className="flex items-center gap-2 mt-3">
+        {editorCell && flexRender(editorCell.column.columnDef.cell, editorCell.getContext())}
+        <div className="scale-90 origin-left">
           {statusCell && flexRender(statusCell.column.columnDef.cell, statusCell.getContext())}
         </div>
       </div>
       
-      <div className="mb-5 text-[15px]">
-        {videoTitleCell && flexRender(videoTitleCell.column.columnDef.cell, videoTitleCell.getContext())}
-      </div>
-      
-      <div className="flex items-end justify-between mt-auto">
-        <div>
-          {editorCell && flexRender(editorCell.column.columnDef.cell, editorCell.getContext())}
-        </div>
-        <div className="flex flex-col gap-1.5 items-end text-[11.5px]">
-          <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
-            <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Start</span>
-            {startDateCell && flexRender(startDateCell.column.columnDef.cell, startDateCell.getContext())}
-          </div>
-          <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
-            <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Done</span>
-            {completeDateCell && flexRender(completeDateCell.column.columnDef.cell, completeDateCell.getContext())}
-          </div>
+      {/* Dates */}
+      <div className="flex items-center gap-2 mt-3 bg-[#F3F5EE] dark:bg-white/10 px-2.5 py-1.5 rounded-md w-max">
+        <Calendar className="h-3.5 w-3.5 text-[#11161B]/60 dark:text-[#E6EAE0]/60" />
+        <div className="flex items-center gap-1.5 text-[11.5px]">
+          {startDateCell && flexRender(startDateCell.column.columnDef.cell, startDateCell.getContext())}
+          <span className="text-[#11161B]/40 dark:text-[#E6EAE0]/40 font-medium">→</span>
+          {completeDateCell && flexRender(completeDateCell.column.columnDef.cell, completeDateCell.getContext())}
         </div>
       </div>
       
-      <div className="mt-4 pt-3 border-t border-[#E6EAE0] dark:border-white/10/50">
+      {/* Link */}
+      <div className="mt-3 pt-3 border-t border-[#E6EAE0] dark:border-white/10/50">
         {linkCell && flexRender(linkCell.column.columnDef.cell, linkCell.getContext())}
       </div>
     </div>
@@ -546,6 +550,8 @@ export function DataTable({ columns, data }: DataTableProps) {
                    <MemoizedMobileRow 
                      key={row.id} 
                      row={row} 
+                     measureRef={virtualizer.measureElement}
+                     dataIndex={virtualRow.index}
                      style={{
                        position: 'absolute',
                        top: 0,
