@@ -66,8 +66,7 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
   const statusCell = row.getVisibleCells().find((c: any) => c.column.id === 'status');
   const videoTitleCell = row.getVisibleCells().find((c: any) => c.column.id === 'video_title');
   const editorCell = row.getVisibleCells().find((c: any) => c.column.id === 'editor');
-  const startDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'start_date');
-  const completeDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'complete_date');
+  const dueCell = row.getVisibleCells().find((c: any) => c.column.id === 'due');
   const linkCell = row.getVisibleCells().find((c: any) => c.column.id === 'link');
 
   return (
@@ -108,9 +107,7 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
       <div className="flex items-center gap-2 mt-3 bg-[#F3F5EE] dark:bg-white/10 px-2.5 py-1.5 rounded-md w-max">
         <Calendar className="h-3.5 w-3.5 text-[#11161B]/60 dark:text-[#E6EAE0]/60" />
         <div className="flex items-center gap-1.5 text-[11.5px]">
-          {startDateCell && flexRender(startDateCell.column.columnDef.cell, startDateCell.getContext())}
-          <span className="text-[#11161B]/40 dark:text-[#E6EAE0]/40 font-medium">→</span>
-          {completeDateCell && flexRender(completeDateCell.column.columnDef.cell, completeDateCell.getContext())}
+          {dueCell && flexRender(dueCell.column.columnDef.cell, dueCell.getContext())}
         </div>
       </div>
       
@@ -655,26 +652,26 @@ export function DataTable({ columns, data }: DataTableProps) {
             <TableRow className="border-b border-[var(--border)] bg-[var(--surface-card)] hover:bg-[var(--surface-card)]">
               <TableCell className="px-[16px] py-[8px] w-12"></TableCell>
               <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  placeholder="Client..." 
-                  list="client-suggestions"
-                  value={client} onChange={e => setClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input
-                  placeholder="Subclient..."
-                  list="subclient-suggestions"
-                  value={subClient} onChange={e => setSubClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
-                />
+                <div className="flex items-center gap-2">
+                  <Input 
+                    placeholder="Client..." 
+                    list="client-suggestions"
+                    value={client} onChange={e => setClient(e.target.value)}
+                    className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[100px]"
+                  />
+                  <Input
+                    placeholder="Subclient..."
+                    list="subclient-suggestions"
+                    value={subClient} onChange={e => setSubClient(e.target.value)}
+                    className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[100px]"
+                  />
+                </div>
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[150px]"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
                 />
               </TableCell>
@@ -683,24 +680,27 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[110px]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  type="date"
-                  value={startDay} 
-                  onChange={e => setStartDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  type="date"
-                  value={completeDay} 
-                  onChange={e => setCompleteDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                />
+                <div className="flex flex-col gap-1.5 min-w-[110px]">
+                  <Input 
+                    type="date"
+                    value={completeDay} 
+                    onChange={e => setCompleteDay(e.target.value)}
+                    className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] text-[var(--text-muted)] font-medium">Start:</span>
+                    <Input 
+                      type="date"
+                      value={startDay} 
+                      onChange={e => setStartDay(e.target.value)}
+                      className="h-[24px] w-[100px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[6px] text-[11px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    />
+                  </div>
+                </div>
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[var(--surface-page)] text-[var(--text-muted)]">
@@ -711,9 +711,9 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <Button 
                   onClick={handleQuickAdd} 
                   disabled={!title || !editor || isAdding}
-                  className="btn-primary h-7 w-16 text-[11px] disabled:opacity-30"
+                  className="btn-primary h-8 w-16 text-[12px] disabled:opacity-30"
                 >
-                  {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
+                  {isAdding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add"}
                 </Button>
               </TableCell>
             </TableRow>
