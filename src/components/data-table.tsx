@@ -731,14 +731,18 @@ export function DataTable({ columns, data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {/* Quick-Add Row */}
-            <TableRow className="border-b border-[var(--border)] bg-[var(--surface-card)] hover:bg-[var(--surface-card)]">
-              <TableCell className="px-[16px] py-[8px] w-12"></TableCell>
+            <TableRow className="border-b-2 border-dashed border-[var(--border)] bg-[#FAFBFC] dark:bg-black/20 hover:bg-[#F3F5EE] dark:hover:bg-black/40 transition-colors group">
+              <TableCell className="px-[16px] py-[8px] w-12 text-center">
+                <div className="w-[16px] h-[16px] mx-auto rounded-[5px] bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] flex items-center justify-center font-bold text-[14px]">
+                  +
+                </div>
+              </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -746,14 +750,14 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Subclient..."
                   list="subclient-suggestions"
                   value={subClient} onChange={e => setSubClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] font-semibold"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
                 />
               </TableCell>
@@ -762,7 +766,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -770,7 +774,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   type="date"
                   value={startDay} 
                   onChange={e => setStartDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -778,21 +782,22 @@ export function DataTable({ columns, data }: DataTableProps) {
                   type="date"
                   value={completeDay} 
                   onChange={e => setCompleteDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[var(--surface-page)] text-[var(--text-muted)]">
-                  Auto
+                <span className="inline-flex items-center gap-[6px] rounded-full py-[4px] px-[10px] text-[11px] font-bold bg-[#E0E7FF]/50 dark:bg-[#231E47]/50 text-indigo-700/50 dark:text-[#A79BF0]/50 border border-indigo-700/10">
+                  <span className="w-[6px] h-[6px] rounded-full bg-[#7C6FF0]/50"></span>
+                  New
                 </span>
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Button 
                   onClick={handleQuickAdd} 
                   disabled={!title || !editor || isAdding}
-                  className="btn-primary h-7 w-16 text-[11px] disabled:opacity-30"
+                  className="bg-[var(--theme-accent)] text-[#241a05] hover:bg-[#F2CD60] h-7 w-16 text-[12px] font-bold shadow-sm disabled:opacity-40 disabled:hover:bg-[var(--theme-accent)] transition-all"
                 >
-                  {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
+                  {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
                 </Button>
               </TableCell>
             </TableRow>
