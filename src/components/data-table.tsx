@@ -196,13 +196,6 @@ export function DataTable({ columns, data }: DataTableProps) {
     return Array.from(editors)
   }, [data])
 
-  const availableEditors = React.useMemo(() => {
-    const busyEditors = new Set(
-      data.filter(d => d.status === "In progress").map(d => formatName(d.editor)).filter(Boolean)
-    )
-    return uniqueEditors.filter(editor => !busyEditors.has(editor)).sort()
-  }, [data, uniqueEditors])
-
   React.useEffect(() => {
     try {
       const storedHiddenEditors = window.localStorage.getItem(HIDDEN_EDITORS_STORAGE_KEY)
@@ -228,6 +221,13 @@ export function DataTable({ columns, data }: DataTableProps) {
     const hiddenEditorSet = new Set(hiddenEditors)
     return uniqueEditors.filter(editorName => !hiddenEditorSet.has(editorName))
   }, [hiddenEditors, uniqueEditors])
+
+  const availableEditors = React.useMemo(() => {
+    const busyEditors = new Set(
+      data.filter(d => d.status === "In progress").map(d => formatName(d.editor)).filter(Boolean)
+    )
+    return visibleEditors.filter(editor => !busyEditors.has(editor)).sort()
+  }, [data, visibleEditors])
 
   const hiddenEditorCount = React.useMemo(() => {
     return hiddenEditors.filter(editorName => uniqueEditors.includes(editorName)).length
@@ -323,6 +323,61 @@ export function DataTable({ columns, data }: DataTableProps) {
     setHiddenEditors([])
   }
 
+  const [isResetting, setIsResetting] = React.useState(false)
+
+  const handleResetData = async () => {
+    if (!window.confirm("Are you sure you want to delete all data and seed random tasks?")) return
+    setIsResetting(true)
+    try {
+      const { data: allIds } = await supabase.from('video_tasks').select('id')
+      if (allIds?.length) {
+        await supabase.from('video_tasks').delete().in('id', allIds.map(d => d.id))
+      }
+      
+      const sampleClients = ['TechCorp', 'MediaCo', 'Innovate LLC', 'Studio X', 'Designify', 'Streamline'];
+      const sampleSubClients = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Project Y', 'Campaign Z', 'Launch 2026'];
+      const sampleEditors = ['Abhishek', 'Pranjya', 'Aakash', 'Vighnesh', 'Harshit', 'Ekta', 'Anjali'];
+      const sampleStatuses = ['In progress', 'Revision', 'Complete'];
+
+      const randomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+      const randomDate = () => {
+          const d = new Date(new Date().getFullYear(), new Date().getMonth(), Math.floor(Math.random() * 28) + 1);
+          return d.toISOString().split('T')[0];
+      };
+
+      const rows = [];
+      for (let i = 0; i < 20; i++) {
+          const status = randomItem(sampleStatuses);
+          const start_date = randomDate();
+          let complete_date = null;
+          if (status === 'Complete') {
+              complete_date = randomDate();
+              if (complete_date < start_date) {
+                  complete_date = start_date;
+              }
+          }
+          
+          rows.push({
+              client: randomItem(sampleSubClients),
+              sub_client: randomItem(sampleClients),
+              video_title: `Video Project ${Math.floor(Math.random() * 1000)}`,
+              editor: randomItem(sampleEditors),
+              start_date: start_date,
+              complete_date: complete_date,
+              status: status,
+              payroll_locked: Math.random() > 0.8
+          });
+      }
+      const { data: newTasks, error } = await supabase.from('video_tasks').insert(rows).select()
+      if (!error && newTasks) {
+         setTableData(newTasks)
+         window.location.reload()
+      }
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !editor) return
@@ -406,6 +461,14 @@ export function DataTable({ columns, data }: DataTableProps) {
               Board
             </button>
           </div>
+          <Button
+            onClick={handleResetData}
+            disabled={isResetting}
+            variant="outline"
+            className="h-[36px] px-3 text-[13px] hidden sm:flex items-center gap-2 font-bold shadow-sm border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:hover:bg-red-900/20"
+          >
+            {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />} Reset Data
+          </Button>
           <Button
             onClick={() => {
               const input = document.querySelector('input[placeholder="Client..."]') as HTMLInputElement;
@@ -498,16 +561,37 @@ export function DataTable({ columns, data }: DataTableProps) {
                 All Editors
               </button>
               {visibleEditors.map(editorName => (
-                <button
-                  key={editorName}
-                  type="button"
-                  className={`flex h-8 w-full items-center gap-2 rounded-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                  onClick={() => { table.getColumn("editor")?.setFilterValue(editorName); setEditorMenuOpen(false); }}
-                >
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editorName) }} />
-                  {editorName}
-                </button>
+                <div key={editorName} className="flex items-center group w-full">
+                  <button
+                    type="button"
+                    className={`flex-1 flex h-8 items-center gap-2 rounded-l-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                    onClick={() => { table.getColumn("editor")?.setFilterValue(editorName); setEditorMenuOpen(false); }}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editorName) }} />
+                    {editorName}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleHideEditor(editorName);
+                    }}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all"
+                    title="Hide Editor"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))}
+              {hiddenEditorCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleRestoreHiddenEditors}
+                  className="mt-2 w-full flex items-center justify-center h-7 rounded-md text-[11px] font-semibold text-[var(--theme-accent)] hover:bg-[var(--surface-card-2)] transition-colors"
+                >
+                  Restore {hiddenEditorCount} hidden editor{hiddenEditorCount !== 1 ? 's' : ''}
+                </button>
+              )}
             </div>
           )}
         </div>
