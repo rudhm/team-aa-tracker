@@ -642,7 +642,6 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div 
         className={`pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[var(--surface-card)] dark:from-[#161b22] to-transparent z-10 hidden md:block rounded-r-xl transition-opacity duration-150 ${canScrollRight ? 'opacity-100' : 'opacity-0'}`} 
       />
-      </div>
       
       <div className="flex items-center justify-between px-[16px] py-[14px] border-t border-[var(--border)]">
         <button 
@@ -662,6 +661,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         >
           Next
         </button>
+      </div>
       </div>
       )}
       </>
