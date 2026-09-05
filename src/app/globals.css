@@ -162,26 +162,27 @@
   }
 
   .dark {
-    --surface-page:      #1c1c1b;
-    --surface-card:      #262624;
-    --surface-header:   #141413;
-    --border:            #38372f;
-    --border-soft:       #403e35;
-    --border-strong:     #4a4940;
+    --surface-page:      #0E0E11;
+    --surface-card:      #18181C;
+    --surface-card-2:    #1E1E23;
+    --surface-header:    #000000;
+    --border:            #2B2B31;
+    --border-soft:       #232328;
+    --border-strong:     #2B2B31;
 
-    --text-primary:      #f2f1ec;
-    --text-secondary:    #b3b1a8;
-    --text-muted:         #7d7b74;
-    --text-on-header:    #f4f4f2;
-    --text-on-header-muted: #8a897f;
+    --text-primary:      #F2F2F3;
+    --text-secondary:    #9C9CA6;
+    --text-muted:        #5C5C66;
+    --text-on-header:    #ffffff;
+    --text-on-header-muted: #8f8c86;
 
-    --theme-accent:            #f2b705;
-    --theme-accent-hover:      #ffca2c;
-    --theme-accent-tint:       #3a3208;
+    --theme-accent:            #D9A441;
+    --theme-accent-hover:      #B9852A;
+    --theme-accent-tint:       #241a05;
     --theme-on-accent:         #1a1500;
     
-    --row-alt: #1f1f1d;
-    --row-hover: #3a3208;
+    --row-alt: #1E1E23;
+    --row-hover: #1F1F25;
   }
 
   * {

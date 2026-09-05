@@ -31,18 +31,17 @@ declare module '@tanstack/react-table' {
 }
 
 function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }) {
-  const config: Record<string, { bg: string; text: string }> = {
-    "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#E2F8EB]/10", text: "text-emerald-700 dark:text-emerald-400" },
-    "In progress": { bg: "bg-[var(--theme-accent-tint)]", text: "text-[var(--theme-accent-hover)]" },
-    "In review":   { bg: "bg-blue-50 dark:bg-blue-500/10",    text: "text-blue-600 dark:text-blue-400" },
-    "Revision":    { bg: "bg-purple-50 dark:bg-purple-500/10",  text: "text-purple-600 dark:text-purple-400" },
-    "Not started": { bg: "bg-[var(--surface-page)]",  text: "text-[var(--text-secondary)]" },
+  const config: Record<string, { bg: string; text: string; sdot: string }> = {
+    "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#173822]", text: "text-emerald-700 dark:text-[#7ED396]", sdot: "bg-[#3FA75B]" },
+    "In progress": { bg: "bg-[#E0E7FF] dark:bg-[#231E47]", text: "text-indigo-700 dark:text-[#A79BF0]", sdot: "bg-[#7C6FF0]" },
+    "Revision":    { bg: "bg-[#FFF4E5] dark:bg-[#3A2E12]", text: "text-amber-700 dark:text-[#E8C46A]", sdot: "bg-[#D9A441]" },
   }
-  const style = config[status] || config["Not started"]
+  const style = config[status] || config["In progress"]
   
   return (
-    <span className={`inline-flex items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold ${style.bg} ${style.text}`}>
-      {status}
+    <span className={`inline-flex items-center gap-[6px] rounded-full py-[4px] px-[12px] text-[12px] font-bold ${style.bg} ${style.text}`}>
+      <span className={`w-[6px] h-[6px] rounded-full ${style.sdot}`}></span>
+      {status === 'Complete' ? 'Completed' : status}
     </span>
   )
 }
@@ -212,10 +211,9 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
     return (
       <span 
         onClick={startEdit} 
-        className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1.5 ${locked ? 'text-[#11161B] dark:text-[#E6EAE0]/20' : 'text-[#11161B] dark:text-[#E6EAE0]/70 hover:bg-[#F3F5EE] dark:bg-white/10 hover:text-[#11161B] dark:hover:text-[#E6EAE0] cursor-pointer border border-dashed border-[#E6EAE0] dark:border-white/10'}`}
+        className={`text-[12.5px] font-semibold px-[10px] py-[4px] rounded-[6px] transition-colors inline-block ${locked ? 'text-[var(--text-faint)]' : 'text-[var(--text-faint)] cursor-pointer border border-dashed border-[var(--border)]'}`}
       >
-        <LinkIcon className="h-3 w-3" />
-        Add Link
+        + Add Link
       </span>
     )
   }
@@ -226,9 +224,8 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
         href={value} 
         target="_blank" 
         rel="noreferrer" 
-        className="text-[12px] font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
+        className="text-[12.5px] font-semibold text-[var(--theme-accent)] hover:underline"
       >
-        <LinkIcon className="h-3 w-3" />
         Watch
       </a>
       {!locked && (
@@ -244,29 +241,36 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
   )
 }
 
+function CustomCheckbox({ checked, onChange, disabled }: { checked: boolean, onChange: () => void, disabled?: boolean }) {
+  return (
+    <div 
+      onClick={() => !disabled && onChange()}
+      className={`w-[16px] h-[16px] rounded-[5px] border-[1.5px] inline-flex items-center justify-center relative ${checked ? 'bg-[var(--theme-accent)] border-[var(--theme-accent)]' : 'border-[var(--border)]'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      {checked && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#241a05]">✓</span>}
+    </div>
+  )
+}
+
 export const columns: ColumnDef<VideoTask>[] = [
   {
     id: "select",
     header: ({ table }) => (
-      <input
-        type="checkbox"
-        className="rounded border-[#E6EAE0] dark:border-white/10 text-[#11161B] dark:text-[#E6EAE0] focus:ring-[#11161B]"
+      <CustomCheckbox
         checked={table.getIsAllPageRowsSelected()}
-        onChange={table.getToggleAllPageRowsSelectedHandler()}
+        onChange={() => table.toggleAllPageRowsSelected()}
       />
     ),
     cell: ({ row }) => {
       const task = row.original
       if (task.status === 'Complete') {
-        return <div className="w-3.5 h-3.5" />
+        return <CustomCheckbox checked={true} onChange={() => {}} disabled={true} />
       }
       
       return (
-        <input
-          type="checkbox"
-          className="rounded border-[#E6EAE0] dark:border-white/10 text-[#11161B] dark:text-[#E6EAE0] focus:ring-[#11161B]"
+        <CustomCheckbox
           checked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
+          onChange={() => row.toggleSelected()}
           disabled={task.payroll_locked}
         />
       )
@@ -278,22 +282,27 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: "Client",
     cell: ({ row, table }) => {
       const task = row.original
-      const clientColor = task.sub_client
-        ? table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")
-        : undefined
+      if (!task.sub_client) {
+        return <span className="text-[13px] text-[var(--text-faint)]">—</span>
+      }
+
+      const clientColor = table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")
+      const initials = task.sub_client.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || task.sub_client.substring(0, 2).toUpperCase()
+
       return (
-        <InlineTextEdit 
-          value={task.sub_client}
-          locked={task.payroll_locked}
-          listId="client-suggestions"
-          className={task.sub_client
-            ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-            : "font-medium text-[#11161B]/50 dark:text-[#E6EAE0]/40"
-          }
-          style={clientColor}
-          emptyContent="—"
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
-        />
+        <div className="flex items-center gap-[10px]">
+          <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-[12px] font-bold shrink-0" style={clientColor}>
+            {initials}
+          </div>
+          <InlineTextEdit 
+            value={task.sub_client}
+            locked={task.payroll_locked}
+            listId="client-suggestions"
+            className="font-bold text-[13.8px] text-[var(--text-primary)]"
+            emptyContent="—"
+            onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
+          />
+        </div>
       )
     },
   },
@@ -312,8 +321,8 @@ export const columns: ColumnDef<VideoTask>[] = [
           locked={task.payroll_locked}
           listId="subclient-suggestions"
           className={task.client
-            ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-            : "font-medium text-[#11161B]/50 dark:text-[#E6EAE0]/40"
+            ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full px-[12px] py-[5px] text-[12.5px] font-semibold"
+            : "text-[13px] text-[var(--text-faint)]"
           }
           style={subClientColor}
           emptyContent="—"
@@ -331,7 +340,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineTextEdit 
           value={task.video_title}
           locked={task.payroll_locked}
-          className="font-bold text-[#11161B] dark:text-[#E6EAE0] text-[13.5px]"
+          className="font-semibold text-[var(--text-primary)] text-[13.5px] block truncate max-w-[230px]"
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'video_title', val)}
         />
       )
@@ -347,8 +356,8 @@ export const columns: ColumnDef<VideoTask>[] = [
         ? table.options.meta?.colorMaps?.editors[formattedName] ?? createEntityColor(formattedName, "editor")
         : undefined
       const editorClassName = formattedName
-        ? "inline-flex max-w-[160px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-        : "inline-block h-6 min-w-16"
+        ? "inline-flex max-w-[160px] items-center justify-center truncate rounded-full px-[12px] py-[5px] text-[12.5px] font-semibold"
+        : "text-[13px] text-[var(--text-faint)]"
       return (
         <InlineTextEdit 
           value={formattedName}

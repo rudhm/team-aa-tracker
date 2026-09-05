@@ -8,10 +8,10 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import { useRouter } from "next/navigation"
-import { useWindowVirtualizer } from "@tanstack/react-virtual"
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(false)
@@ -255,6 +255,7 @@ export function DataTable({ columns, data }: DataTableProps) {
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
     state: {
       columnFilters,
@@ -366,177 +367,111 @@ export function DataTable({ columns, data }: DataTableProps) {
     router.refresh()
   }
 
-    const rows = table.getRowModel().rows
-  const [scrollMargin, setScrollMargin] = React.useState(0)
-  React.useEffect(() => {
-    const updateMargin = () => {
-      if (scrollRef.current) {
-        const headerHeight = isMobile ? 0 : 102; // Header (48px) + QuickAdd (54px)
-        setScrollMargin(scrollRef.current.offsetTop + headerHeight)
-      }
-    }
-    updateMargin()
-    window.addEventListener('resize', updateMargin)
-    return () => window.removeEventListener('resize', updateMargin)
-  }, [isMobile, viewMode])
-  const virtualizer = useWindowVirtualizer({
-    count: rows.length,
-    estimateSize: () => isMobile ? 180 : 53,
-    scrollMargin,
-    overscan: 5,
-  })
-  const virtualItems = virtualizer.getVirtualItems()
-  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
-  const paddingBottom = virtualItems.length > 0 ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end : 0;
-
+  const rows = table.getRowModel().rows
   const selectedCount = Object.keys(rowSelection).length
 
   return (
-    <div className="space-y-5 relative">
+    <div className="relative">
       {/* The invisible stage for the delivery animation to overlay securely */}
       <div id="delivery-stage" className="absolute top-16 left-0 right-0 z-50 pointer-events-none"></div>
 
-      {/* Top Bar: Search & Editor Filter & View Toggle */}
-      <div className="theme-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-          <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--text-muted)]" />
-            <Input
-              placeholder="Search video titles…"
-              value={(table.getColumn("video_title")?.getFilterValue() as string) ?? ""}
-              onChange={(event) =>
-                table.getColumn("video_title")?.setFilterValue(event.target.value)
-              }
-              className="h-[38px] w-full sm:w-[320px] rounded-[8px] border border-[var(--border)] bg-[var(--surface-page)] pl-[36px] pr-4 text-[13.5px] text-[var(--text-primary)] shadow-none placeholder:text-[var(--text-muted)] focus-visible:ring-2 focus-visible:ring-black/10"
-            />
-          </div>
-          
-          <div className="relative w-full sm:w-auto">
-            <button
-              type="button"
-              className="flex h-[38px] w-full items-center justify-between gap-2 rounded-[8px] border border-[var(--border)] bg-[var(--surface-page)] px-[14px] text-left text-[13.5px] text-[var(--text-primary)] shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 sm:w-[190px]"
-              onClick={() => setEditorMenuOpen(isOpen => !isOpen)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setEditorMenuOpen(false)
-              }}
-              onBlur={(event) => {
-                if (!event.currentTarget.parentElement?.contains(event.relatedTarget as Node | null)) {
-                  setEditorMenuOpen(false)
-                }
-              }}
-            >
-              {editorFilter ? (
-                <span
-                  className="inline-flex max-w-[135px] items-center truncate rounded-full border px-[8px] py-[2px] text-[11px] font-bold"
-                  style={colorMaps.editors[editorFilter]}
-                >
-                  {editorFilter}
-                </span>
-              ) : (
-                <span className="truncate">All Editors</span>
-              )}
-              <ChevronDown className="h-4 w-4 shrink-0 text-[#11161B] dark:text-[#E6EAE0]/70" />
-            </button>
-
-            {editorMenuOpen && (
-              <div
-                className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]"
-                onBlur={(event) => {
-                  if (!event.currentTarget.parentElement?.contains(event.relatedTarget as Node | null)) {
-                    setEditorMenuOpen(false)
-                  }
-                }}
-              >
-                <button
-                  type="button"
-                  className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                  onPointerDown={(event) => event.preventDefault()}
-                  onClick={() => {
-                    table.getColumn("editor")?.setFilterValue("")
-                    setEditorMenuOpen(false)
-                  }}
-                >
-                  All Editors
-                </button>
-
-                {visibleEditors.length ? (
-                  visibleEditors.map(editorName => (
-                    <div key={editorName} className="group flex items-center rounded-lg hover:bg-[#F3F5EE] dark:hover:bg-white/10">
-                      <button
-                        type="button"
-                        className={`h-8 min-w-0 flex-1 truncate px-3 text-left font-medium ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                        onPointerDown={(event) => event.preventDefault()}
-                        onClick={() => {
-                          table.getColumn("editor")?.setFilterValue(editorName)
-                          setEditorMenuOpen(false)
-                        }}
-                      >
-                        <span
-                          className="inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                          style={colorMaps.editors[editorName]}
-                        >
-                          {editorName}
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        className="mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] opacity-100 transition-colors hover:bg-white hover:text-[var(--text-primary)] dark:hover:bg-[#0d1117] sm:opacity-0 sm:group-hover:opacity-100"
-                        title={`Hide ${editorName}`}
-                        onPointerDown={(event) => event.preventDefault()}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          handleHideEditor(editorName)
-                        }}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)]">
-                    No editors
-                  </div>
-                )}
-
-                {hiddenEditorCount > 0 && (
-                  <button
-                    type="button"
-                    className="mt-1 flex h-8 w-full items-center gap-2 rounded-lg border-t border-[var(--border)] px-3 text-left text-[12px] font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[#F3F5EE] hover:text-[var(--text-primary)] dark:hover:bg-white/10"
-                    onPointerDown={(event) => event.preventDefault()}
-                    onClick={handleRestoreHiddenEditors}
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                    Restore hidden
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-start sm:justify-end w-full sm:w-auto">
+      {/* Top Bar: Title & Actions */}
+      <div className="flex items-center justify-between mb-[16px] flex-wrap gap-[12px]">
+        <div className="text-[20px] font-bold text-[var(--text-primary)]">All Videos</div>
+        <div className="flex items-center gap-[10px] flex-wrap">
           {/* View Toggle */}
-          <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface-page)] p-[3px] w-full sm:w-auto justify-between sm:justify-start gap-[2px]">
+          <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface-card-2)] p-[3px] gap-[2px]">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex h-[32px] flex-1 sm:flex-none items-center justify-center px-[14px] rounded-[6px] text-[13.5px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`flex h-[30px] items-center justify-center px-[10px] rounded-[6px] text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
             >
               <List className="mr-[6px] h-4 w-4" />
               Table
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`flex h-[32px] flex-1 sm:flex-none items-center justify-center px-[14px] rounded-[6px] text-[13.5px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`flex h-[30px] items-center justify-center px-[10px] rounded-[6px] text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
             >
               <LayoutGrid className="mr-[6px] h-4 w-4" />
               Board
             </button>
           </div>
+          <button className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[14px] py-[8px] rounded-[8px] text-[13px] font-semibold flex items-center gap-[6px] cursor-pointer hidden sm:flex">
+            Sort ↕
+          </button>
+          <button className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[14px] py-[8px] rounded-[8px] text-[13px] font-semibold flex items-center gap-[6px] cursor-pointer hidden sm:flex">
+            More filters ≡
+          </button>
+          <button className="bg-[var(--theme-accent)] border border-[var(--theme-accent)] text-[var(--theme-on-accent)] px-[14px] py-[8px] rounded-[8px] text-[13px] font-semibold flex items-center gap-[6px] cursor-pointer hidden sm:flex">
+            Send Feedback
+          </button>
+          <div className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-muted)] w-[36px] h-[36px] rounded-[8px] flex items-center justify-center font-bold pb-1 hidden sm:flex cursor-pointer">
+            ...
+          </div>
+        </div>
+      </div>
+
+      {/* Chip Row */}
+      <div className="flex items-center gap-[10px] mb-[16px] flex-wrap">
+        <div className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-[8px] px-[12px] py-[8px] text-[13px] color-[var(--text-muted)] min-w-[220px]">
+          <Search className="h-[14px] w-[14px] text-[var(--text-muted)]" />
+          <Input
+            placeholder="Search video titles…"
+            value={(table.getColumn("video_title")?.getFilterValue() as string) ?? ""}
+            onChange={(event) => table.getColumn("video_title")?.setFilterValue(event.target.value)}
+            className="h-auto p-0 border-none bg-transparent shadow-none focus-visible:ring-0 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+          />
+        </div>
+
+        <div className="relative">
+          <button
+            type="button"
+            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
+            onClick={() => setEditorMenuOpen(isOpen => !isOpen)}
+          >
+            Editor : {editorFilter || "All"}
+            {editorFilter && (
+              <span 
+                className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  table.getColumn("editor")?.setFilterValue("")
+                }}
+              >
+                ✕
+              </span>
+            )}
+            {!editorFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
+          </button>
+
+          {editorMenuOpen && (
+            <div className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+              <button
+                type="button"
+                className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                onClick={() => { table.getColumn("editor")?.setFilterValue(""); setEditorMenuOpen(false); }}
+              >
+                All Editors
+              </button>
+              {visibleEditors.map(editorName => (
+                <button
+                  key={editorName}
+                  type="button"
+                  className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                  onClick={() => { table.getColumn("editor")?.setFilterValue(editorName); setEditorMenuOpen(false); }}
+                >
+                  <span className="inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold" style={colorMaps.editors[editorName]}>
+                    {editorName}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Idle Editors Panel */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-[12px] px-[18px] py-[14px] flex flex-wrap items-center gap-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-[12px] px-[18px] py-[14px] flex flex-wrap items-center gap-4 mb-[18px]">
         <div className="text-[13px] font-bold text-[var(--text-primary)] whitespace-nowrap flex items-center gap-[6px]">
           <span className="w-[7px] h-[7px] rounded-full bg-[#3FA75B] inline-block"></span>
           Idle Editors ({availableEditors.length})
@@ -685,30 +620,21 @@ export function DataTable({ columns, data }: DataTableProps) {
             </TableRow>
 
             {/* Data Rows */}
-            {virtualItems.length > 0 && paddingTop > 0 && (
-              <TableRow><TableCell colSpan={columns.length} style={{ height: paddingTop, padding: 0 }} /></TableRow>
-            )}
-            {virtualItems.length > 0 ? (
-              virtualItems.map((virtualRow: any) => {
-                const row = rows[virtualRow.index];
-                return (
-                  <MemoizedDesktopRow
-                    key={row.id}
-                    row={row}
-                    index={virtualRow.index}
-                    isLast={virtualRow.index === rows.length - 1}
-                  />
-                )
-              })
+            {rows.length > 0 ? (
+              rows.map((row, index) => (
+                <MemoizedDesktopRow
+                  key={row.id}
+                  row={row}
+                  index={index}
+                  isLast={index === rows.length - 1}
+                />
+              ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
+                <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[var(--text-muted)]">
                   No videos found.
                 </TableCell>
               </TableRow>
-            )}
-            {virtualItems.length > 0 && paddingBottom > 0 && (
-              <TableRow><TableCell colSpan={columns.length} style={{ height: paddingBottom, padding: 0 }} /></TableRow>
             )}
           </TableBody>
         </Table>
@@ -716,6 +642,26 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div 
         className={`pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[var(--surface-card)] dark:from-[#161b22] to-transparent z-10 hidden md:block rounded-r-xl transition-opacity duration-150 ${canScrollRight ? 'opacity-100' : 'opacity-0'}`} 
       />
+      </div>
+      
+      <div className="flex items-center justify-between px-[16px] py-[14px] border-t border-[var(--border)]">
+        <button 
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+          className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[16px] py-[7px] rounded-[8px] text-[13px] font-semibold cursor-pointer disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-[var(--text-muted)] text-[13px]">
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
+        </span>
+        <button 
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+          className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[16px] py-[7px] rounded-[8px] text-[13px] font-semibold cursor-pointer disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
       )}
       </>

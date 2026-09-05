@@ -39,7 +39,7 @@ export default async function Page() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[var(--surface-header)] text-white">
+      <header className="sticky top-0 z-40 bg-[var(--surface-header)] text-white border-b border-[var(--border)]">
         <div className="mx-auto flex h-[56px] max-w-[1920px] items-center justify-between px-6 sm:px-8">
           <div className="flex items-center gap-[14px]">
             <a href="/" className="text-[15px] font-semibold text-white no-underline">
