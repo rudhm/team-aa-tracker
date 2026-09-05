@@ -26,30 +26,24 @@ export default async function Page() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-40 theme-header backdrop-blur-xl bg-[var(--surface-header)]/90">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8">
-          <div className="flex items-center gap-3">
-            <a href="/" className="group flex items-center gap-3 outline-none">
-              {/* Text block */}
-              <div className="flex items-center gap-2.5 animate-in fade-in slide-in-from-left-4 duration-500">
-                <span className="text-[15px] font-bold tracking-tight text-[var(--text-on-header)]">
-                  Team <span className="text-[var(--theme-accent)]">AA</span> Studios
-                </span>
-                <div className="h-3.5 w-px bg-[var(--border)]"></div>
-                <span className="text-[11px] font-semibold tracking-wider subtle uppercase">
-                  Dashboard
-                </span>
-              </div>
+      <header className="sticky top-0 z-40 bg-[var(--surface-header)] text-white">
+        <div className="mx-auto flex h-[56px] max-w-[1180px] items-center justify-between px-7">
+          <div className="flex items-center gap-[14px]">
+            <a href="/" className="text-[15px] font-semibold text-white no-underline">
+              Team <span className="text-[var(--theme-accent)]">AA</span> Studios
             </a>
-            <div className="ml-2 border-l border-[var(--border)] pl-4 animate-in fade-in duration-500 hidden sm:block">
-              <p className="text-[12px] font-semibold subtle whitespace-nowrap">
-                {data.length} {data.length === 1 ? "video" : "videos"}
-              </p>
+            <div className="w-px h-4 bg-[#3a3936] hidden sm:block"></div>
+            <div className="text-[#8f8c86] text-[14px] hidden sm:block">DASHBOARD</div>
+            <div className="w-px h-4 bg-[#3a3936] hidden sm:block"></div>
+            <div className="text-[#d8d5cd] text-[14px] hidden sm:block">
+              {data.length} {data.length === 1 ? "video" : "videos"}
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <a href="/payroll" className="theme-link text-[13px] font-semibold">
+            <div className="flex items-center justify-center [&_button]:!w-[28px] [&_button]:!h-[28px] [&_button]:!bg-[#2c2b28] [&_button]:!rounded-full [&_svg]:!w-3.5 [&_svg]:!h-3.5 [&_svg]:!text-white [&_button]:!border-0">
+              <ThemeToggle />
+            </div>
+            <a href="/payroll" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
               Wrap-up →
             </a>
           </div>
@@ -57,7 +51,7 @@ export default async function Page() {
       </header>
 
       {/* Main content */}
-      <main className="mx-auto max-w-6xl px-6 py-8 sm:px-8 flex-1">
+      <main className="mx-auto max-w-[1180px] px-6 py-7 w-full flex-1">
         <DataTable columns={columns} data={data} />
       </main>
 

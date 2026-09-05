@@ -136,23 +136,27 @@
 @layer base {
   :root {
     /* ---- Grays: structure ---- */
-    --surface-page:    #f4f4f2;
-    --surface-card:     #ffffff;
-    --surface-header:   #1f1f1e;
-    --border:           #e2e0da;
-    --border-strong:    #c9c7c0;
+    --surface-page:    #F5EFDD;
+    --surface-card:     #FFFFFF;
+    --surface-header:   #181715;
+    --border:           #E7E1CE;
+    --border-soft:      #EFE9D8;
+    --border-strong:    #D1CAB4;
 
-    --text-primary:     #1a1a19;
-    --text-secondary:   #6b6a64;
-    --text-muted:        #a3a199;
-    --text-on-header:   #f4f4f2;
-    --text-on-header-muted: #9b9a93;
+    --text-primary:     #211F1B;
+    --text-secondary:   #9A9484;
+    --text-muted:        #C7C1AF;
+    --text-on-header:   #ffffff;
+    --text-on-header-muted: #8f8c86;
 
     /* ---- Yellow: accent (use sparingly) ---- */
-    --theme-accent:           #d9a400;
-    --theme-accent-hover:     #c29200;
-    --theme-accent-tint:      #fdf3d6;
-    --theme-on-accent:        #2c2400;
+    --theme-accent:           #D9A441;
+    --theme-accent-hover:     #B9852A;
+    --theme-accent-tint:      #F3EDDA;
+    --theme-on-accent:        #241a05;
+
+    --row-alt: #FAF7EE;
+    --row-hover: #F3EDDA;
 
     --radius: 8px;
   }
@@ -162,6 +166,7 @@
     --surface-card:      #262624;
     --surface-header:   #141413;
     --border:            #38372f;
+    --border-soft:       #403e35;
     --border-strong:     #4a4940;
 
     --text-primary:      #f2f1ec;
@@ -174,14 +179,16 @@
     --theme-accent-hover:      #ffca2c;
     --theme-accent-tint:       #3a3208;
     --theme-on-accent:         #1a1500;
+    
+    --row-alt: #1f1f1d;
+    --row-hover: #3a3208;
   }
 
   * {
     @apply border-border;
   }
   body {
-    background: linear-gradient(135deg, var(--surface-page) 0%, var(--theme-accent-tint) 100%) !important;
-    background-attachment: fixed !important;
+    background: var(--surface-page) !important;
     color: var(--text-primary) !important;
     min-height: 100vh;
     margin: 0;
@@ -246,7 +253,8 @@
   .theme-toolbar {
     background-color: var(--surface-card) !important;
     border-radius: 12px !important;
-    padding: 16px 20px !important;
+    padding: 14px 16px !important;
+    border: 1px solid var(--border) !important;
   }
   .theme-toolbar input,
   .theme-toolbar select {

@@ -125,14 +125,14 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
 const MemoizedDesktopRow = React.memo(({ row, isLast, index }: { row: any, isLast: boolean, index: number }) => (
   <TableRow
     data-state={row.getIsSelected() && "selected"}
-    className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${
-      index % 2 === 0 ? "bg-white dark:bg-[#161b22]" : "bg-[#FAFAFA] dark:bg-[#0d1117]"
+    className={`transition-colors duration-150 hover:bg-[var(--row-hover)] dark:hover:bg-white/10 ${
+      index % 2 === 0 ? "bg-[var(--surface-card)]" : "bg-[var(--row-alt)]"
     } ${
-      !isLast ? "border-b border-[#E6EAE0] dark:border-white/10/40" : "border-0"
+      !isLast ? "border-b border-[var(--border-soft)]" : "border-0"
     }`}
   >
     {row.getVisibleCells().map((cell: any) => (
-      <TableCell key={cell.id} className="px-6 py-4 text-[13px]">
+      <TableCell key={cell.id} className="px-[16px] py-[13px] text-[13.5px]">
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </TableCell>
     ))}
@@ -143,11 +143,34 @@ export function DataTable({ columns, data }: DataTableProps) {
   const router = useRouter()
   const isMobile = useIsMobile()
   const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [canScrollRight, setCanScrollRight] = React.useState(false)
   const [tableData, setTableData] = React.useState(data)
 
   React.useEffect(() => {
     setTableData(data)
   }, [data])
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const checkScroll = () => {
+      const canScroll = el.scrollWidth > el.clientWidth + 4
+      const atEnd = Math.ceil(el.scrollLeft + el.clientWidth) >= el.scrollWidth - 4
+      setCanScrollRight(canScroll && !atEnd)
+    }
+    el.addEventListener('scroll', checkScroll)
+    window.addEventListener('resize', checkScroll)
+    checkScroll()
+    
+    // Also check on mount/data change
+    const timeoutId = setTimeout(checkScroll, 100)
+    
+    return () => {
+      el.removeEventListener('scroll', checkScroll)
+      window.removeEventListener('resize', checkScroll)
+      clearTimeout(timeoutId)
+    }
+  }, [tableData, viewMode, isMobile])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = React.useState({})
   const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
@@ -376,21 +399,21 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div className="theme-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#11161B] dark:text-[#E6EAE0]/70" />
+            <Search className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--text-muted)]" />
             <Input
               placeholder="Search video titles…"
               value={(table.getColumn("video_title")?.getFilterValue() as string) ?? ""}
               onChange={(event) =>
                 table.getColumn("video_title")?.setFilterValue(event.target.value)
               }
-              className="h-[34px] w-full sm:w-[280px] rounded-lg border-none bg-[var(--surface-page)] pl-11 pr-4 text-[13px] font-medium text-[var(--text-primary)] shadow-sm placeholder:text-[var(--text-secondary)] focus-visible:ring-2 focus-visible:ring-black/10"
+              className="h-[38px] w-full sm:w-[320px] rounded-[8px] border border-[var(--border)] bg-[var(--surface-page)] pl-[36px] pr-4 text-[13.5px] text-[var(--text-primary)] shadow-none placeholder:text-[var(--text-muted)] focus-visible:ring-2 focus-visible:ring-black/10"
             />
           </div>
           
           <div className="relative w-full sm:w-auto">
             <button
               type="button"
-              className="flex h-[34px] w-full items-center justify-between gap-3 rounded-lg border-none bg-[var(--surface-page)] pl-4 pr-3 text-left text-[13px] font-medium text-[var(--text-primary)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 sm:w-[190px]"
+              className="flex h-[38px] w-full items-center justify-between gap-2 rounded-[8px] border border-[var(--border)] bg-[var(--surface-page)] px-[14px] text-left text-[13.5px] text-[var(--text-primary)] shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 sm:w-[190px]"
               onClick={() => setEditorMenuOpen(isOpen => !isOpen)}
               onKeyDown={(event) => {
                 if (event.key === "Escape") setEditorMenuOpen(false)
@@ -403,7 +426,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             >
               {editorFilter ? (
                 <span
-                  className="inline-flex max-w-[135px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                  className="inline-flex max-w-[135px] items-center truncate rounded-full border px-[8px] py-[2px] text-[11px] font-bold"
                   style={colorMaps.editors[editorFilter]}
                 >
                   {editorFilter}
@@ -492,41 +515,46 @@ export function DataTable({ columns, data }: DataTableProps) {
 
         <div className="flex justify-start sm:justify-end w-full sm:w-auto">
           {/* View Toggle */}
-          <div className="flex items-center rounded-lg border border-[var(--border)] p-[3px] w-full sm:w-auto justify-between sm:justify-start">
+          <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface-page)] p-[3px] w-full sm:w-auto justify-between sm:justify-start gap-[2px]">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex h-7 flex-1 sm:flex-none items-center justify-center px-4 text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'tab-active' : 'tab-inactive'}`}
+              className={`flex h-[32px] flex-1 sm:flex-none items-center justify-center px-[14px] rounded-[6px] text-[13.5px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
-              <List className="mr-2 h-4 w-4" />
+              <List className="mr-[6px] h-4 w-4" />
               Table
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`flex h-7 flex-1 sm:flex-none items-center justify-center px-4 text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'tab-active' : 'tab-inactive'}`}
+              className={`flex h-[32px] flex-1 sm:flex-none items-center justify-center px-[14px] rounded-[6px] text-[13.5px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
-              <LayoutGrid className="mr-2 h-4 w-4" />
+              <LayoutGrid className="mr-[6px] h-4 w-4" />
               Board
             </button>
           </div>
         </div>
       </div>
 
-      {/* Idle Editors Bar */}
-      <div className="flex flex-wrap items-center gap-2 px-1">
-        <span className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70">Idle Editors:</span>
-        {availableEditors.length > 0 ? (
-          availableEditors.map(editor => (
-            <span
-              key={editor}
-              className="inline-flex max-w-[135px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-              style={colorMaps.editors[editor]}
-            >
-              {editor}
-            </span>
-          ))
-        ) : (
-          <span className="text-[12px] text-[#11161B]/60 dark:text-[#E6EAE0]/50 italic">No editors available right now</span>
-        )}
+      {/* Idle Editors Panel */}
+      <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-[12px] px-[18px] py-[14px] flex flex-wrap items-center gap-4">
+        <div className="text-[13px] font-bold text-[var(--text-primary)] whitespace-nowrap flex items-center gap-[6px]">
+          <span className="w-[7px] h-[7px] rounded-full bg-[#3FA75B] inline-block"></span>
+          Idle Editors ({availableEditors.length})
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {availableEditors.length > 0 ? (
+            availableEditors.map(editor => (
+              <span
+                key={editor}
+                className="inline-flex items-center px-[12px] py-[5px] rounded-full text-[12.5px] font-semibold whitespace-nowrap"
+                style={colorMaps.editors[editor]}
+              >
+                {editor}
+              </span>
+            ))
+          ) : (
+            <span className="text-[12.5px] font-semibold text-[var(--text-secondary)] italic">None</span>
+          )}
+        </div>
       </div>
 
       <datalist id="editor-suggestions">
@@ -577,10 +605,10 @@ export function DataTable({ columns, data }: DataTableProps) {
             <div ref={scrollRef} className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full peer relative">
               <Table className="min-w-[920px]">
           <TableHeader>
-            <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
+            <TableRow className="border-b border-[var(--border)] hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
                 headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="h-12 px-6 text-[11px] font-semibold uppercase tracking-widest text-[#11161B] dark:text-[#E6EAE0]/70">
+                  <TableHead key={header.id} className="py-[12px] px-[16px] text-[11.5px] font-bold uppercase tracking-[.03em] text-[var(--text-muted)] sticky top-0 z-10 bg-[var(--surface-card)]">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))
@@ -589,62 +617,62 @@ export function DataTable({ columns, data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {/* Quick-Add Row */}
-            <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/80 bg-[#F3F5EE] dark:bg-white/10 hover:bg-[#F3F5EE] dark:bg-white/10">
-              <TableCell className="px-6 py-3 w-12"></TableCell>
-              <TableCell className="px-6 py-3">
+            <TableRow className="border-b border-[var(--border)] bg-[var(--surface-card)] hover:bg-[var(--surface-card)]">
+              <TableCell className="px-[16px] py-[8px] w-12"></TableCell>
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-none focus-visible:bg-white dark:focus-visible:bg-[#161b22] focus-visible:ring-1"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
                 />
               </TableCell>
-              <TableCell className="px-6 py-3">
+              <TableCell className="px-[16px] py-[8px]">
                 <Input
                   placeholder="Subclient..."
                   list="subclient-suggestions"
                   value={subClient} onChange={e => setSubClient(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
                 />
               </TableCell>
-              <TableCell className="px-6 py-3">
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
                 />
               </TableCell>
-              <TableCell className="px-6 py-3">
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-8 rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
                 />
               </TableCell>
-              <TableCell className="px-6 py-3">
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   type="date"
                   value={startDay} 
                   onChange={e => setStartDay(e.target.value)}
-                  className="h-8 w-[110px] rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1 [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
-              <TableCell className="px-6 py-3">
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   type="date"
                   value={completeDay} 
                   onChange={e => setCompleteDay(e.target.value)}
-                  className="h-8 w-[110px] rounded-lg border-transparent bg-transparent px-2 text-[13px] shadow-none focus-visible:bg-white dark:bg-[#161b22] focus-visible:ring-1 [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
-              <TableCell className="px-6 py-3">
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[#E6EAE0]/50 text-[#11161B] dark:text-[#E6EAE0]/70">
+              <TableCell className="px-[16px] py-[8px]">
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[var(--surface-page)] text-[var(--text-muted)]">
                   Auto
                 </span>
               </TableCell>
-              <TableCell className="px-6 py-3">
+              <TableCell className="px-[16px] py-[8px]">
                 <Button 
                   onClick={handleQuickAdd} 
                   disabled={!title || !editor || isAdding}
@@ -684,7 +712,9 @@ export function DataTable({ columns, data }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 dark:from-[#161b22]/90 to-transparent z-10 hidden md:block rounded-r-xl" />
+      <div 
+        className={`pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[var(--surface-card)] dark:from-[#161b22] to-transparent z-10 hidden md:block rounded-r-xl transition-opacity duration-150 ${canScrollRight ? 'opacity-100' : 'opacity-0'}`} 
+      />
       </div>
       )}
       </>
