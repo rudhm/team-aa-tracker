@@ -74,6 +74,13 @@ export function DataTable({ columns, data }: DataTableProps) {
     return Array.from(editors)
   }, [data])
 
+  const freeEditors = React.useMemo(() => {
+    const busyEditors = new Set(
+      data.filter(d => d.status === "In progress").map(d => formatName(d.editor)).filter(Boolean)
+    )
+    return uniqueEditors.filter(editor => !busyEditors.has(editor)).sort()
+  }, [data, uniqueEditors])
+
   React.useEffect(() => {
     try {
       const storedHiddenEditors = window.localStorage.getItem(HIDDEN_EDITORS_STORAGE_KEY)
@@ -383,6 +390,24 @@ export function DataTable({ columns, data }: DataTableProps) {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Free Editors Bar */}
+      <div className="flex flex-wrap items-center gap-2 px-1">
+        <span className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70">Free Editors:</span>
+        {freeEditors.length > 0 ? (
+          freeEditors.map(editor => (
+            <span
+              key={editor}
+              className="inline-flex max-w-[135px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+              style={colorMaps.editors[editor]}
+            >
+              {editor}
+            </span>
+          ))
+        ) : (
+          <span className="text-[12px] text-[#11161B]/60 dark:text-[#E6EAE0]/50 italic">No editors free right now</span>
+        )}
       </div>
 
       <datalist id="editor-suggestions">
