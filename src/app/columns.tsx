@@ -21,6 +21,7 @@ export type VideoTask = {
   link: string | null
   delivered_at: string | null
   payroll_locked: boolean
+  duration: string | null
 }
 
 declare module '@tanstack/react-table' {
@@ -91,7 +92,7 @@ export function InlineTextEdit({
          autoFocus
          list={listId}
          placeholder={placeholder}
-         className="h-7 w-full min-w-[120px] max-w-[180px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
+         className="h-7 w-full min-w-[120px] max-w-[180px] rounded-md bg-[var(--surface-page)] border border-[var(--border-soft)] px-2 text-[13px] font-medium text-[var(--text-primary)] shadow-sm outline-none focus:ring-2 focus:ring-black/10"
          value={text}
          onChange={e => setText(e.target.value)}
          onBlur={saveEdit}
@@ -107,7 +108,7 @@ export function InlineTextEdit({
   return (
     <span 
       onClick={startEdit} 
-      className={`${className} transition-colors ${prefix ? 'flex items-center gap-1.5' : ''} ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0]' : ''}`}
+      className={`${className} transition-colors ${prefix ? 'flex items-center gap-1.5' : ''} ${!locked ? 'cursor-pointer hover:text-[var(--text-primary)]' : ''}`}
       style={style}
       title={tooltipText}
     >
@@ -159,7 +160,7 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate }: { value: s
        <input
          type="date"
          autoFocus
-         className="h-7 w-full max-w-[130px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[12px] text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
+         className="h-7 w-full max-w-[130px] rounded-md bg-[var(--surface-page)] border border-[var(--border-soft)] px-2 text-[12px] text-[var(--text-primary)] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
          value={dateStr}
          onChange={e => setDateStr(e.target.value)}
          onBlur={saveEdit}
@@ -171,7 +172,7 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate }: { value: s
   return (
     <span 
       onClick={startEdit} 
-      className={`text-[12.5px] transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0]' : ''} ${!value ? 'text-[var(--text-faint)] italic' : 'font-medium text-[var(--text-secondary)]'}`}
+      className={`text-[12.5px] transition-colors ${!locked ? 'cursor-pointer hover:text-[var(--text-primary)]' : ''} ${!value ? 'text-[var(--text-faint)] italic' : 'font-medium text-[var(--text-secondary)]'}`}
       title={!locked ? "Click to edit" : ""}
     >
       <span className={!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}>
@@ -214,7 +215,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
       <input
         autoFocus
         placeholder="Paste URL..."
-        className="h-8 w-full max-w-[180px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[12px] text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10"
+        className="h-8 w-full max-w-[180px] rounded-md bg-[var(--surface-page)] border border-[var(--border-soft)] px-2 text-[12px] text-[var(--text-primary)] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10"
         value={text}
         onChange={e => setText(e.target.value)}
         onBlur={saveEdit}
@@ -248,7 +249,7 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
       {!locked && (
         <button 
           onClick={startEdit}
-          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 w-[36px] h-[36px] flex items-center justify-center text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:bg-[#F3F5EE] dark:bg-white/10 rounded-full transition-all shrink-0"
+          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 w-[36px] h-[36px] flex items-center justify-center text-[var(--text-primary)]/70 hover:text-[var(--text-primary)] hover:bg-[var(--row-hover)] rounded-full transition-all shrink-0"
           title="Edit link"
           aria-label="Edit link"
         >
@@ -361,6 +362,23 @@ export const columns: ColumnDef<VideoTask>[] = [
     },
   },
   {
+    accessorKey: "duration",
+    header: "Length",
+    cell: ({ row, table }) => {
+      const task = row.original
+      return (
+        <InlineTextEdit 
+          value={task.duration}
+          locked={task.payroll_locked}
+          placeholder="00:00"
+          className="text-[12.5px] text-[var(--text-secondary)] font-medium tabular-nums"
+          emptyContent="—"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'duration', val)}
+        />
+      )
+    },
+  },
+  {
     accessorKey: "editor",
     header: "EDITOR",
     cell: ({ row, table }) => {
@@ -434,7 +452,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           <DropdownMenuTrigger className="focus:outline-none">
             <StatusBadge status={status} isLocked={false} />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[#E6EAE0] dark:border-white/10 bg-white dark:bg-[#161b22] p-1.5 shadow-lg">
+          <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[var(--border-soft)] bg-[var(--surface-page)] p-1.5 shadow-lg">
             {STATUSES.map((s) => (
               <DropdownMenuItem
                 key={s}
@@ -443,7 +461,7 @@ export const columns: ColumnDef<VideoTask>[] = [
                     await table.options.meta?.updateData(row.index, 'status', s)
                   }
                 }}
-                className="rounded-xl px-2 py-1.5 text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70 focus:bg-[#F3F5EE] dark:bg-white/10"
+                className="rounded-xl px-2 py-1.5 text-[12px] font-medium text-[var(--text-primary)]/70 focus:bg-[var(--row-hover)]"
               >
                 {s}
               </DropdownMenuItem>

@@ -80,7 +80,7 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-[16px] font-bold text-[#11161B] dark:text-[#E6EAE0] leading-snug">
+          <div className="text-[16px] font-bold text-[var(--text-primary)] leading-snug">
             {videoTitleCell && flexRender(videoTitleCell.column.columnDef.cell, videoTitleCell.getContext())}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -105,17 +105,17 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
       </div>
       
       {/* Dates */}
-      <div className="flex items-center gap-2 mt-3 bg-[#F3F5EE] dark:bg-white/10 px-2.5 py-1.5 rounded-md w-max">
-        <Calendar className="h-3.5 w-3.5 text-[#11161B]/60 dark:text-[#E6EAE0]/60" />
+      <div className="flex items-center gap-2 mt-3 bg-[var(--row-hover)] px-2.5 py-1.5 rounded-md w-max">
+        <Calendar className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
         <div className="flex items-center gap-1.5 text-[11.5px]">
           {startDateCell && flexRender(startDateCell.column.columnDef.cell, startDateCell.getContext())}
-          <span className="text-[#11161B]/40 dark:text-[#E6EAE0]/40 font-medium">→</span>
+          <span className="text-[var(--text-secondary)] font-medium">→</span>
           {completeDateCell && flexRender(completeDateCell.column.columnDef.cell, completeDateCell.getContext())}
         </div>
       </div>
       
       {/* Link */}
-      <div className="mt-3 pt-3 border-t border-[#E6EAE0] dark:border-white/10/50">
+      <div className="mt-3 pt-3 border-t border-[var(--border-soft)]/50">
         {linkCell && flexRender(linkCell.column.columnDef.cell, linkCell.getContext())}
       </div>
     </div>
@@ -188,6 +188,7 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [editor, setEditor] = React.useState("")
   const [startDay, setStartDay] = React.useState("")
   const [completeDay, setCompleteDay] = React.useState("")
+  const [duration, setDuration] = React.useState("")
   const [isAdding, setIsAdding] = React.useState(false)
   const [isIdleExpanded, setIsIdleExpanded] = React.useState(false)
 
@@ -403,6 +404,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       editor: formatName(editor),
       start_date: startDay || null,
       complete_date: parsedComplete,
+      duration: duration.trim() || null,
       status: parsedComplete ? 'Complete' : 'In progress',
     }
 
@@ -411,6 +413,7 @@ export function DataTable({ columns, data }: DataTableProps) {
     setClient("")
     setSubClient("")
     setTitle("")
+    setDuration("")
     setStartDay("")
     setCompleteDay("")
     setIsAdding(false)
@@ -745,7 +748,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -753,14 +756,22 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Subclient..."
                   list="subclient-suggestions"
                   value={subClient} onChange={e => setSubClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] font-semibold"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] font-semibold"
+                  onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
+                />
+              </TableCell>
+              <TableCell className="px-[16px] py-[8px]">
+                <Input 
+                  placeholder="00:00" 
+                  value={duration} onChange={e => setDuration(e.target.value)}
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] tabular-nums"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
                 />
               </TableCell>
@@ -769,7 +780,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -777,7 +788,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   type="date"
                   value={startDay} 
                   onChange={e => setStartDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -785,7 +796,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   type="date"
                   value={completeDay} 
                   onChange={e => setCompleteDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-white dark:bg-[#161b22] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
@@ -904,48 +915,48 @@ export function DataTable({ columns, data }: DataTableProps) {
           </SheetTrigger>
           <SheetContent side="bottom" className="rounded-t-[32px] p-6 pb-12 outline-none">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-left text-[18px] font-bold text-[#11161B] dark:text-[#E6EAE0]">Add new video</SheetTitle>
+              <SheetTitle className="text-left text-[18px] font-bold text-[var(--text-primary)]">Add new video</SheetTitle>
             </SheetHeader>
             
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Client</label>
+                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Client</label>
                 <Input 
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
-                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] font-semibold shadow-sm focus-visible:bg-[var(--surface-page)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Subclient</label>
+                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Subclient</label>
                 <Input
                   placeholder="Subclient..."
                   list="subclient-suggestions"
                   value={subClient} onChange={e => setSubClient(e.target.value)}
-                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] shadow-sm focus-visible:bg-[var(--surface-page)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Title</label>
+                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Title</label>
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] shadow-sm focus-visible:bg-[var(--surface-page)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Editor</label>
+                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Editor</label>
                 <Input 
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22]"
+                  className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] shadow-sm focus-visible:bg-[var(--surface-page)]"
                 />
               </div>
               <div className="flex gap-4">
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Start Date</label>
+                  <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Start Date</label>
                   <Input 
                     type="text"
                     placeholder="Date"
@@ -953,11 +964,11 @@ export function DataTable({ columns, data }: DataTableProps) {
                     onBlur={e => { if (!e.target.value) e.target.type = "text"; }}
                     value={startDay} 
                     onChange={e => setStartDay(e.target.value)}
-                    className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] shadow-sm focus-visible:bg-[var(--surface-page)] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[#11161B] dark:text-[#E6EAE0]/70 uppercase tracking-wider ml-1">Complete Date</label>
+                  <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Complete Date</label>
                   <Input 
                     type="text"
                     placeholder="Date"
@@ -965,7 +976,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                     onBlur={e => { if (!e.target.value) e.target.type = "text"; }}
                     value={completeDay} 
                     onChange={e => setCompleteDay(e.target.value)}
-                    className="h-[34px] rounded-lg bg-[#F3F5EE] dark:bg-white/10 border-[#E6EAE0] dark:border-white/10 px-4 text-[14px] shadow-sm focus-visible:bg-white dark:bg-[#161b22] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] shadow-sm focus-visible:bg-[var(--surface-page)] text-center [&::-webkit-calendar-picker-indicator]:dark:invert"
                   />
                 </div>
               </div>

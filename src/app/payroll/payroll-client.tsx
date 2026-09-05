@@ -5,7 +5,7 @@ import { VideoTask } from "@/app/columns"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Download, Lock, Loader2, Copy, Check } from "lucide-react"
+import { Download, Lock, Loader2, Copy, Check, ChevronDown, ChevronRight } from "lucide-react"
 import { createEntityColor, createEntityColorMaps, formatName } from "@/lib/utils"
 
 export function PayrollClient({ data }: { data: VideoTask[] }) {
@@ -17,7 +17,11 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
   const [subClientFilter, setSubClientFilter] = React.useState("All")
   const [editorFilter, setEditorFilter] = React.useState("All")
   const [copied, setCopied] = React.useState(false)
+  const [collapsedEditors, setCollapsedEditors] = React.useState<Record<string, boolean>>({})
 
+  const toggleEditor = (ed: string) => {
+    setCollapsedEditors(prev => ({ ...prev, [ed]: !prev[ed] }))
+  }
   React.useEffect(() => {
     setClientFilter("All")
     setSubClientFilter("All")
@@ -163,31 +167,43 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     <div className="space-y-6">
       <div className="theme-toolbar flex flex-col items-stretch justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
-          <select 
-            className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-4 pr-10 text-[13px] font-bold text-[var(--text-primary)] focus-visible:outline-none"
-            value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
-          >
-            {months.length === 0 && <option value="">No data</option>}
-            {months.map(([monthKey]) => (
-              <option key={monthKey} value={monthKey}>{formatMonth(monthKey)}</option>
-            ))}
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select 
+              className="h-[34px] w-full appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-4 pr-10 text-[13px] font-bold text-[var(--text-primary)] focus-visible:outline-none"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+            >
+              {months.length === 0 && <option value="">No data</option>}
+              {months.map(([monthKey]) => (
+                <option key={monthKey} value={monthKey}>{formatMonth(monthKey)}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" />
+          </div>
 
-          <select value={clientFilter} onChange={e => setClientFilter(e.target.value)} className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
-             <option value="All">All Clients</option>
-             {uniqueClients.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select value={clientFilter} onChange={e => setClientFilter(e.target.value)} className="h-[34px] w-full appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
+               <option value="All">All Clients</option>
+               {uniqueClients.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-50 pointer-events-none" />
+          </div>
 
-          <select value={subClientFilter} onChange={e => setSubClientFilter(e.target.value)} className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
-             <option value="All">All Subclients</option>
-             {uniqueSubClients.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select value={subClientFilter} onChange={e => setSubClientFilter(e.target.value)} className="h-[34px] w-full appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
+               <option value="All">All Subclients</option>
+               {uniqueSubClients.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-50 pointer-events-none" />
+          </div>
 
-          <select value={editorFilter} onChange={e => setEditorFilter(e.target.value)} className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
-             <option value="All">All Editors</option>
-             {uniqueEditors.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select value={editorFilter} onChange={e => setEditorFilter(e.target.value)} className="h-[34px] w-full appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
+               <option value="All">All Editors</option>
+               {uniqueEditors.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 opacity-50 pointer-events-none" />
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -227,61 +243,98 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
         </div>
       </div>
 
+      {/* Summary Table */}
+      {editorGroups.length > 0 && (
+        <div className="theme-card rounded-xl overflow-hidden shadow-sm">
+          <div className="border-b border-[var(--border)] bg-[var(--surface-page)] px-6 py-4">
+            <h2 className="text-[14px] font-bold text-[var(--text-primary)]">Monthly Summary</h2>
+          </div>
+          <div className="px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {editorGroups.map(([editor, tasks]) => (
+              <div key={editor} className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-soft)] bg-[var(--surface-page)]">
+                <span className="text-[13px] font-bold text-[var(--text-primary)] truncate pr-2">{editor}</span>
+                <span className="text-[12px] font-semibold text-[var(--theme-accent-hover)] bg-[var(--theme-accent-tint)] px-2 py-0.5 rounded-full shrink-0">{tasks.length}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-6">
-        {editorGroups.map(([editor, tasks]) => (
-          <div key={editor} className="overflow-hidden rounded-xl theme-card">
-            <div className="border-b border-[var(--border)] bg-[var(--surface-page)] px-6 py-4 flex items-center justify-between">
-              {editor === "Unassigned" ? (
-                <h2 className="text-[13px] font-bold text-[var(--text-primary)]">{editor}</h2>
-              ) : (
-                <h2
-                  className="inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                  style={colorMaps.editors[editor] ?? createEntityColor(editor, "editor")}
-                >
-                  {editor}
-                </h2>
-              )}
+        {editorGroups.map(([editor, tasks]) => {
+          const isCollapsed = collapsedEditors[editor] || false
+          return (
+          <div key={editor} className="overflow-hidden rounded-xl theme-card shadow-sm">
+            <div 
+              className="border-b border-[var(--border)] bg-[var(--surface-page)] px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[var(--row-hover)] transition-colors select-none"
+              onClick={() => toggleEditor(editor)}
+            >
+              <div className="flex items-center gap-3">
+                <ChevronRight className={`h-4 w-4 text-[var(--text-secondary)] transition-transform duration-200 ${isCollapsed ? '' : 'rotate-90'}`} />
+                {editor === "Unassigned" ? (
+                  <h2 className="text-[13px] font-bold text-[var(--text-primary)]">{editor}</h2>
+                ) : (
+                  <h2
+                    className="inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                    style={colorMaps.editors[editor] ?? createEntityColor(editor, "editor")}
+                  >
+                    {editor}
+                  </h2>
+                )}
+              </div>
               <span className="inline-flex items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold bg-[var(--theme-accent-tint)] text-[var(--theme-accent-hover)]">
                 {tasks.length} {tasks.length === 1 ? 'video' : 'videos'}
               </span>
             </div>
+            
+            {!isCollapsed && (
             <div className="divide-y divide-[var(--border)]">
               {tasks.map(task => (
                 <div key={task.id} className="flex items-center justify-between px-6 py-4 hover:bg-[var(--surface-page)] transition-colors">
                   <div>
                     <p className="text-[13px] font-bold text-[var(--text-primary)]">{task.video_title}</p>
-                    {task.sub_client && (
-                      <p
-                        className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                        style={colorMaps.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")}
-                      >
-                        {task.sub_client}
-                      </p>
-                    )}
-                    {task.client && (
-                      <p
-                        className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                        style={colorMaps.subClients[task.client] ?? createEntityColor(task.client, "subclient")}
-                      >
-                        {task.client}
-                      </p>
-                    )}
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      {task.sub_client && (
+                        <span
+                          className="inline-flex max-w-[220px] items-center truncate rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                          style={colorMaps.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")}
+                        >
+                          {task.sub_client}
+                        </span>
+                      )}
+                      {task.client && task.sub_client && (
+                        <span className="text-[var(--text-muted)] text-[10px] font-bold">›</span>
+                      )}
+                      {task.client && (
+                        <span
+                          className="inline-flex max-w-[220px] items-center truncate rounded-full border px-2 py-0.5 text-[10px] font-bold opacity-75"
+                          style={colorMaps.subClients[task.client] ?? createEntityColor(task.client, "subclient")}
+                        >
+                          {task.client}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">
+                    <p className="text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums mb-1">
                       Completed: {new Date(task.complete_date!.length === 10 ? task.complete_date + "T12:00:00Z" : task.complete_date!).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })}
                     </p>
-                    {task.link && (
-                      <a href={task.link} target="_blank" rel="noreferrer" className="theme-link text-[12px] font-medium mt-0.5 block">
+                    {task.link ? (
+                      <a href={task.link} target="_blank" rel="noreferrer" className="theme-link text-[12px] font-medium block hover:underline">
                         View link
                       </a>
+                    ) : (
+                      <span className="text-[11px] font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded border border-red-200 dark:border-red-900/50">
+                        No link yet
+                      </span>
                     )}
                   </div>
                 </div>
               ))}
             </div>
+            )}
           </div>
-        ))}
+        )})}
       </div>
       
       {months.length === 0 && (
