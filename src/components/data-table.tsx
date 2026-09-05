@@ -741,24 +741,67 @@ export function DataTable({ columns, data }: DataTableProps) {
         className={`pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[var(--surface-card)] dark:from-[#161b22] to-transparent z-10 hidden md:block rounded-r-xl transition-opacity duration-150 ${canScrollRight ? 'opacity-100' : 'opacity-0'}`} 
       />
       
-      <div className="flex items-center justify-between px-[16px] py-[14px] border-t border-[var(--border)]">
-        <button 
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-          className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[16px] py-[7px] rounded-[8px] text-[13px] font-semibold cursor-pointer disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-[var(--text-muted)] text-[13px]">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
-        </span>
-        <button 
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-          className="bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-primary)] px-[16px] py-[7px] rounded-[8px] text-[13px] font-semibold cursor-pointer disabled:opacity-50"
-        >
-          Next
-        </button>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-[16px] py-[14px] border-t border-[var(--border)]">
+        <div className="text-[12.5px] font-medium text-[var(--text-muted)] w-full sm:w-[150px] text-center sm:text-left">
+          Showing {table.getFilteredRowModel().rows.length === 0 ? 0 : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–{Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of {table.getFilteredRowModel().rows.length}
+        </div>
+        
+        <div className="flex items-center gap-1.5 flex-1 justify-center">
+          <button 
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2 py-1 rounded-[6px] text-[13px] font-semibold cursor-pointer disabled:opacity-30 disabled:hover:text-[var(--text-secondary)] transition-colors"
+          >
+            ‹ Previous
+          </button>
+          
+          <div className="flex items-center gap-1 mx-2">
+            {table.getPageCount() > 0 && Array.from({ length: table.getPageCount() }).map((_, i) => {
+              const currentPage = table.getState().pagination.pageIndex;
+              const isCurrent = i === currentPage;
+              
+              if (i === 0 || i === table.getPageCount() - 1 || Math.abs(i - currentPage) <= 1) {
+                return (
+                  <button 
+                    key={i}
+                    onClick={() => table.setPageIndex(i)}
+                    className={`w-7 h-7 rounded-[6px] text-[13px] font-semibold flex items-center justify-center transition-colors ${isCurrent ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-card-2)] hover:text-[var(--text-primary)]'}`}
+                  >
+                    {i + 1}
+                  </button>
+                )
+              } else if (i === 1 && currentPage > 2) {
+                return <span key={i} className="text-[var(--text-faint)] text-[11px] font-bold mx-1">...</span>
+              } else if (i === table.getPageCount() - 2 && currentPage < table.getPageCount() - 3) {
+                return <span key={i} className="text-[var(--text-faint)] text-[11px] font-bold mx-1">...</span>
+              }
+              return null;
+            })}
+          </div>
+
+          <button 
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2 py-1 rounded-[6px] text-[13px] font-semibold cursor-pointer disabled:opacity-30 disabled:hover:text-[var(--text-secondary)] transition-colors"
+          >
+            Next ›
+          </button>
+        </div>
+        
+        <div className="w-full sm:w-[150px] flex justify-center sm:justify-end">
+          <select
+            value={table.getState().pagination.pageSize}
+            onChange={e => table.setPageSize(Number(e.target.value))}
+            className="bg-[var(--surface-card-2)] border border-[var(--border-soft)] rounded-[8px] text-[12.5px] font-medium text-[var(--text-primary)] px-2 py-1.5 outline-none cursor-pointer hover:border-[var(--border)] transition-colors appearance-none pr-6 relative"
+            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'gray\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.35rem center', backgroundSize: '1em' }}
+          >
+            {[10, 20, 30, 40, 50].map(pageSize => (
+              <option key={pageSize} value={pageSize}>
+                {pageSize} / page
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       </div>
       )}

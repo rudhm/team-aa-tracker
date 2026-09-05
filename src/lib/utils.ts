@@ -32,7 +32,8 @@ export function getEditorDotColor(name: string | null | undefined): string {
   for (let i = 0; i < lowerName.length; i++) {
     hash = lowerName.charCodeAt(i) + ((hash << 5) - hash)
   }
-  return EDITOR_COLORS[Math.abs(hash) % EDITOR_COLORS.length]
+  const hue = Math.abs(hash) % 360
+  return `hsl(${hue}, 85%, 48%)`
 }
 
 export type EntityColorStyle = {
