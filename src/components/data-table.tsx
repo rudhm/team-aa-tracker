@@ -11,6 +11,19 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { useRouter } from "next/navigation"
+import { useWindowVirtualizer } from "@tanstack/react-virtual"
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(false)
+  React.useEffect(() => {
+    const mql = window.matchMedia("(max-width: 768px)")
+    setIsMobile(mql.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener("change", handler)
+    return () => mql.removeEventListener("change", handler)
+  }, [])
+  return isMobile
+}
 import { supabase } from "@/lib/supabase"
 import { VideoTask } from "@/app/columns"
 
@@ -45,8 +58,85 @@ interface DataTableProps {
   data: VideoTask[]
 }
 
+
+const MemoizedMobileRow = React.memo(({ row, style }: { row: any, style?: React.CSSProperties }) => {
+  const selectCell = row.getVisibleCells().find((c: any) => c.column.id === 'select');
+  const clientCell = row.getVisibleCells().find((c: any) => c.column.id === 'client');
+  const subClientCell = row.getVisibleCells().find((c: any) => c.column.id === 'sub_client');
+  const statusCell = row.getVisibleCells().find((c: any) => c.column.id === 'status');
+  const videoTitleCell = row.getVisibleCells().find((c: any) => c.column.id === 'video_title');
+  const editorCell = row.getVisibleCells().find((c: any) => c.column.id === 'editor');
+  const startDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'start_date');
+  const completeDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'complete_date');
+  const linkCell = row.getVisibleCells().find((c: any) => c.column.id === 'link');
+
+  return (
+    <div style={style} className="rounded-xl theme-card p-5 shadow-sm flex flex-col relative overflow-hidden transition-all duration-200">
+      <div className="flex items-start justify-between mb-4 gap-2">
+        <div className="flex items-center gap-3 flex-1">
+          {selectCell && row.original.status !== 'Complete' && (
+            <div className="scale-125 transform-gpu -mt-0.5">
+              {flexRender(selectCell.column.columnDef.cell, selectCell.getContext())}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            {clientCell && flexRender(clientCell.column.columnDef.cell, clientCell.getContext())}
+            <div className="mt-1 text-[12px]">
+              {subClientCell && flexRender(subClientCell.column.columnDef.cell, subClientCell.getContext())}
+            </div>
+          </div>
+        </div>
+        <div className="shrink-0 scale-90 origin-top-right">
+          {statusCell && flexRender(statusCell.column.columnDef.cell, statusCell.getContext())}
+        </div>
+      </div>
+      
+      <div className="mb-5 text-[15px]">
+        {videoTitleCell && flexRender(videoTitleCell.column.columnDef.cell, videoTitleCell.getContext())}
+      </div>
+      
+      <div className="flex items-end justify-between mt-auto">
+        <div>
+          {editorCell && flexRender(editorCell.column.columnDef.cell, editorCell.getContext())}
+        </div>
+        <div className="flex flex-col gap-1.5 items-end text-[11.5px]">
+          <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
+            <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Start</span>
+            {startDateCell && flexRender(startDateCell.column.columnDef.cell, startDateCell.getContext())}
+          </div>
+          <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
+            <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Done</span>
+            {completeDateCell && flexRender(completeDateCell.column.columnDef.cell, completeDateCell.getContext())}
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-4 pt-3 border-t border-[#E6EAE0] dark:border-white/10/50">
+        {linkCell && flexRender(linkCell.column.columnDef.cell, linkCell.getContext())}
+      </div>
+    </div>
+  )
+})
+
+const MemoizedDesktopRow = React.memo(({ row, isLast }: { row: any, isLast: boolean }) => (
+  <TableRow
+    data-state={row.getIsSelected() && "selected"}
+    className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:bg-white/10 ${
+      !isLast ? "border-b border-[#E6EAE0] dark:border-white/10/40" : "border-0"
+    }`}
+  >
+    {row.getVisibleCells().map((cell: any) => (
+      <TableCell key={cell.id} className="px-6 py-4 text-[13px]">
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      </TableCell>
+    ))}
+  </TableRow>
+))
+
 export function DataTable({ columns, data }: DataTableProps) {
   const router = useRouter()
+  const isMobile = useIsMobile()
+  const scrollRef = React.useRef<HTMLDivElement>(null)
   const [tableData, setTableData] = React.useState(data)
 
   React.useEffect(() => {
@@ -246,6 +336,17 @@ export function DataTable({ columns, data }: DataTableProps) {
     router.refresh()
   }
 
+    const rows = table.getRowModel().rows
+  const virtualizer = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => isMobile ? 180 : 53,
+    scrollMargin: scrollRef.current?.offsetTop ?? 0,
+    overscan: 5,
+  })
+  const virtualItems = virtualizer.getVirtualItems()
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom = virtualItems.length > 0 ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end : 0;
+
   const selectedCount = Object.keys(rowSelection).length
 
   return (
@@ -307,7 +408,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <button
                   type="button"
                   className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                  onMouseDown={(event) => event.preventDefault()}
+                  onPointerDown={(event) => event.preventDefault()}
                   onClick={() => {
                     table.getColumn("editor")?.setFilterValue("")
                     setEditorMenuOpen(false)
@@ -322,7 +423,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                       <button
                         type="button"
                         className={`h-8 min-w-0 flex-1 truncate px-3 text-left font-medium ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                        onMouseDown={(event) => event.preventDefault()}
+                        onPointerDown={(event) => event.preventDefault()}
                         onClick={() => {
                           table.getColumn("editor")?.setFilterValue(editorName)
                           setEditorMenuOpen(false)
@@ -339,7 +440,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                         type="button"
                         className="mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] opacity-100 transition-colors hover:bg-white hover:text-[var(--text-primary)] dark:hover:bg-[#0d1117] sm:opacity-0 sm:group-hover:opacity-100"
                         title={`Hide ${editorName}`}
-                        onMouseDown={(event) => event.preventDefault()}
+                        onPointerDown={(event) => event.preventDefault()}
                         onClick={(event) => {
                           event.stopPropagation()
                           handleHideEditor(editorName)
@@ -359,7 +460,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   <button
                     type="button"
                     className="mt-1 flex h-8 w-full items-center gap-2 rounded-lg border-t border-[var(--border)] px-3 text-left text-[12px] font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[#F3F5EE] hover:text-[var(--text-primary)] dark:hover:bg-white/10"
-                    onMouseDown={(event) => event.preventDefault()}
+                    onPointerDown={(event) => event.preventDefault()}
                     onClick={handleRestoreHiddenEditors}
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
@@ -425,62 +526,34 @@ export function DataTable({ columns, data }: DataTableProps) {
       ) : (
       <>
         {/* Mobile View (Cards) */}
-        <div className="md:hidden flex flex-col gap-4 pb-24">
-          {table.getRowModel().rows?.length ? (
-             table.getRowModel().rows.map(row => (
-                <div key={row.id} className="rounded-xl theme-card p-5 shadow-sm flex flex-col relative overflow-hidden transition-all duration-200">
-                   <div className="flex items-start justify-between mb-4 gap-2">
-                      <div className="flex items-center gap-3 flex-1">
-                        {row.getVisibleCells().find(c => c.column.id === 'select') && row.original.status !== 'Complete' && (
-                          <div className="scale-125 transform-gpu -mt-0.5">
-                            {flexRender(row.getVisibleCells().find(c => c.column.id === 'select')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'select')?.getContext()!)}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          {flexRender(row.getVisibleCells().find(c => c.column.id === 'client')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'client')?.getContext()!)}
-                          <div className="mt-1 text-[12px]">
-                            {flexRender(row.getVisibleCells().find(c => c.column.id === 'sub_client')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'sub_client')?.getContext()!)}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="shrink-0 scale-90 origin-top-right">
-                        {flexRender(row.getVisibleCells().find(c => c.column.id === 'status')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'status')?.getContext()!)}
-                      </div>
-                   </div>
-                   
-                   <div className="mb-5 text-[15px]">
-                     {flexRender(row.getVisibleCells().find(c => c.column.id === 'video_title')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'video_title')?.getContext()!)}
-                   </div>
-                   
-                   <div className="flex items-end justify-between mt-auto">
-                     <div>
-                       {flexRender(row.getVisibleCells().find(c => c.column.id === 'editor')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'editor')?.getContext()!)}
-                     </div>
-                     <div className="flex flex-col gap-1.5 items-end text-[11.5px]">
-                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
-                         <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Start</span>
-                         {flexRender(row.getVisibleCells().find(c => c.column.id === 'start_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'start_date')?.getContext()!)}
-                       </div>
-                       <div className="flex items-center gap-2 bg-[#F3F5EE] dark:bg-white/10 px-2 py-0.5 rounded-md">
-                         <span className="text-[#11161B] dark:text-[#E6EAE0]/70 font-bold uppercase tracking-wider text-[9px]">Done</span>
-                         {flexRender(row.getVisibleCells().find(c => c.column.id === 'complete_date')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'complete_date')?.getContext()!)}
-                       </div>
-                     </div>
-                   </div>
-                   
-                   {/* Mobile Link Rendering */}
-                   <div className="mt-4 pt-3 border-t border-[#E6EAE0] dark:border-white/10/50">
-                     {flexRender(row.getVisibleCells().find(c => c.column.id === 'link')?.column.columnDef.cell, row.getVisibleCells().find(c => c.column.id === 'link')?.getContext()!)}
-                   </div>
-                </div>
-             ))
-          ) : (
-            <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">No videos found.</div>
-          )}
-        </div>
+        {!isMobile ? null : (
+          <div ref={scrollRef} className="md:hidden flex flex-col gap-4 pb-24" style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
+            {virtualItems.length ? (
+               virtualItems.map((virtualRow: any) => {
+                 const row = rows[virtualRow.index];
+                 return (
+                   <MemoizedMobileRow 
+                     key={row.id} 
+                     row={row} 
+                     style={{
+                       position: 'absolute',
+                       top: 0,
+                       left: 0,
+                       width: '100%',
+                       transform: `translateY(${virtualRow.start}px)`,
+                     }}
+                   />
+                 )
+               })
+            ) : (
+              <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">No videos found.</div>
+            )}
+          </div>
+        )}
 
         {/* Desktop View (Table) */}
-        <div className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full">
+        {isMobile ? null : (
+          <div ref={scrollRef} className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full">
         <Table className="min-w-[920px]">
           <TableHeader>
             <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
@@ -562,22 +635,20 @@ export function DataTable({ columns, data }: DataTableProps) {
             </TableRow>
 
             {/* Data Rows */}
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, i) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:bg-white/10 ${
-                    i < table.getRowModel().rows.length - 1 ? "border-b border-[#E6EAE0] dark:border-white/10/40" : "border-0"
-                  }`}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-4 text-[13px]">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+            {virtualItems.length > 0 && paddingTop > 0 && (
+              <TableRow><TableCell colSpan={columns.length} style={{ height: paddingTop, padding: 0 }} /></TableRow>
+            )}
+            {virtualItems.length > 0 ? (
+              virtualItems.map((virtualRow: any) => {
+                const row = rows[virtualRow.index];
+                return (
+                  <MemoizedDesktopRow
+                    key={row.id}
+                    row={row}
+                    isLast={virtualRow.index === rows.length - 1}
+                  />
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-40 text-center text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
@@ -585,9 +656,13 @@ export function DataTable({ columns, data }: DataTableProps) {
                 </TableCell>
               </TableRow>
             )}
+            {virtualItems.length > 0 && paddingBottom > 0 && (
+              <TableRow><TableCell colSpan={columns.length} style={{ height: paddingBottom, padding: 0 }} /></TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
+      )}
       </>
       )}
 
