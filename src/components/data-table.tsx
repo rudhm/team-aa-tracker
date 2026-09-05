@@ -74,7 +74,7 @@ export function DataTable({ columns, data }: DataTableProps) {
     return Array.from(editors)
   }, [data])
 
-  const freeEditors = React.useMemo(() => {
+  const availableEditors = React.useMemo(() => {
     const busyEditors = new Set(
       data.filter(d => d.status === "In progress").map(d => formatName(d.editor)).filter(Boolean)
     )
@@ -392,11 +392,11 @@ export function DataTable({ columns, data }: DataTableProps) {
         </div>
       </div>
 
-      {/* Free Editors Bar */}
+      {/* Available Editors Bar */}
       <div className="flex flex-wrap items-center gap-2 px-1">
-        <span className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70">Free Editors:</span>
-        {freeEditors.length > 0 ? (
-          freeEditors.map(editor => (
+        <span className="text-[13px] font-semibold text-[#11161B] dark:text-[#E6EAE0]/70">Available Editors:</span>
+        {availableEditors.length > 0 ? (
+          availableEditors.map(editor => (
             <span
               key={editor}
               className="inline-flex max-w-[135px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
@@ -406,7 +406,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             </span>
           ))
         ) : (
-          <span className="text-[12px] text-[#11161B]/60 dark:text-[#E6EAE0]/50 italic">No editors free right now</span>
+          <span className="text-[12px] text-[#11161B]/60 dark:text-[#E6EAE0]/50 italic">No editors available right now</span>
         )}
       </div>
 
