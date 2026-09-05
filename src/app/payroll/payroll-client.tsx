@@ -51,14 +51,14 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     return months.find(m => m[0] === selectedMonth)?.[1] || []
   }, [months, selectedMonth])
 
-  const uniqueClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.client).filter(Boolean))).sort(), [currentMonthData])
-  const uniqueSubClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.sub_client).filter((s): s is string => Boolean(s)))).sort(), [currentMonthData])
+  const uniqueClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.sub_client).filter(Boolean))).sort() as string[], [currentMonthData])
+  const uniqueSubClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.client).filter(Boolean))).sort(), [currentMonthData])
   const uniqueEditors = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => formatName(t.editor)).filter(Boolean))).sort(), [currentMonthData])
 
   const filteredMonthData = React.useMemo(() => {
     return currentMonthData.filter(t => {
-      const matchClient = clientFilter === "All" || t.client === clientFilter
-      const matchSub = subClientFilter === "All" || t.sub_client === subClientFilter
+      const matchClient = clientFilter === "All" || t.sub_client === clientFilter
+      const matchSub = subClientFilter === "All" || t.client === subClientFilter
       const matchEditor = editorFilter === "All" || formatName(t.editor) === editorFilter
       return matchClient && matchSub && matchEditor
     })
@@ -76,8 +76,8 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   const colorMaps = React.useMemo(() => {
     return createEntityColorMaps({
-      clients: currentMonthData.map(task => task.client),
-      subClients: currentMonthData.map(task => task.sub_client),
+      clients: currentMonthData.map(task => task.sub_client).filter(Boolean) as string[],
+      subClients: currentMonthData.map(task => task.client),
       editors: currentMonthData.map(task => formatName(task.editor)),
     })
   }, [currentMonthData])
@@ -101,8 +101,8 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     const headers = ["Editor", "Client", "Subclient", "Video Title", "Completed At"]
     const rows = filteredMonthData.map(t => [
       t.editor, 
-      t.client, 
-      t.sub_client,
+      t.sub_client || "", 
+      t.client || "",
       t.video_title, 
       t.complete_date ? new Date(t.complete_date).toISOString() : ""
     ])
@@ -139,7 +139,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
       .forEach(([editor, tasks]) => {
         text += `*${editor}* (${tasks.length})\n`
         tasks.forEach(t => {
-          const clientStr = t.sub_client ? `${t.client} - ${t.sub_client}` : t.client
+          const clientStr = t.client ? `${t.sub_client} - ${t.client}` : t.sub_client
           const date = t.complete_date 
             ? new Date(t.complete_date.length === 10 ? t.complete_date + "T12:00:00Z" : t.complete_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
             : ""
@@ -250,18 +250,20 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
                 <div key={task.id} className="flex items-center justify-between px-6 py-4 hover:bg-[var(--surface-page)] transition-colors">
                   <div>
                     <p className="text-[13px] font-bold text-[var(--text-primary)]">{task.video_title}</p>
-                    <p
-                      className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                      style={colorMaps.clients[task.client] ?? createEntityColor(task.client, "client")}
-                    >
-                      {task.client}
-                    </p>
                     {task.sub_client && (
                       <p
                         className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                        style={colorMaps.subClients[task.sub_client] ?? createEntityColor(task.sub_client, "subclient")}
+                        style={colorMaps.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")}
                       >
                         {task.sub_client}
+                      </p>
+                    )}
+                    {task.client && (
+                      <p
+                        className="mt-1 inline-flex max-w-[220px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                        style={colorMaps.subClients[task.client] ?? createEntityColor(task.client, "subclient")}
+                      >
+                        {task.client}
                       </p>
                     )}
                   </div>

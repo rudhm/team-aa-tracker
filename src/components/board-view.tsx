@@ -27,18 +27,20 @@ export function BoardView({ data, colorMaps, onUpdateStatus }: BoardViewProps) {
             <div className="space-y-3">
               {columnTasks.map(task => (
                 <div key={task.id} className="group rounded-[20px] border border-[#E6EAE0] dark:border-white/10/50 bg-[#F3F5EE] dark:bg-white/10 p-4 transition-all hover:border-[#E6EAE0] dark:border-white/10 hover:bg-white dark:bg-[#161b22] hover:shadow-sm">
-                  <div
-                    className="mb-2 inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase"
-                    style={colorMaps?.clients[task.client] ?? createEntityColor(task.client, "client")}
-                  >
-                    {task.client}
-                  </div>
                   {task.sub_client && (
                     <div
-                      className="mb-2 inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                      style={colorMaps?.subClients[task.sub_client] ?? createEntityColor(task.sub_client, "subclient")}
+                      className="mb-2 inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase"
+                      style={colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")}
                     >
                       {task.sub_client}
+                    </div>
+                  )}
+                  {task.client && (
+                    <div
+                      className="mb-2 inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                      style={colorMaps?.subClients[task.client] ?? createEntityColor(task.client, "subclient")}
+                    >
+                      {task.client}
                     </div>
                   )}
                   <div className="mb-3 text-[14px] font-bold text-[#11161B] dark:text-[#E6EAE0]">

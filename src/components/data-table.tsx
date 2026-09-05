@@ -87,7 +87,7 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
             <div className="scale-90 origin-left">
               {clientCell && flexRender(clientCell.column.columnDef.cell, clientCell.getContext())}
             </div>
-            {row.original.sub_client && subClientCell && (
+            {row.original.client && subClientCell && (
               <div className="scale-90 origin-left">
                 {flexRender(subClientCell.column.columnDef.cell, subClientCell.getContext())}
               </div>
@@ -122,10 +122,12 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
   )
 })
 
-const MemoizedDesktopRow = React.memo(({ row, isLast }: { row: any, isLast: boolean }) => (
+const MemoizedDesktopRow = React.memo(({ row, isLast, index }: { row: any, isLast: boolean, index: number }) => (
   <TableRow
     data-state={row.getIsSelected() && "selected"}
-    className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:bg-white/10 ${
+    className={`transition-colors duration-150 hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${
+      index % 2 === 0 ? "bg-white dark:bg-[#161b22]" : "bg-[#FAFAFA] dark:bg-[#0d1117]"
+    } ${
       !isLast ? "border-b border-[#E6EAE0] dark:border-white/10/40" : "border-0"
     }`}
   >
@@ -206,19 +208,19 @@ export function DataTable({ columns, data }: DataTableProps) {
   }, [hiddenEditors, uniqueEditors])
 
   const uniqueClients = React.useMemo(() => {
-    const clients = new Set(data.map(d => d.client).filter(Boolean))
-    return Array.from(clients)
+    const clients = new Set(data.map(d => d.sub_client).filter(Boolean))
+    return Array.from(clients) as string[]
   }, [data])
 
   const uniqueSubClients = React.useMemo(() => {
-    const subClients = new Set(data.map(d => d.sub_client).filter((subClient): subClient is string => Boolean(subClient)))
+    const subClients = new Set(data.map(d => d.client).filter((subClient): subClient is string => Boolean(subClient)))
     return Array.from(subClients)
   }, [data])
 
   const colorMaps = React.useMemo(() => {
     return createEntityColorMaps({
-      clients: tableData.map(task => task.client),
-      subClients: tableData.map(task => task.sub_client),
+      clients: tableData.map(task => task.sub_client).filter(Boolean) as string[],
+      subClients: tableData.map(task => task.client),
       editors: tableData.map(task => formatName(task.editor)),
     })
   }, [tableData])
@@ -299,8 +301,8 @@ export function DataTable({ columns, data }: DataTableProps) {
     const localToday = new Date().toLocaleDateString("en-CA")
 
     const payload = {
-      client,
-      sub_client: subClient.trim() || null,
+      client: subClient.trim() || "",
+      sub_client: client.trim() || null,
       video_title: title,
       editor: formatName(editor),
       start_date: startDay || null,
@@ -345,7 +347,8 @@ export function DataTable({ columns, data }: DataTableProps) {
   React.useEffect(() => {
     const updateMargin = () => {
       if (scrollRef.current) {
-        setScrollMargin(scrollRef.current.offsetTop)
+        const headerHeight = isMobile ? 0 : 102; // Header (48px) + QuickAdd (54px)
+        setScrollMargin(scrollRef.current.offsetTop + headerHeight)
       }
     }
     updateMargin()
@@ -570,8 +573,9 @@ export function DataTable({ columns, data }: DataTableProps) {
 
         {/* Desktop View (Table) */}
         {isMobile ? null : (
-          <div ref={scrollRef} className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full">
-        <Table className="min-w-[920px]">
+          <div className="relative w-full group">
+            <div ref={scrollRef} className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full peer relative">
+              <Table className="min-w-[920px]">
           <TableHeader>
             <TableRow className="border-b border-[#E6EAE0] dark:border-white/10/60 hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -662,6 +666,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   <MemoizedDesktopRow
                     key={row.id}
                     row={row}
+                    index={virtualRow.index}
                     isLast={virtualRow.index === rows.length - 1}
                   />
                 )
@@ -678,6 +683,8 @@ export function DataTable({ columns, data }: DataTableProps) {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 dark:from-[#161b22]/90 to-transparent z-10 hidden md:block rounded-r-xl" />
       </div>
       )}
       </>

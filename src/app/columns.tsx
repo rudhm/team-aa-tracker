@@ -157,7 +157,7 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
   return (
     <span 
       onClick={startEdit} 
-      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B] dark:text-[#E6EAE0]/70'}`}
+      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B]/60 dark:text-[#E6EAE0]/50 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B]/60 dark:text-[#E6EAE0]/50'}`}
       title={!locked ? "Click to edit date" : ""}
     >
       {displayValue}
@@ -273,42 +273,51 @@ export const columns: ColumnDef<VideoTask>[] = [
     },
   },
   {
-    accessorKey: "client",
+    id: "client",
+    accessorKey: "sub_client",
     header: "Client",
     cell: ({ row, table }) => {
       const task = row.original
-      const clientColor = table.options.meta?.colorMaps?.clients[task.client] ?? createEntityColor(task.client, "client")
+      const clientColor = task.sub_client
+        ? table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")
+        : undefined
       return (
         <InlineTextEdit 
-          value={task.client}
+          value={task.sub_client}
           locked={task.payroll_locked}
           listId="client-suggestions"
-          className="inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+          className={task.sub_client
+            ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+            : "font-medium text-[#11161B]/50 dark:text-[#E6EAE0]/40"
+          }
           style={clientColor}
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val)}
+          emptyContent="—"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
         />
       )
     },
   },
   {
-    accessorKey: "sub_client",
+    id: "sub_client",
+    accessorKey: "client",
     header: "Subclient",
     cell: ({ row, table }) => {
       const task = row.original
-      const subClientColor = task.sub_client
-        ? table.options.meta?.colorMaps?.subClients[task.sub_client] ?? createEntityColor(task.sub_client, "subclient")
+      const subClientColor = task.client
+        ? table.options.meta?.colorMaps?.subClients[task.client] ?? createEntityColor(task.client, "subclient")
         : undefined
       return (
         <InlineTextEdit
-          value={task.sub_client}
+          value={task.client}
           locked={task.payroll_locked}
           listId="subclient-suggestions"
-          className={task.sub_client
+          className={task.client
             ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-            : "font-medium text-[#11161B] dark:text-[#E6EAE0]/70"
+            : "font-medium text-[#11161B]/50 dark:text-[#E6EAE0]/40"
           }
           style={subClientColor}
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
+          emptyContent="—"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val.trim() || "")}
         />
       )
     },
@@ -322,7 +331,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineTextEdit 
           value={task.video_title}
           locked={task.payroll_locked}
-          className="font-medium text-[#11161B] dark:text-[#E6EAE0]/70"
+          className="font-bold text-[#11161B] dark:text-[#E6EAE0] text-[13.5px]"
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'video_title', val)}
         />
       )
