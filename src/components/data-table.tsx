@@ -150,6 +150,13 @@ export function DataTable({ columns, data }: DataTableProps) {
     setTableData(data)
   }, [data])
 
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [rowSelection, setRowSelection] = React.useState({})
+  const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
+  const [editorMenuOpen, setEditorMenuOpen] = React.useState(false)
+  const [hiddenEditors, setHiddenEditors] = React.useState<string[]>([])
+  const [hiddenEditorsLoaded, setHiddenEditorsLoaded] = React.useState(false)
+
   React.useEffect(() => {
     const el = scrollRef.current
     if (!el) return
@@ -171,12 +178,6 @@ export function DataTable({ columns, data }: DataTableProps) {
       clearTimeout(timeoutId)
     }
   }, [tableData, viewMode, isMobile])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
-  const [editorMenuOpen, setEditorMenuOpen] = React.useState(false)
-  const [hiddenEditors, setHiddenEditors] = React.useState<string[]>([])
-  const [hiddenEditorsLoaded, setHiddenEditorsLoaded] = React.useState(false)
   
   // Quick-Add State
   const [client, setClient] = React.useState("")
