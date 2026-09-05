@@ -27,7 +27,7 @@ export default async function Page() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--surface-header)] text-white">
-        <div className="mx-auto flex h-[56px] max-w-[1180px] items-center justify-between px-7">
+        <div className="mx-auto flex h-[56px] max-w-[1920px] items-center justify-between px-6 sm:px-8">
           <div className="flex items-center gap-[14px]">
             <a href="/" className="text-[15px] font-semibold text-white no-underline">
               Team <span className="text-[var(--theme-accent)]">AA</span> Studios
@@ -51,13 +51,13 @@ export default async function Page() {
       </header>
 
       {/* Main content */}
-      <main className="mx-auto max-w-[1180px] px-6 py-7 w-full flex-1">
+      <main className="mx-auto max-w-[1920px] px-6 sm:px-8 py-7 w-full flex-1">
         <DataTable columns={columns} data={data} />
       </main>
 
       {/* Footer */}
       <footer className="w-full border-t border-[var(--border)] py-6 mt-auto">
-        <div className="mx-auto max-w-6xl px-6 text-center text-[13px] font-medium text-[var(--text-muted)] sm:px-8">
+        <div className="mx-auto max-w-[1920px] px-6 sm:px-8 text-center text-[13px] font-medium text-[var(--text-muted)]">
         </div>
       </footer>
     </div>
