@@ -376,15 +376,19 @@ export function DataTable({ columns, data }: DataTableProps) {
   const rows = table.getRowModel().rows
   const selectedCount = Object.keys(rowSelection).length
 
+  const completedCount = tableData.filter(d => d.status === 'Complete').length
+  const inProgressCount = tableData.filter(d => d.status === 'In progress').length
+  const revisionCount = tableData.filter(d => d.status === 'Revision').length
+
   return (
     <div className="relative">
       {/* The invisible stage for the delivery animation to overlay securely */}
       <div id="delivery-stage" className="absolute top-16 left-0 right-0 z-50 pointer-events-none"></div>
 
       {/* Top Bar: Title & Actions */}
-      <div className="flex items-center justify-between mb-[16px] flex-wrap gap-[12px]">
-        <div className="text-[20px] font-bold text-[var(--text-primary)]">All Videos</div>
-        <div className="flex items-center gap-[10px] flex-wrap">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="text-xl font-bold text-[var(--text-primary)]">All Videos</div>
+        <div className="flex items-center gap-3 flex-wrap">
           {/* View Toggle */}
           <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface-card-2)] p-[3px] gap-[2px]">
             <button
@@ -402,7 +406,52 @@ export function DataTable({ columns, data }: DataTableProps) {
               Board
             </button>
           </div>
+          <Button
+            onClick={() => {
+              const input = document.querySelector('input[placeholder="Client..."]') as HTMLInputElement;
+              if (input) {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                input.focus();
+              }
+            }}
+            className="btn-primary h-[36px] px-4 text-[13px] hidden sm:flex items-center gap-2 font-bold shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> New Video
+          </Button>
+        </div>
+      </div>
 
+      {/* Stats Strip */}
+      <div className="flex items-center gap-6 mb-4 text-[13px] text-[var(--text-secondary)] font-medium bg-[var(--surface-card-2)] border border-[var(--border)] rounded-xl px-4 py-2.5 shadow-sm">
+        <div className="flex items-center gap-6 flex-shrink-0">
+          <span className="text-[var(--text-primary)] font-bold">{tableData.length} <span className="font-medium text-[var(--text-secondary)]">Videos</span></span>
+          <span className="text-[var(--text-primary)] font-bold">{completedCount} <span className="font-medium text-[var(--text-secondary)]">Completed</span></span>
+          <span className="text-[var(--text-primary)] font-bold">{inProgressCount} <span className="font-medium text-[var(--text-secondary)]">In Progress</span></span>
+          <span className="text-[var(--text-primary)] font-bold">{revisionCount} <span className="font-medium text-[var(--text-secondary)]">Pending</span></span>
+        </div>
+        
+        <div className="w-px h-5 bg-[var(--border)] flex-shrink-0 hidden md:block" />
+        
+        <div className="flex items-center gap-4 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex-1 py-1">
+          <div className="flex items-center gap-2 flex-shrink-0 text-[var(--text-primary)] font-bold">
+            <span className="w-2 h-2 rounded-full bg-[#3FA75B]"></span>
+            {availableEditors.length} <span className="font-medium text-[var(--text-secondary)]">editors idle</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {availableEditors.length > 0 ? (
+              availableEditors.map(editor => (
+                <span
+                  key={editor}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-[11.5px] font-bold shadow-sm"
+                  style={colorMaps.editors[editor]}
+                >
+                  {editor}
+                </span>
+              ))
+            ) : (
+              <span className="text-[12px] text-[var(--text-muted)] italic">None</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -545,29 +594,13 @@ export function DataTable({ columns, data }: DataTableProps) {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Idle Editors Panel */}
-      <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-[12px] px-[18px] py-[14px] flex flex-wrap items-center gap-4 mb-[18px]">
-        <div className="text-[13px] font-bold text-[var(--text-primary)] whitespace-nowrap flex items-center gap-[6px]">
-          <span className="w-[7px] h-[7px] rounded-full bg-[#3FA75B] inline-block"></span>
-          Idle Editors ({availableEditors.length})
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {availableEditors.length > 0 ? (
-            availableEditors.map(editor => (
-              <span
-                key={editor}
-                className="inline-flex items-center px-[12px] py-[5px] rounded-full text-[12.5px] font-semibold whitespace-nowrap"
-                style={colorMaps.editors[editor]}
-              >
-                {editor}
-              </span>
-            ))
-          ) : (
-            <span className="text-[12.5px] font-semibold text-[var(--text-secondary)] italic">None</span>
-          )}
-        </div>
+        <button
+          type="button"
+          className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[10px] text-[13px] text-[var(--text-primary)] hover:bg-[var(--row-hover)] transition-colors"
+        >
+          More <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+        </button>
       </div>
 
       <datalist id="editor-suggestions">
