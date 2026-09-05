@@ -673,13 +673,6 @@ export function DataTable({ columns, data }: DataTableProps) {
             </div>
           )}
         </div>
-
-        <button
-          type="button"
-          className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[10px] text-[13px] text-[var(--text-primary)] hover:bg-[var(--row-hover)] transition-colors"
-        >
-          More <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-        </button>
       </div>
 
       <datalist id="editor-suggestions">
