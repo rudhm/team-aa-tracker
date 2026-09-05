@@ -32,9 +32,9 @@ declare module '@tanstack/react-table' {
 
 function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }) {
   const config: Record<string, { bg: string; text: string; sdot: string }> = {
-    "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#173822]", text: "text-emerald-700 dark:text-[#7ED396]", sdot: "bg-[#3FA75B]" },
-    "In progress": { bg: "bg-[#E0E7FF] dark:bg-[#231E47]", text: "text-indigo-700 dark:text-[#A79BF0]", sdot: "bg-[#7C6FF0]" },
-    "Revision":    { bg: "bg-[#FFF4E5] dark:bg-[#3A2E12]", text: "text-amber-700 dark:text-[#E8C46A]", sdot: "bg-[#D9A441]" },
+    "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#173822]", text: "text-emerald-800 dark:text-emerald-200", sdot: "bg-[#3FA75B]" },
+    "In progress": { bg: "bg-[#E0E7FF] dark:bg-[#231E47]", text: "text-indigo-800 dark:text-indigo-200", sdot: "bg-[#7C6FF0]" },
+    "Revision":    { bg: "bg-[#FFF4E5] dark:bg-[#3A2E12]", text: "text-amber-900 dark:text-amber-200", sdot: "bg-[#D9A441]" },
   }
   const style = config[status] || config["In progress"]
   
@@ -137,27 +137,23 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
 
   const saveEdit = () => {
      setIsEditing(false)
-     if (!dateStr) {
-        if (value !== null) onUpdate(null)
-        return
-     }
-     if (dateStr !== value?.substring(0, 10)) {
-        onUpdate(dateStr)
+     if (dateStr) {
+       onUpdate(dateStr)
+     } else {
+       onUpdate(null)
      }
   }
 
   if (isEditing) {
      return (
-         <input
-         type="text"
-         placeholder="Date"
+       <input
+         type="date"
          autoFocus
-         className="h-7 w-[110px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-1 text-center text-[12px] font-semibold text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
+         className="h-7 w-full max-w-[130px] rounded-md bg-white dark:bg-[#161b22] border border-[#E6EAE0] dark:border-white/10 px-2 text-[12px] text-[#11161B] dark:text-[#E6EAE0] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
          value={dateStr}
          onChange={e => setDateStr(e.target.value)}
-         onFocus={e => { e.target.type = "date"; e.target.showPicker?.(); }}
-         onBlur={e => { if (!e.target.value) e.target.type = "text"; saveEdit(); }}
-         onKeyDown={e => { if (e.key === "Enter") saveEdit() }}
+         onBlur={saveEdit}
+         onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
        />
      )
   }
@@ -165,15 +161,17 @@ export function InlineDayEdit({ value, locked, onUpdate }: { value: string | nul
   return (
     <span 
       onClick={startEdit} 
-      className={`font-medium tabular-nums transition-colors ${!locked ? 'cursor-pointer text-[#11161B]/60 dark:text-[#E6EAE0]/50 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : 'text-[#11161B]/60 dark:text-[#E6EAE0]/50'}`}
-      title={!locked ? "Click to edit date" : ""}
+      className={`text-[12.5px] transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0]' : ''} ${!value ? 'text-[var(--text-faint)] italic' : 'font-medium text-[var(--text-secondary)]'}`}
+      title={!locked ? "Click to edit" : ""}
     >
-      {displayValue}
+      <span className={!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}>
+        {displayValue}
+      </span>
     </span>
   )
 }
 
-export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value: string | null, locked: boolean, onUpdate: (val: string, newStatus?: string) => void, isCompleted: boolean }) {
+export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value: string | null, locked: boolean, onUpdate: (val: string | null, updateStatus?: 'Complete') => void, isCompleted: boolean }) {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState("")
 
@@ -183,9 +181,9 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
     setText(value || "")
   }
 
-  const handlePaste = (e: React.ClipboardEvent) => {
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData('text')
-    if (pastedText && pastedText.startsWith('http')) {
+    if (pastedText.startsWith('http')) {
       e.preventDefault()
       setText(pastedText)
       setIsEditing(false)
@@ -228,22 +226,23 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
   }
 
   return (
-    <div className="flex items-center gap-2 group">
+    <div className="flex items-center gap-1 group">
       <a 
         href={value} 
         target="_blank" 
         rel="noreferrer" 
-        className="text-[12.5px] font-semibold text-[var(--theme-accent)] hover:underline"
+        className="text-[12.5px] font-semibold text-[var(--theme-accent)] hover:underline px-2 py-2"
       >
         Watch
       </a>
       {!locked && (
         <button 
           onClick={startEdit}
-          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:bg-[#F3F5EE] dark:bg-white/10 rounded-full transition-all"
+          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 w-[36px] h-[36px] flex items-center justify-center text-[#11161B] dark:text-[#E6EAE0]/70 hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:bg-[#F3F5EE] dark:bg-white/10 rounded-full transition-all shrink-0"
           title="Edit link"
+          aria-label="Edit link"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
         </button>
       )}
     </div>

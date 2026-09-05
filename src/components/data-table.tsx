@@ -516,9 +516,10 @@ export function DataTable({ columns, data }: DataTableProps) {
 
       {/* Chip Row */}
       <div className="flex items-center gap-[10px] mb-[16px] flex-wrap">
-        <div className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-[14px] py-[7px] text-[13px] text-[var(--text-muted)] min-w-[220px]">
+        <div className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-[14px] py-[7px] text-[13px] text-[var(--text-muted)] min-w-[220px] focus-within:ring-2 focus-within:ring-[var(--theme-accent)] transition-all">
           <Search className="h-[14px] w-[14px] text-[var(--text-muted)]" />
           <Input
+            aria-label="Search video titles"
             placeholder="Search video titles…"
             value={(table.getColumn("video_title")?.getFilterValue() as string) ?? ""}
             onChange={(event) => table.getColumn("video_title")?.setFilterValue(event.target.value)}
