@@ -5,13 +5,24 @@ import { VideoTask } from "@/app/columns"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Download, Lock, Loader2 } from "lucide-react"
+import { Download, Lock, Loader2, Copy, Check } from "lucide-react"
 import { createEntityColor, createEntityColorMaps, formatName } from "@/lib/utils"
 
 export function PayrollClient({ data }: { data: VideoTask[] }) {
   const router = useRouter()
   const [selectedMonth, setSelectedMonth] = React.useState<string>("")
   const [isLocking, setIsLocking] = React.useState(false)
+
+  const [clientFilter, setClientFilter] = React.useState("All")
+  const [subClientFilter, setSubClientFilter] = React.useState("All")
+  const [editorFilter, setEditorFilter] = React.useState("All")
+  const [copied, setCopied] = React.useState(false)
+
+  React.useEffect(() => {
+    setClientFilter("All")
+    setSubClientFilter("All")
+    setEditorFilter("All")
+  }, [selectedMonth])
 
   // Group data by YYYY-MM
   const months = React.useMemo(() => {
@@ -40,15 +51,28 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     return months.find(m => m[0] === selectedMonth)?.[1] || []
   }, [months, selectedMonth])
 
+  const uniqueClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.client).filter(Boolean))).sort(), [currentMonthData])
+  const uniqueSubClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.sub_client).filter((s): s is string => Boolean(s)))).sort(), [currentMonthData])
+  const uniqueEditors = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => formatName(t.editor)).filter(Boolean))).sort(), [currentMonthData])
+
+  const filteredMonthData = React.useMemo(() => {
+    return currentMonthData.filter(t => {
+      const matchClient = clientFilter === "All" || t.client === clientFilter
+      const matchSub = subClientFilter === "All" || t.sub_client === subClientFilter
+      const matchEditor = editorFilter === "All" || formatName(t.editor) === editorFilter
+      return matchClient && matchSub && matchEditor
+    })
+  }, [currentMonthData, clientFilter, subClientFilter, editorFilter])
+
   const editorGroups = React.useMemo(() => {
     const map = new Map<string, VideoTask[]>()
-    currentMonthData.forEach(task => {
+    filteredMonthData.forEach(task => {
       const ed = formatName(task.editor) || "Unassigned"
       if (!map.has(ed)) map.set(ed, [])
       map.get(ed)!.push(task)
     })
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]))
-  }, [currentMonthData])
+  }, [filteredMonthData])
 
   const colorMaps = React.useMemo(() => {
     return createEntityColorMaps({
@@ -72,10 +96,10 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
   }
 
   const exportCSV = () => {
-    if (currentMonthData.length === 0) return
+    if (filteredMonthData.length === 0) return
 
     const headers = ["Editor", "Client", "Subclient", "Video Title", "Completed At"]
-    const rows = currentMonthData.map(t => [
+    const rows = filteredMonthData.map(t => [
       t.editor, 
       t.client, 
       t.sub_client,
@@ -98,6 +122,22 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     document.body.removeChild(link)
   }
 
+  const copyToClipboard = () => {
+    if (filteredMonthData.length === 0) return
+    const headers = ["Editor", "Client", "Subclient", "Video Title", "Completed Date"]
+    const rows = filteredMonthData.map(t => [
+      formatName(t.editor) || "Unassigned", 
+      t.client || "", 
+      t.sub_client || "",
+      t.video_title || "", 
+      t.complete_date ? new Date(t.complete_date.length === 10 ? t.complete_date + "T12:00:00Z" : t.complete_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" }) : ""
+    ])
+    const tsv = [headers.join("\t"), ...rows.map(r => r.join("\t"))].join("\n")
+    navigator.clipboard.writeText(tsv)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const formatMonth = (yyyyMm: string) => {
     const [y, m] = yyyyMm.split('-')
     const date = new Date(parseInt(y), parseInt(m) - 1, 1)
@@ -106,26 +146,51 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="theme-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <select 
-          className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-4 pr-10 text-[13px] font-bold text-[var(--text-primary)] focus-visible:outline-none"
-          value={selectedMonth}
-          onChange={e => setSelectedMonth(e.target.value)}
-        >
-          {months.length === 0 && <option value="">No data</option>}
-          {months.map(([monthKey]) => (
-            <option key={monthKey} value={monthKey}>{formatMonth(monthKey)}</option>
-          ))}
-        </select>
+      <div className="theme-toolbar flex flex-col items-stretch justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
+          <select 
+            className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-4 pr-10 text-[13px] font-bold text-[var(--text-primary)] focus-visible:outline-none"
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+          >
+            {months.length === 0 && <option value="">No data</option>}
+            {months.map(([monthKey]) => (
+              <option key={monthKey} value={monthKey}>{formatMonth(monthKey)}</option>
+            ))}
+          </select>
+
+          <select value={clientFilter} onChange={e => setClientFilter(e.target.value)} className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
+             <option value="All">All Clients</option>
+             {uniqueClients.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          <select value={subClientFilter} onChange={e => setSubClientFilter(e.target.value)} className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
+             <option value="All">All Subclients</option>
+             {uniqueSubClients.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          <select value={editorFilter} onChange={e => setEditorFilter(e.target.value)} className="h-[34px] w-full sm:w-auto appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-3 pr-8 text-[12px] font-medium text-[var(--text-primary)] focus-visible:outline-none">
+             <option value="All">All Editors</option>
+             {uniqueEditors.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <Button 
+            onClick={copyToClipboard}
+            variant="outline"
+            className="h-[34px] w-full sm:w-auto rounded-lg border-[var(--border-strong)] bg-transparent px-4 text-[12px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-page)]"
+          >
+            {copied ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4 text-[var(--text-secondary)]" />}
+            {copied ? "Copied!" : "Copy"}
+          </Button>
           <Button 
             onClick={exportCSV}
             variant="outline"
             className="h-[34px] w-full sm:w-auto rounded-lg border-[var(--border-strong)] bg-transparent px-4 text-[12px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-page)]"
           >
             <Download className="mr-2 h-4 w-4 text-[var(--text-secondary)]" />
-            Export CSV
+            CSV
           </Button>
 
           {new Date().getDate() >= 1 && new Date().getDate() <= 5 && (
