@@ -509,28 +509,17 @@ export function DataTable({ columns, data }: DataTableProps) {
       <>
         {/* Mobile View (Cards) */}
         {!isMobile ? null : (
-          <div ref={scrollRef} className="md:hidden flex flex-col gap-4 pb-24" style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
-            {virtualItems.length ? (
-               virtualItems.map((virtualRow: any) => {
-                 const row = rows[virtualRow.index];
-                 return (
-                   <MemoizedMobileRow 
-                     key={row.id} 
-                     row={row} 
-                     measureRef={virtualizer.measureElement}
-                     dataIndex={virtualRow.index}
-                     style={{
-                       position: 'absolute',
-                       top: 0,
-                       left: 0,
-                       width: '100%',
-                       transform: `translateY(${virtualRow.start}px)`,
-                     }}
-                   />
-                 )
-               })
+          <div ref={scrollRef} className="md:hidden flex flex-col gap-4 pb-24 relative w-full">
+            {rows.length ? (
+               rows.map((row, index) => (
+                 <MemoizedMobileRow 
+                   key={row.id} 
+                   row={row} 
+                   dataIndex={index}
+                 />
+               ))
             ) : (
-              <div className="text-center py-10 text-[13px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">No videos found.</div>
+              <div className="text-center py-10 text-[13px] font-medium text-[var(--text-muted)]">No videos found.</div>
             )}
           </div>
         )}
