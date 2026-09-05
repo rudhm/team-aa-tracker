@@ -189,6 +189,7 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [startDay, setStartDay] = React.useState("")
   const [completeDay, setCompleteDay] = React.useState("")
   const [isAdding, setIsAdding] = React.useState(false)
+  const [isIdleExpanded, setIsIdleExpanded] = React.useState(false)
 
   // Unique fields for datalist autocomplete
   const uniqueEditors = React.useMemo(() => {
@@ -488,7 +489,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         <div className="flex items-center gap-[6px] flex-wrap">
           {availableEditors.length > 0 ? (
             <>
-              {availableEditors.slice(0, 5).map(editor => (
+              {availableEditors.slice(0, isIdleExpanded ? undefined : 5).map(editor => (
                 <div
                   key={editor}
                   className="flex items-center gap-1.5 bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-2.5 py-1 text-[12px] font-semibold text-[var(--text-primary)] shadow-sm"
@@ -498,9 +499,13 @@ export function DataTable({ columns, data }: DataTableProps) {
                 </div>
               ))}
               {availableEditors.length > 5 && (
-                <div className="flex items-center bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-2.5 py-1 text-[12px] font-bold text-[var(--text-secondary)] shadow-sm">
-                  +{availableEditors.length - 5}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsIdleExpanded(!isIdleExpanded)}
+                  className="flex items-center bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-2.5 py-1 text-[12px] font-bold text-[var(--theme-accent)] shadow-sm hover:bg-[var(--border)] transition-colors cursor-pointer"
+                >
+                  {isIdleExpanded ? "Show less" : `+${availableEditors.length - 5}`}
+                </button>
               )}
             </>
           ) : (
