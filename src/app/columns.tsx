@@ -284,60 +284,68 @@ export const columns: ColumnDef<VideoTask>[] = [
   {
     id: "client",
     accessorKey: "sub_client",
-    header: "CLIENT",
+    header: "Client",
     cell: ({ row, table }) => {
       const task = row.original
-      const clientColor = task.sub_client ? table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client") : undefined
-      const initials = task.sub_client ? (task.sub_client.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || task.sub_client.substring(0, 2).toUpperCase()) : "—"
+      if (!task.sub_client) {
+        return <span className="text-[13px] text-[var(--text-faint)]">—</span>
+      }
+
+      const clientColor = table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")
+      const initials = task.sub_client.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || task.sub_client.substring(0, 2).toUpperCase()
 
       return (
-        <div className="flex items-center gap-[8px]">
-          {task.sub_client ? (
-            <div className="w-[24px] h-[24px] rounded-[6px] flex items-center justify-center text-[11px] font-bold shrink-0" style={clientColor}>
-              {initials}
-            </div>
-          ) : (
-             <div className="w-[24px] h-[24px] rounded-[6px] flex items-center justify-center text-[11px] font-bold shrink-0 bg-[var(--surface-card-2)] border border-[var(--border)] text-[var(--text-faint)]">
-               —
-             </div>
-          )}
-          <div className="flex items-center gap-1.5 flex-wrap leading-tight">
-            <InlineTextEdit 
-              value={task.sub_client}
-              locked={task.payroll_locked}
-              listId="client-suggestions"
-              className="font-bold text-[13.5px] text-[var(--text-primary)]"
-              emptyContent="—"
-              onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
-            />
-            {task.client && (
-              <>
-                <span className="text-[var(--text-faint)] font-bold text-[10px]">·</span>
-                <InlineTextEdit
-                  value={task.client}
-                  locked={task.payroll_locked}
-                  listId="subclient-suggestions"
-                  className="text-[12px] font-semibold text-[var(--text-secondary)]"
-                  emptyContent="—"
-                  onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val.trim() || "")}
-                />
-              </>
-            )}
+        <div className="flex items-center gap-[10px]">
+          <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-[12px] font-bold shrink-0" style={clientColor}>
+            {initials}
           </div>
+          <InlineTextEdit 
+            value={task.sub_client}
+            locked={task.payroll_locked}
+            listId="client-suggestions"
+            className="font-bold text-[13.8px] text-[var(--text-primary)]"
+            emptyContent="—"
+            onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
+          />
         </div>
       )
     },
   },
   {
+    id: "sub_client",
+    accessorKey: "client",
+    header: "Subclient",
+    cell: ({ row, table }) => {
+      const task = row.original
+      const subClientColor = task.client
+        ? table.options.meta?.colorMaps?.subClients[task.client] ?? createEntityColor(task.client, "subclient")
+        : undefined
+      return (
+        <InlineTextEdit
+          value={task.client}
+          locked={task.payroll_locked}
+          listId="subclient-suggestions"
+          className={task.client
+            ? "inline-flex max-w-[180px] items-center justify-center truncate rounded-full px-[12px] py-[5px] text-[12.5px] font-semibold"
+            : "text-[13px] text-[var(--text-faint)]"
+          }
+          style={subClientColor}
+          emptyContent="—"
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val.trim() || "")}
+        />
+      )
+    },
+  },
+  {
     accessorKey: "video_title",
-    header: "VIDEO",
+    header: "Video Title",
     cell: ({ row, table }) => {
       const task = row.original
       return (
         <InlineTextEdit 
           value={task.video_title}
           locked={task.payroll_locked}
-          className="font-semibold text-[var(--text-primary)] text-[13.5px] block truncate max-w-[200px]"
+          className="font-semibold text-[var(--text-primary)] text-[13.5px] block truncate max-w-[230px]"
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'video_title', val)}
         />
       )
@@ -359,7 +367,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           className="text-[13px] font-semibold text-[var(--text-primary)]"
           emptyContent=""
           prefix={formattedName ? (
-            <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
           ) : undefined}
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', formatName(val))}
         />
@@ -367,32 +375,35 @@ export const columns: ColumnDef<VideoTask>[] = [
     },
   },
   {
-    id: "due",
-    header: "DUE",
+    accessorKey: "start_date",
+    header: "Start Date",
     cell: ({ row, table }) => {
       const task = row.original
       return (
-        <div className="flex flex-col min-w-[70px] leading-tight">
-          <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[var(--text-primary)]">
-             <InlineDayEdit 
-               value={task.complete_date} 
-               locked={task.payroll_locked} 
-               onUpdate={(val) => {
-                 const updates: any = { complete_date: val }
-                 if (val && task.status !== 'Complete') updates.status = 'Complete'
-                 table.options.meta?.updateData(row.index, updates)
-               }} 
-             />
-          </div>
-          <div className="flex items-center gap-1 text-[10.5px] text-[var(--text-muted)]">
-             <span className="opacity-70 font-medium">Start:</span>
-             <InlineDayEdit 
-               value={task.start_date} 
-               locked={task.payroll_locked} 
-               onUpdate={(val) => table.options.meta?.updateData(row.index, 'start_date', val)} 
-             />
-          </div>
-        </div>
+        <InlineDayEdit 
+          value={task.start_date} 
+          locked={task.payroll_locked} 
+          onUpdate={(val) => table.options.meta?.updateData(row.index, 'start_date', val)} 
+        />
+      )
+    }
+  },
+  {
+    accessorKey: "complete_date",
+    header: "Complete Date",
+    cell: ({ row, table }) => {
+      const task = row.original
+      return (
+        <InlineDayEdit 
+          value={task.complete_date} 
+          locked={task.payroll_locked} 
+          onUpdate={(val) => {
+            // If they manually set a complete date, we should also auto-flip status to Complete!
+            const updates: any = { complete_date: val }
+            if (val && task.status !== 'Complete') updates.status = 'Complete'
+            table.options.meta?.updateData(row.index, updates)
+          }} 
+        />
       )
     }
   },

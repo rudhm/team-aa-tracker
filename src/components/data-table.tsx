@@ -35,7 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, Loader2, Plus, RotateCcw, Search, X, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -63,10 +62,12 @@ interface DataTableProps {
 const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { row: any, style?: React.CSSProperties, measureRef?: React.Ref<HTMLDivElement>, dataIndex?: number }) => {
   const selectCell = row.getVisibleCells().find((c: any) => c.column.id === 'select');
   const clientCell = row.getVisibleCells().find((c: any) => c.column.id === 'client');
+  const subClientCell = row.getVisibleCells().find((c: any) => c.column.id === 'sub_client');
   const statusCell = row.getVisibleCells().find((c: any) => c.column.id === 'status');
   const videoTitleCell = row.getVisibleCells().find((c: any) => c.column.id === 'video_title');
   const editorCell = row.getVisibleCells().find((c: any) => c.column.id === 'editor');
-  const dueCell = row.getVisibleCells().find((c: any) => c.column.id === 'due');
+  const startDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'start_date');
+  const completeDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'complete_date');
   const linkCell = row.getVisibleCells().find((c: any) => c.column.id === 'link');
 
   return (
@@ -86,6 +87,11 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
             <div className="scale-90 origin-left">
               {clientCell && flexRender(clientCell.column.columnDef.cell, clientCell.getContext())}
             </div>
+            {row.original.client && subClientCell && (
+              <div className="scale-90 origin-left">
+                {flexRender(subClientCell.column.columnDef.cell, subClientCell.getContext())}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -99,9 +105,12 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
       </div>
       
       {/* Dates */}
-      <div className="flex items-center gap-2 mt-3 bg-[var(--surface-card-2)] border border-[var(--border)] px-3 py-2 rounded-lg w-max">
+      <div className="flex items-center gap-2 mt-3 bg-[#F3F5EE] dark:bg-white/10 px-2.5 py-1.5 rounded-md w-max">
+        <Calendar className="h-3.5 w-3.5 text-[#11161B]/60 dark:text-[#E6EAE0]/60" />
         <div className="flex items-center gap-1.5 text-[11.5px]">
-          {dueCell && flexRender(dueCell.column.columnDef.cell, dueCell.getContext())}
+          {startDateCell && flexRender(startDateCell.column.columnDef.cell, startDateCell.getContext())}
+          <span className="text-[#11161B]/40 dark:text-[#E6EAE0]/40 font-medium">→</span>
+          {completeDateCell && flexRender(completeDateCell.column.columnDef.cell, completeDateCell.getContext())}
         </div>
       </div>
       
@@ -123,7 +132,7 @@ const MemoizedDesktopRow = React.memo(({ row, isLast, index }: { row: any, isLas
     }`}
   >
     {row.getVisibleCells().map((cell: any) => (
-      <TableCell key={cell.id} className="px-[12px] py-[9px] text-[13.5px]">
+      <TableCell key={cell.id} className="px-[16px] py-[13px] text-[13.5px]">
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </TableCell>
     ))}
@@ -312,37 +321,6 @@ export function DataTable({ columns, data }: DataTableProps) {
 
   const handleRestoreHiddenEditors = () => {
     setHiddenEditors([])
-  }
-
-  const selectedRows = table.getFilteredSelectedRowModel().rows
-
-  const handleBulkUpdate = async (field: string, value: any) => {
-    const selectedIds = selectedRows.map(row => row.original.id)
-    if (!selectedIds.length) return
-    
-    // Optimistic Update
-    setTableData(prev => prev.map(task => {
-      if (selectedIds.includes(task.id)) {
-        return { ...task, [field]: value }
-      }
-      return task
-    }))
-    setRowSelection({})
-    
-    await supabase.from('video_tasks').update({ [field]: value }).in('id', selectedIds)
-    router.refresh()
-  }
-
-  const handleBulkDelete = async () => {
-    const selectedIds = selectedRows.map(row => row.original.id)
-    if (!selectedIds.length) return
-    
-    // Optimistic Update
-    setTableData(prev => prev.filter(task => !selectedIds.includes(task.id)))
-    setRowSelection({})
-    
-    await supabase.from('video_tasks').delete().in('id', selectedIds)
-    router.refresh()
   }
 
   const handleQuickAdd = async (e: React.FormEvent) => {
@@ -659,12 +637,12 @@ export function DataTable({ columns, data }: DataTableProps) {
         {isMobile ? null : (
           <div className="relative w-full group">
             <div ref={scrollRef} className="hidden md:block overflow-hidden rounded-xl theme-card shadow-sm overflow-x-auto w-full peer relative">
-              <Table className="min-w-[800px]">
+              <Table className="min-w-[920px]">
           <TableHeader>
             <TableRow className="border-b border-[var(--border)] hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
                 headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="px-[12px] py-[10px] text-[11.5px] font-bold uppercase tracking-[.03em] text-[var(--text-muted)] sticky top-0 z-10 bg-[var(--surface-card)]">
+                  <TableHead key={header.id} className="py-[12px] px-[16px] text-[11.5px] font-bold uppercase tracking-[.03em] text-[var(--text-muted)] sticky top-0 z-10 bg-[var(--surface-card)]">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))
@@ -674,68 +652,65 @@ export function DataTable({ columns, data }: DataTableProps) {
           <TableBody>
             {/* Quick-Add Row */}
             <TableRow className="border-b border-[var(--border)] bg-[var(--surface-card)] hover:bg-[var(--surface-card)]">
-              <TableCell className="px-[12px] py-[6px] w-12"></TableCell>
-              <TableCell className="px-[12px] py-[6px]">
-                <div className="flex items-center gap-2">
-                  <Input 
-                    placeholder="Client..." 
-                    list="client-suggestions"
-                    value={client} onChange={e => setClient(e.target.value)}
-                    className="h-[28px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[100px]"
-                  />
-                  <Input
-                    placeholder="Subclient..."
-                    list="subclient-suggestions"
-                    value={subClient} onChange={e => setSubClient(e.target.value)}
-                    className="h-[28px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[100px]"
-                  />
-                </div>
+              <TableCell className="px-[16px] py-[8px] w-12"></TableCell>
+              <TableCell className="px-[16px] py-[8px]">
+                <Input 
+                  placeholder="Client..." 
+                  list="client-suggestions"
+                  value={client} onChange={e => setClient(e.target.value)}
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                />
               </TableCell>
-              <TableCell className="px-[12px] py-[6px]">
+              <TableCell className="px-[16px] py-[8px]">
+                <Input
+                  placeholder="Subclient..."
+                  list="subclient-suggestions"
+                  value={subClient} onChange={e => setSubClient(e.target.value)}
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
+                />
+              </TableCell>
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-[28px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[150px]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
                 />
               </TableCell>
-              <TableCell className="px-[12px] py-[6px]">
+              <TableCell className="px-[16px] py-[8px]">
                 <Input 
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-[28px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] min-w-[110px]"
+                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)]"
                 />
               </TableCell>
-              <TableCell className="px-[12px] py-[6px]">
-                <div className="flex flex-col gap-1 min-w-[110px]">
-                  <Input 
-                    type="date"
-                    value={completeDay} 
-                    onChange={e => setCompleteDay(e.target.value)}
-                    className="h-[28px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                  />
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-[var(--text-muted)] font-medium">Start:</span>
-                    <Input 
-                      type="date"
-                      value={startDay} 
-                      onChange={e => setStartDay(e.target.value)}
-                      className="h-[22px] w-[90px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[6px] text-[10px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                    />
-                  </div>
-                </div>
+              <TableCell className="px-[16px] py-[8px]">
+                <Input 
+                  type="date"
+                  value={startDay} 
+                  onChange={e => setStartDay(e.target.value)}
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                />
               </TableCell>
-              <TableCell className="px-[12px] py-[6px]">
+              <TableCell className="px-[16px] py-[8px]">
+                <Input 
+                  type="date"
+                  value={completeDay} 
+                  onChange={e => setCompleteDay(e.target.value)}
+                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] text-[var(--text-faint)] shadow-none focus-visible:ring-1 focus-visible:text-[var(--text-primary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                />
+              </TableCell>
+              <TableCell className="px-[16px] py-[8px]">
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold bg-[var(--surface-page)] text-[var(--text-muted)]">
                   Auto
                 </span>
               </TableCell>
-              <TableCell className="px-[12px] py-[6px]">
+              <TableCell className="px-[16px] py-[8px]">
                 <Button 
                   onClick={handleQuickAdd} 
                   disabled={!title || !editor || isAdding}
-                  className="btn-primary h-7 w-14 text-[11px] disabled:opacity-30"
+                  className="btn-primary h-7 w-16 text-[11px] disabled:opacity-30"
                 >
                   {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
                 </Button>
@@ -884,54 +859,16 @@ export function DataTable({ columns, data }: DataTableProps) {
       {/* Floating Bulk Action Bar */}
       {selectedCount > 0 && viewMode === 'table' && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200 w-[90vw] md:w-auto flex justify-center">
-          <div className="flex items-center gap-4 rounded-full bg-[var(--surface-card)] px-5 py-3 shadow-2xl border border-[var(--border)] text-[13px]">
-            <span className="font-bold text-[var(--text-primary)]">
-              {selectedCount} <span className="font-medium text-[var(--text-muted)]">selected</span>
+          <div className="flex items-center gap-4 rounded-full theme-header px-6 py-3 shadow-2xl border border-[var(--border)]">
+            <span className="text-[13px] font-medium text-white/80">
+              {selectedCount} {selectedCount === 1 ? 'video' : 'videos'} selected
             </span>
-            
-            <div className="w-px h-4 bg-[var(--border)] mx-1"></div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger className="font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus:outline-none">
-                Change editor
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-48 rounded-xl border-[#E6EAE0] dark:border-white/10 bg-white dark:bg-[#161b22] p-1.5 shadow-lg">
-                {uniqueEditors.map(editorName => (
-                   <DropdownMenuItem key={editorName} onClick={() => handleBulkUpdate('editor', editorName)} className="rounded-lg px-2 py-1.5 text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70 focus:bg-[#F3F5EE] dark:bg-white/10 flex items-center gap-2 cursor-pointer">
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editorName) }} />
-                      {editorName}
-                   </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger className="font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus:outline-none">
-                Change status
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-36 rounded-xl border-[#E6EAE0] dark:border-white/10 bg-white dark:bg-[#161b22] p-1.5 shadow-lg">
-                {['In progress', 'Revision', 'Complete'].map(s => (
-                   <DropdownMenuItem key={s} onClick={() => handleBulkUpdate('status', s)} className="rounded-lg px-2 py-1.5 text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70 focus:bg-[#F3F5EE] dark:bg-white/10 cursor-pointer">
-                      {s}
-                   </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <div className="relative flex items-center">
-              <input type="date" onChange={(e) => { if (e.target.value) handleBulkUpdate('complete_date', e.target.value) }} className="absolute inset-0 opacity-0 cursor-pointer w-full" title="Set due date" />
-              <div className="font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer">
-                Set due date
-              </div>
-            </div>
-            
-            <div className="w-px h-4 bg-[var(--border)] mx-1"></div>
-            
+            <div className="w-px h-4 bg-white/20 dark:bg-white/5"></div>
             <button 
-              onClick={handleBulkDelete}
-              className="font-bold text-red-500 hover:text-red-400 transition-colors"
+              onClick={handleBulkComplete}
+              className="text-[13px] font-bold text-[#ffdf59] hover:text-[#fffdf2] transition-colors"
             >
-              Delete
+              Mark Complete
             </button>
           </div>
         </div>
