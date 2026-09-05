@@ -1,5 +1,5 @@
 import { VideoTask } from "@/app/columns"
-import { createEntityColor, type EntityColorMaps, formatName } from "@/lib/utils"
+import { createEntityColor, type EntityColorMaps, formatName, getEditorDotColor } from "@/lib/utils"
 
 const STATUSES = ['In progress', 'Revision', 'Complete']
 
@@ -48,12 +48,10 @@ export function BoardView({ data, colorMaps, onUpdateStatus }: BoardViewProps) {
                   </div>
                   <div className="flex items-center justify-between">
                     {task.editor ? (
-                      <span
-                        className="inline-flex max-w-[130px] items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
-                        style={colorMaps?.editors[formatName(task.editor)] ?? createEntityColor(formatName(task.editor), "editor")}
-                      >
+                      <div className="flex items-center gap-1.5 text-[12px] font-bold text-[#11161B] dark:text-[#E6EAE0]">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(formatName(task.editor)) }} />
                         {formatName(task.editor)}
-                      </span>
+                      </div>
                     ) : (
                       <span className="text-[12px] font-medium text-[#11161B] dark:text-[#E6EAE0]/70">
                         Unassigned

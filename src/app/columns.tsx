@@ -5,7 +5,7 @@ import { ColumnDef, RowData } from "@tanstack/react-table"
 import { supabase } from "@/lib/supabase"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { createEntityColor, type EntityColorMaps, formatName } from "@/lib/utils"
+import { createEntityColor, type EntityColorMaps, formatName, getEditorDotColor } from "@/lib/utils"
 import { LinkIcon } from "lucide-react"
 
 export type VideoTask = {
@@ -57,6 +57,7 @@ export function InlineTextEdit({
   className = "",
   emptyContent = "—",
   style,
+  prefix,
 }: { 
   value: string | null, 
   locked: boolean, 
@@ -66,6 +67,7 @@ export function InlineTextEdit({
   className?: string,
   emptyContent?: React.ReactNode,
   style?: React.CSSProperties,
+  prefix?: React.ReactNode,
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState("")
@@ -101,11 +103,14 @@ export function InlineTextEdit({
   return (
     <span 
       onClick={startEdit} 
-      className={`${className} transition-colors ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0] hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}`}
+      className={`${className} transition-colors flex items-center gap-1.5 ${!locked ? 'cursor-pointer hover:text-[#11161B] dark:hover:text-[#E6EAE0]' : ''}`}
       style={style}
       title={!locked ? "Click to edit" : ""}
     >
-      {value || emptyContent}
+      {prefix}
+      <span className={!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}>
+        {value || emptyContent}
+      </span>
     </span>
   )
 }
@@ -348,24 +353,22 @@ export const columns: ColumnDef<VideoTask>[] = [
   },
   {
     accessorKey: "editor",
-    header: "Editor",
+    header: "EDITOR",
     cell: ({ row, table }) => {
       const task = row.original
       const formattedName = formatName(task.editor)
-      const editorColor = formattedName
-        ? table.options.meta?.colorMaps?.editors[formattedName] ?? createEntityColor(formattedName, "editor")
-        : undefined
-      const editorClassName = formattedName
-        ? "inline-flex max-w-[160px] items-center justify-center truncate rounded-full px-[12px] py-[5px] text-[12.5px] font-semibold"
-        : "text-[13px] text-[var(--text-faint)]"
+      const dotColor = getEditorDotColor(formattedName)
+      
       return (
         <InlineTextEdit 
           value={formattedName}
           locked={task.payroll_locked}
           listId="editor-suggestions"
-          className={editorClassName}
+          className="text-[13px] font-semibold text-[var(--text-primary)]"
           emptyContent=""
-          style={editorColor}
+          prefix={formattedName ? (
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+          ) : undefined}
           onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', formatName(val))}
         />
       )

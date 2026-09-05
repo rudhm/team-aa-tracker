@@ -10,25 +10,29 @@ export function formatName(name: string | null | undefined) {
   return name.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
 }
 
-export function getEditorColorClass(name: string | null | undefined) {
-  if (!name) return 'bg-[#F3F5EE] text-[#11161B]/50 border-transparent'
-  
-  const colors = [
-    'bg-blue-100 text-blue-800 border-blue-200',
-    'bg-purple-100 text-purple-800 border-purple-200',
-    'bg-pink-100 text-pink-800 border-pink-200',
-    'bg-orange-100 text-orange-800 border-orange-200',
-    'bg-teal-100 text-teal-800 border-teal-200',
-    'bg-indigo-100 text-indigo-800 border-indigo-200',
-    'bg-rose-100 text-rose-800 border-rose-200',
-    'bg-emerald-100 text-emerald-800 border-emerald-200'
-  ]
+const EDITOR_COLORS = [
+  '#9333EA', // Purple
+  '#2563EB', // Blue
+  '#EAB308', // Yellow
+  '#E11D48', // Rose
+  '#059669', // Emerald
+  '#D97706', // Amber
+  '#0284C7', // Light Blue
+  '#4F46E5', // Indigo
+]
+
+export function getEditorDotColor(name: string | null | undefined): string {
+  if (!name) return '#9CA3AF'
+  const lowerName = name.trim().toLowerCase()
+  if (lowerName === 'abhishek') return '#9333EA'
+  if (lowerName === 'pranjya') return '#2563EB'
+  if (lowerName === 'aakash') return '#EAB308'
   
   let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  for (let i = 0; i < lowerName.length; i++) {
+    hash = lowerName.charCodeAt(i) + ((hash << 5) - hash)
   }
-  return colors[Math.abs(hash) % colors.length]
+  return EDITOR_COLORS[Math.abs(hash) % EDITOR_COLORS.length]
 }
 
 export type EntityColorStyle = {

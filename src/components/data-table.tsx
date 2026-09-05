@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { createEntityColorMaps, formatName } from "@/lib/utils"
+import { createEntityColorMaps, formatName, getEditorDotColor } from "@/lib/utils"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -440,13 +440,13 @@ export function DataTable({ columns, data }: DataTableProps) {
           <div className="flex items-center gap-2">
             {availableEditors.length > 0 ? (
               availableEditors.map(editor => (
-                <span
+                <div
                   key={editor}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-[11.5px] font-bold shadow-sm"
-                  style={colorMaps.editors[editor]}
+                  className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--text-primary)] mr-1"
                 >
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editor) }} />
                   {editor}
-                </span>
+                </div>
               ))
             ) : (
               <span className="text-[12px] text-[var(--text-muted)] italic">None</span>
@@ -501,12 +501,11 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <button
                   key={editorName}
                   type="button"
-                  className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                  className={`flex h-8 w-full items-center gap-2 rounded-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
                   onClick={() => { table.getColumn("editor")?.setFilterValue(editorName); setEditorMenuOpen(false); }}
                 >
-                  <span className="inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-0.5 text-[11px] font-bold" style={colorMaps.editors[editorName]}>
-                    {editorName}
-                  </span>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editorName) }} />
+                  {editorName}
                 </button>
               ))}
             </div>
