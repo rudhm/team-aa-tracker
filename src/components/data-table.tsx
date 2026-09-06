@@ -201,6 +201,7 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [startDay, setStartDay] = React.useState("")
   const [completeDay, setCompleteDay] = React.useState("")
   const [duration, setDuration] = React.useState("")
+  const [isUrgentAdd, setIsUrgentAdd] = React.useState(false)
   const [isAdding, setIsAdding] = React.useState(false)
   const [isIdleExpanded, setIsIdleExpanded] = React.useState(false)
   const [mutationError, setMutationError] = React.useState("")
@@ -389,6 +390,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       complete_date: parsedComplete,
       duration: duration.trim() || null,
       status: parsedComplete ? 'Complete' : 'In progress',
+      is_urgent: isUrgentAdd,
     }
 
     const { error } = await supabase.from('video_tasks').insert([payload])
@@ -405,6 +407,7 @@ export function DataTable({ columns, data }: DataTableProps) {
     setDuration("")
     setStartDay("")
     setCompleteDay("")
+    setIsUrgentAdd(false)
     setIsAdding(false)
     router.refresh()
     return true
@@ -728,82 +731,139 @@ export function DataTable({ columns, data }: DataTableProps) {
           <TableBody>
             {/* Quick-Add Row */}
             <TableRow className="border-b-2 border-dashed border-[var(--border)] bg-[#FAFBFC] dark:bg-black/20 hover:bg-[#F3F5EE] dark:hover:bg-black/40 transition-colors group">
-              <TableCell className="px-[16px] py-[8px] w-12 text-center">
-                <div className="w-[16px] h-[16px] mx-auto rounded-[5px] bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] flex items-center justify-center font-bold text-[14px]">
-                  +
-                </div>
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  placeholder="Client..." 
-                  list="client-suggestions"
-                  value={client} onChange={e => setClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input
-                  placeholder="Subclient..."
-                  list="subclient-suggestions"
-                  value={subClient} onChange={e => setSubClient(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  placeholder="Video Title..." 
-                  value={title} onChange={e => setTitle(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] font-semibold"
-                  onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  placeholder="duration" 
-                  value={duration} onChange={e => setDuration(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] tabular-nums"
-                  onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  placeholder="Editor..." 
-                  list="editor-suggestions"
-                  value={editor} onChange={e => setEditor(e.target.value)}
-                  className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  type="date"
-                  value={startDay} 
-                  onChange={e => setStartDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Input 
-                  type="date"
-                  value={completeDay} 
-                  onChange={e => setCompleteDay(e.target.value)}
-                  className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
-                />
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <span className="inline-flex items-center gap-[6px] rounded-full py-[4px] px-[10px] text-[11px] font-bold bg-[#E0E7FF]/50 dark:bg-[#231E47]/50 text-indigo-700/50 dark:text-[#A79BF0]/50 border border-indigo-700/10">
-                  <span className="w-[6px] h-[6px] rounded-full bg-[#7C6FF0]/50"></span>
-                  New
-                </span>
-              </TableCell>
-              <TableCell className="px-[16px] py-[8px]">
-                <Button 
-                  onClick={handleQuickAdd} 
-                  disabled={!title || !editor || isAdding}
-                  className="bg-[var(--theme-accent)] text-[#241a05] hover:bg-[#F2CD60] h-7 w-16 text-[12px] font-bold shadow-sm disabled:opacity-40 disabled:hover:bg-[var(--theme-accent)] transition-all"
-                >
-                  {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
-                </Button>
-              </TableCell>
+              {table.getVisibleLeafColumns().map((column) => {
+                if (column.id === 'select') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px] w-12 text-center">
+                      <div className="w-[16px] h-[16px] mx-auto rounded-[5px] bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] flex items-center justify-center font-bold text-[14px]">
+                        +
+                      </div>
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'sub_client') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input 
+                        placeholder="Client..." 
+                        list="client-suggestions"
+                        value={client} onChange={e => setClient(e.target.value)}
+                        className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'client') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input
+                        placeholder="Subclient..."
+                        list="subclient-suggestions"
+                        value={subClient} onChange={e => setSubClient(e.target.value)}
+                        className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'video_title') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input 
+                        placeholder="Video Title..." 
+                        value={title} onChange={e => setTitle(e.target.value)}
+                        className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] font-semibold"
+                        onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'duration') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input 
+                        placeholder="duration" 
+                        value={duration} onChange={e => setDuration(e.target.value)}
+                        className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] tabular-nums"
+                        onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'editor') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input 
+                        placeholder="Editor..." 
+                        list="editor-suggestions"
+                        value={editor} onChange={e => setEditor(e.target.value)}
+                        className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)]"
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'start_date') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input 
+                        type="date"
+                        value={startDay} 
+                        onChange={e => setStartDay(e.target.value)}
+                        className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'complete_date') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Input 
+                        type="date"
+                        value={completeDay} 
+                        onChange={e => setCompleteDay(e.target.value)}
+                        className="h-[30px] w-[110px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all text-[var(--text-secondary)] [&::-webkit-calendar-picker-indicator]:dark:invert"
+                      />
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'is_urgent') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <button
+                        type="button"
+                        onClick={() => setIsUrgentAdd(!isUrgentAdd)}
+                        className={`flex h-[26px] items-center justify-center rounded-full px-2.5 text-[11px] font-bold uppercase transition-all ${isUrgentAdd ? 'bg-red-500 text-white shadow-sm hover:bg-red-600' : 'bg-transparent text-[var(--text-muted)] hover:bg-[var(--surface-card-2)] hover:text-[var(--text-primary)]'}`}
+                      >
+                        {isUrgentAdd ? "Urgent" : "None"}
+                      </button>
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'status') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <span className="inline-flex items-center gap-[6px] rounded-full py-[4px] px-[10px] text-[11px] font-bold bg-[#E0E7FF]/50 dark:bg-[#231E47]/50 text-indigo-700/50 dark:text-[#A79BF0]/50 border border-indigo-700/10">
+                        <span className="w-[6px] h-[6px] rounded-full bg-[#7C6FF0]/50"></span>
+                        New
+                      </span>
+                    </TableCell>
+                  )
+                }
+                if (column.id === 'link') {
+                  return (
+                    <TableCell key={column.id} className="px-[16px] py-[8px]">
+                      <Button 
+                        onClick={handleQuickAdd} 
+                        disabled={!title || !editor || isAdding}
+                        className="bg-[var(--theme-accent)] text-[#241a05] hover:bg-[#F2CD60] h-7 w-16 text-[12px] font-bold shadow-sm disabled:opacity-40 disabled:hover:bg-[var(--theme-accent)] transition-all"
+                      >
+                        {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                      </Button>
+                    </TableCell>
+                  )
+                }
+                
+                return <TableCell key={column.id} className="px-[16px] py-[8px]"></TableCell>
+              })}
             </TableRow>
 
             {/* Data Rows */}
