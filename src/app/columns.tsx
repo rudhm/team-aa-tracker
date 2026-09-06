@@ -1,42 +1,43 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { ColumnDef, RowData } from "@tanstack/react-table"
-import { supabase } from "@/lib/supabase"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { createEntityColor, type EntityColorMaps, formatName, getEditorDotColor } from "@/lib/utils"
-import { LinkIcon } from "lucide-react"
+import type { Database } from "@/types/database"
 
-export type VideoTask = {
-  id: string
-  created_at: string
-  client: string
-  sub_client: string | null
-  video_title: string
-  editor: string
-  start_date: string | null
-  complete_date: string | null
-  status: string
-  link: string | null
-  delivered_at: string | null
-  payroll_locked: boolean
-  duration: string | null
-}
+export type VideoTask = Database["public"]["Tables"]["video_tasks"]["Row"]
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
-    updateData: (rowIndex: number, columnIdOrUpdates: string | Record<string, any>, value?: any) => Promise<void>
+    updateData: (rowId: string, columnIdOrUpdates: string | Record<string, any>, value?: any) => Promise<void>
     colorMaps?: EntityColorMaps
+  }
+}
+function normalizeUrl(value: string) {
+  let url = value.trim()
+  if (url && !/^https?:\/\//i.test(url)) {
+    url = 'https://' + url
+  }
+  return url
+}
+
+function isValidVideoUrl(value: string) {
+  try {
+    const url = new URL(normalizeUrl(value))
+    return url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    return false
   }
 }
 
 function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }) {
   const config: Record<string, { bg: string; text: string; sdot: string }> = {
     "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#173822]", text: "text-emerald-800 dark:text-emerald-200", sdot: "bg-[#3FA75B]" },
-    "In progress": { bg: "bg-[#E0E7FF] dark:bg-[#231E47]", text: "text-indigo-800 dark:text-indigo-200", sdot: "bg-[#7C6FF0]" },
-    "Revision":    { bg: "bg-[#FFF4E5] dark:bg-[#3A2E12]", text: "text-amber-900 dark:text-amber-200", sdot: "bg-[#D9A441]" },
+    "In progress": { bg: "bg-[#FEE2E2] dark:bg-[#451A1A]", text: "text-red-800 dark:text-red-200", sdot: "bg-[#EF4444]" },
+    "Revision":    { bg: "bg-[#FEF3C7] dark:bg-[#423114]", text: "text-yellow-800 dark:text-yellow-200", sdot: "bg-[#F59E0B]" },
   }
+
   const style = config[status] || config["In progress"]
   
   return (
@@ -59,6 +60,7 @@ export function InlineTextEdit({
   emptyContent = "—",
   style,
   prefix,
+  truncate = false,
 }: { 
   value: string | null, 
   locked: boolean, 
@@ -69,6 +71,7 @@ export function InlineTextEdit({
   emptyContent?: React.ReactNode,
   style?: React.CSSProperties,
   prefix?: React.ReactNode,
+  truncate?: boolean,
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState("")
@@ -106,21 +109,23 @@ export function InlineTextEdit({
     : (!locked ? "Click to edit" : undefined);
 
   return (
-    <span 
-      onClick={startEdit} 
-      className={`${className} transition-colors ${prefix ? 'flex items-center gap-1.5' : ''} ${!locked ? 'cursor-pointer hover:text-[var(--text-primary)]' : ''}`}
+    <button
+      type="button"
+      onClick={startEdit}
+      disabled={locked}
+      className={`${className} text-left transition-colors ${prefix ? 'flex items-center gap-1.5' : ''} ${!locked ? 'cursor-pointer hover:text-[var(--text-primary)]' : ''} disabled:cursor-default`}
       style={style}
       title={tooltipText}
     >
       {prefix}
-      <span className={!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}>
+      <span className={`${!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''} ${truncate ? 'block truncate' : ''}`}>
         {value || emptyContent}
       </span>
-    </span>
+    </button>
   )
 }
 
-export function InlineDayEdit({ value, locked, onUpdate, otherDate }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void, otherDate?: string | null }) {
+export function InlineDayEdit({ value, locked, onUpdate, otherDate, isStartDate = false }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void, otherDate?: string | null, isStartDate?: boolean }) {
   const [isEditing, setIsEditing] = useState(false)
   const [dateStr, setDateStr] = useState("")
 
@@ -141,6 +146,11 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate }: { value: s
      if (dateStr && otherDate) {
        const d1 = new Date(dateStr)
        const d2 = new Date(otherDate)
+       if ((isStartDate && d1 > d2) || (!isStartDate && d1 < d2)) {
+         alert(isStartDate ? "Start Date cannot be later than Complete Date." : "Complete Date cannot be earlier than Start Date.")
+         setDateStr(value?.substring(0, 10) || "")
+         return
+       }
        if (d1.getUTCMonth() !== d2.getUTCMonth() || d1.getUTCFullYear() !== d2.getUTCFullYear()) {
          alert("Start Date and Complete Date must belong to the same month.")
          setDateStr(value?.substring(0, 10) || "")
@@ -170,15 +180,17 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate }: { value: s
   }
 
   return (
-    <span 
-      onClick={startEdit} 
-      className={`text-[12.5px] transition-colors ${!locked ? 'cursor-pointer hover:text-[var(--text-primary)]' : ''} ${!value ? 'text-[var(--text-faint)] italic' : 'font-medium text-[var(--text-secondary)]'}`}
+    <button
+      type="button"
+      onClick={startEdit}
+      disabled={locked}
+      className={`text-left text-[12.5px] transition-colors ${!locked ? 'cursor-pointer hover:text-[var(--text-primary)]' : ''} ${!value ? 'text-[var(--text-faint)] italic' : 'font-medium text-[var(--text-secondary)]'} disabled:cursor-default`}
       title={!locked ? "Click to edit" : ""}
     >
       <span className={!locked ? 'hover:underline decoration-[#11161B]/30 underline-offset-4' : ''}>
         {displayValue}
       </span>
-    </span>
+    </button>
   )
 }
 
@@ -193,20 +205,30 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
   }
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    const pastedText = e.clipboardData.getData('text')
-    if (pastedText.startsWith('http')) {
+    const pastedText = e.clipboardData.getData('text').trim()
+    if (isValidVideoUrl(pastedText)) {
       e.preventDefault()
-      setText(pastedText)
+      const normalized = normalizeUrl(pastedText)
+      setText(normalized)
       setIsEditing(false)
-      onUpdate(pastedText, !isCompleted ? 'Complete' : undefined)
+      onUpdate(normalized, !isCompleted ? 'Complete' : undefined)
     }
   }
 
   const saveEdit = () => {
     setIsEditing(false)
     if (text !== (value || "")) {
-      const isUrl = text.trim().startsWith('http')
-      onUpdate(text, (isUrl && !isCompleted) ? 'Complete' : undefined)
+      const trimmedText = text.trim()
+      if (trimmedText) {
+        if (!isValidVideoUrl(trimmedText)) {
+          setText(value || "")
+          return
+        }
+        const normalized = normalizeUrl(trimmedText)
+        onUpdate(normalized, !isCompleted ? 'Complete' : undefined)
+      } else {
+        onUpdate(null)
+      }
     }
   }
 
@@ -227,12 +249,14 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
 
   if (!value) {
     return (
-      <span 
-        onClick={startEdit} 
-        className={`text-[12.5px] font-semibold px-[10px] py-[4px] rounded-[6px] transition-colors inline-block ${locked ? 'text-[var(--text-faint)]' : 'text-[var(--text-faint)] cursor-pointer border border-dashed border-[var(--border)]'}`}
+      <button
+        type="button"
+        onClick={startEdit}
+        disabled={locked}
+        className={`text-left text-[12.5px] font-semibold px-[10px] py-[4px] rounded-[6px] transition-colors inline-block ${locked ? 'text-[var(--text-faint)]' : 'text-[var(--text-faint)] cursor-pointer border border-dashed border-[var(--border)]'}`}
       >
         + Add Link
-      </span>
+      </button>
     )
   }
 
@@ -260,14 +284,26 @@ export function InlineLinkEdit({ value, locked, onUpdate, isCompleted }: { value
   )
 }
 
-function CustomCheckbox({ checked, onChange, disabled }: { checked: boolean, onChange: () => void, disabled?: boolean }) {
+function CustomCheckbox({ checked, onChange, disabled, ariaLabel }: { checked: boolean, onChange: () => void, disabled?: boolean, ariaLabel?: string }) {
   return (
-    <div 
-      onClick={() => !disabled && onChange()}
-      className={`w-[16px] h-[16px] rounded-[5px] border-[1.5px] inline-flex items-center justify-center relative ${checked ? 'bg-[var(--theme-accent)] border-[var(--theme-accent)]' : 'border-[var(--border)]'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+    <button
+      type="button"
+      aria-label={ariaLabel ?? (checked ? "Deselect row" : "Select row")}
+      aria-pressed={checked}
+      disabled={disabled}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!disabled) onChange();
+      }}
+      className={`h-[18px] w-[18px] rounded-[4px] border-[1.5px] inline-flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A441] ${checked ? 'bg-[#D9A441] border-[#D9A441]' : 'bg-[var(--surface-page)] border-[var(--border-strong)] hover:border-[var(--text-secondary)]'} ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
     >
-      {checked && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-[#241a05]">✓</span>}
-    </div>
+      {checked && (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241a05" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      )}
+    </button>
   )
 }
 
@@ -277,6 +313,7 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: ({ table }) => (
       <CustomCheckbox
         checked={table.getIsAllPageRowsSelected()}
+        ariaLabel="Select all rows"
         onChange={() => table.toggleAllPageRowsSelected()}
       />
     ),
@@ -297,25 +334,23 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: "Client",
     cell: ({ row, table }) => {
       const task = row.original
-      if (!task.sub_client) {
-        return <span className="text-[13px] text-[var(--text-faint)]">—</span>
-      }
-
-      const clientColor = table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")
-      const initials = task.sub_client.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || task.sub_client.substring(0, 2).toUpperCase()
+      const clientColor = task.sub_client ? (table.options.meta?.colorMaps?.clients[task.sub_client] ?? createEntityColor(task.sub_client, "client")) : { backgroundColor: 'transparent' }
+      const initials = task.sub_client ? (task.sub_client.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || task.sub_client.substring(0, 2).toUpperCase()) : ""
 
       return (
         <div className="flex items-center gap-[10px]">
-          <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-[12px] font-bold shrink-0" style={clientColor}>
-            {initials}
-          </div>
+          {!!task.sub_client && (
+            <div className="w-[30px] h-[30px] rounded-[9px] flex items-center justify-center text-[12px] font-bold shrink-0" style={clientColor}>
+              {initials}
+            </div>
+          )}
           <InlineTextEdit 
             value={task.sub_client}
             locked={task.payroll_locked}
             listId="client-suggestions"
-            className="font-bold text-[13.8px] text-[var(--text-primary)]"
+            className={`font-bold text-[13.8px] ${task.sub_client ? 'text-[var(--text-primary)]' : 'text-[var(--text-faint)]'}`}
             emptyContent="—"
-            onUpdate={(val) => table.options.meta?.updateData(row.index, 'sub_client', val.trim() || null)}
+            onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'sub_client', val.trim() || null)}
           />
         </div>
       )
@@ -341,7 +376,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           }
           style={subClientColor}
           emptyContent="—"
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'client', val.trim() || "")}
+          onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'client', val.trim() || "")}
         />
       )
     },
@@ -351,12 +386,14 @@ export const columns: ColumnDef<VideoTask>[] = [
     header: "Video Title",
     cell: ({ row, table }) => {
       const task = row.original
+
       return (
         <InlineTextEdit 
           value={task.video_title}
           locked={task.payroll_locked}
-          className="font-semibold text-[var(--text-primary)] text-[13.5px] block truncate max-w-[230px]"
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'video_title', val)}
+          className="font-semibold text-[var(--text-primary)] text-[13.5px] max-w-[230px]"
+          truncate={true}
+          onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'video_title', val)}
         />
       )
     },
@@ -373,7 +410,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           placeholder="00:00"
           className="text-[12.5px] text-[var(--text-secondary)] font-medium tabular-nums"
           emptyContent="—"
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'duration', val)}
+          onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'duration', val)}
         />
       )
     },
@@ -391,12 +428,12 @@ export const columns: ColumnDef<VideoTask>[] = [
           value={formattedName}
           locked={task.payroll_locked}
           listId="editor-suggestions"
-          className="text-[13px] font-semibold text-[var(--text-primary)]"
-          emptyContent=""
+          className={`text-[13px] font-semibold ${formattedName ? 'text-[var(--text-primary)]' : 'text-[var(--text-faint)]'}`}
+          emptyContent="—"
           prefix={formattedName ? (
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
           ) : undefined}
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'editor', formatName(val))}
+          onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'editor', formatName(val))}
         />
       )
     },
@@ -411,7 +448,8 @@ export const columns: ColumnDef<VideoTask>[] = [
           value={task.start_date} 
           locked={task.payroll_locked} 
           otherDate={task.complete_date}
-          onUpdate={(val) => table.options.meta?.updateData(row.index, 'start_date', val)} 
+          isStartDate
+          onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'start_date', val)} 
         />
       )
     }
@@ -430,9 +468,49 @@ export const columns: ColumnDef<VideoTask>[] = [
             // If they manually set a complete date, we should also auto-flip status to Complete!
             const updates: any = { complete_date: val }
             if (val && task.status !== 'Complete') updates.status = 'Complete'
-            table.options.meta?.updateData(row.index, updates)
+            if (!val && task.status === 'Complete') updates.status = 'In progress'
+            table.options.meta?.updateData(row.original.id, updates)
           }} 
         />
+      )
+    }
+  },
+  {
+    accessorKey: "is_urgent",
+    header: "Priority",
+    cell: ({ row, table }) => {
+      const task = row.original
+      const isDisabled = task.payroll_locked || task.status === 'Complete'
+
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            if (!isDisabled) {
+              table.options.meta?.updateData(row.original.id, 'is_urgent', !task.is_urgent)
+            }
+          }}
+          disabled={isDisabled}
+          title={task.status === 'Complete' ? "Completed videos cannot be urgent" : task.is_urgent ? "Mark as normal" : "Mark as urgent"}
+          className={`flex items-center justify-center transition-all ${
+            task.is_urgent 
+              ? 'gap-1.5 rounded-full bg-red-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm hover:bg-red-600' 
+              : 'h-6 w-6 rounded-md text-[var(--text-faint)] hover:bg-[var(--surface-card-2)] hover:text-[var(--text-secondary)]'
+          } ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+        >
+          {task.is_urgent ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+              </svg>
+              Urgent
+            </>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+            </svg>
+          )}
+        </button>
       )
     }
   },
@@ -458,7 +536,7 @@ export const columns: ColumnDef<VideoTask>[] = [
                 key={s}
                 onClick={async () => {
                   if (s !== status) {
-                    await table.options.meta?.updateData(row.index, 'status', s)
+                    await table.options.meta?.updateData(row.original.id, 'status', s)
                   }
                 }}
                 className="rounded-xl px-2 py-1.5 text-[12px] font-medium text-[var(--text-primary)]/70 focus:bg-[var(--row-hover)]"
@@ -486,7 +564,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           onUpdate={async (newLink, newStatus) => {
             const updates: any = { link: newLink }
             if (newStatus) updates.status = newStatus
-            await table.options.meta?.updateData(row.index, updates)
+            await table.options.meta?.updateData(row.original.id, updates)
           }} 
         />
       )

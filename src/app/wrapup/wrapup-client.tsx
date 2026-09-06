@@ -8,15 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Download, Lock, Loader2, Copy, Check, ChevronDown, ChevronRight } from "lucide-react"
 import { createEntityColor, createEntityColorMaps, formatName } from "@/lib/utils"
 
-export function PayrollClient({ data }: { data: VideoTask[] }) {
+export function WrapupClient({ data }: { data: VideoTask[] }) {
   const router = useRouter()
   const [selectedMonth, setSelectedMonth] = React.useState<string>("")
   const [isLocking, setIsLocking] = React.useState(false)
+  const [lockError, setLockError] = React.useState("")
 
   const [clientFilter, setClientFilter] = React.useState("All")
   const [subClientFilter, setSubClientFilter] = React.useState("All")
   const [editorFilter, setEditorFilter] = React.useState("All")
   const [copied, setCopied] = React.useState(false)
+  const [copyError, setCopyError] = React.useState("")
   const [collapsedEditors, setCollapsedEditors] = React.useState<Record<string, boolean>>({})
 
   const toggleEditor = (ed: string) => {
@@ -90,11 +92,21 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   const handleLockMonth = async () => {
     if (currentMonthData.length === 0) return
+    setLockError("")
     setIsLocking(true)
     
     const ids = currentMonthData.map(t => t.id)
-    await supabase.from('video_tasks').update({ payroll_locked: true }).in('id', ids)
-    
+    const { error } = await supabase
+      .from('video_tasks')
+      .update({ payroll_locked: true })
+      .in('id', ids)
+      .eq('payroll_locked', false)
+    if (error) {
+      console.error("Error locking wrapup month:", error)
+      setLockError("This wrapup period could not be locked. Please try again.")
+      setIsLocking(false)
+      return
+    }
     setIsLocking(false)
     router.refresh()
   }
@@ -120,10 +132,11 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.setAttribute("href", url)
-    link.setAttribute("download", `Payroll_${selectedMonth}.csv`)
+    link.setAttribute("download", `Wrap-up_${selectedMonth}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   const copyToClipboard = () => {
@@ -152,9 +165,16 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
         text += `\n`
       })
 
+    setCopyError("")
     navigator.clipboard.writeText(text.trim())
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+      .then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      })
+      .catch(error => {
+        console.error("Error copying wrapup summary:", error)
+        setCopyError("Unable to copy the summary. Check browser permissions and try again.")
+      })
   }
 
   const formatMonth = (yyyyMm: string) => {
@@ -165,6 +185,16 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
 
   return (
     <div className="space-y-6">
+      {lockError && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+          {lockError}
+        </div>
+      )}
+      {copyError && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+          {copyError}
+        </div>
+      )}
       <div className="theme-toolbar flex flex-col items-stretch justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-wrap">
           <div className="relative w-full sm:w-auto">
@@ -224,7 +254,7 @@ export function PayrollClient({ data }: { data: VideoTask[] }) {
             CSV
           </Button>
 
-          {new Date().getDate() >= 1 && new Date().getDate() <= 5 && (
+          {new Date().getDate() >= 1 && new Date().getDate() <= 5 && selectedMonth < `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, '0')}` && (
             isMonthLocked ? (
               <span className="inline-flex h-[34px] w-full sm:w-auto justify-center items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold bg-[#E2F8EB] text-emerald-700">
                 <Lock className="mr-2 h-4 w-4" /> Locked

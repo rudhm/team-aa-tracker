@@ -1,11 +1,14 @@
-import { supabase } from "@/lib/supabase"
+import { createSupabaseServerClient } from "@/lib/supabase-server"
 import { columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { AuthControls } from "@/components/auth-controls"
+import { WipeDataButton } from "@/components/wipe-data-button"
 
 export const revalidate = 0 // Disable caching to always fetch the latest data
 
 async function getData() {
+  const supabase = await createSupabaseServerClient()
   // Fetch data from the video_tasks table
   const { data, error } = await supabase
     .from('video_tasks')
@@ -14,13 +17,16 @@ async function getData() {
 
   if (error) {
     console.error("Error fetching video tasks:", error)
-    return []
+    throw new Error("Unable to load video tasks")
   }
 
   return data
 }
 
 export default async function Page() {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
   const data = await getData()
   
   // Get current date in IST (Asia/Kolkata)
@@ -58,10 +64,12 @@ export default async function Page() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <WipeDataButton />
+            <AuthControls email={user.email ?? "Signed in"} />
             <div className="flex items-center justify-center [&_button]:!w-[28px] [&_button]:!h-[28px] [&_button]:!bg-[#2c2b28] [&_button]:!rounded-full [&_svg]:!w-3.5 [&_svg]:!h-3.5 [&_svg]:!text-white [&_button]:!border-0">
               <ThemeToggle />
             </div>
-            <a href="/payroll" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
+            <a href="/wrapup" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
               Wrap-up →
             </a>
           </div>
@@ -73,11 +81,6 @@ export default async function Page() {
         <DataTable columns={columns} data={filteredData} />
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-[var(--border)] py-6 mt-auto">
-        <div className="mx-auto max-w-[1920px] px-6 sm:px-8 text-center text-[13px] font-medium text-[var(--text-muted)]">
-        </div>
-      </footer>
     </div>
   )
 }

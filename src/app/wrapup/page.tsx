@@ -1,11 +1,13 @@
-import { supabase } from "@/lib/supabase"
-import { PayrollClient } from "./payroll-client"
+import { createSupabaseServerClient } from "@/lib/supabase-server"
+import { WrapupClient } from "./wrapup-client"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { AuthControls } from "@/components/auth-controls"
 import { VideoTask } from "@/app/columns"
 
 export const revalidate = 0
 
 async function getDeliveredData() {
+  const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase
     .from('video_tasks')
     .select('*')
@@ -13,14 +15,17 @@ async function getDeliveredData() {
     .order('complete_date', { ascending: false })
 
   if (error) {
-    console.error("Error fetching payroll data:", error)
-    return []
+    console.error("Error fetching wrapup data:", error)
+    throw new Error("Unable to load wrapup data")
   }
 
   return data as VideoTask[]
 }
 
-export default async function PayrollPage() {
+export default async function WrapupPage() {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
   const data = await getDeliveredData()
 
   return (
@@ -36,6 +41,7 @@ export default async function PayrollPage() {
           </div>
           
           <div className="flex items-center gap-4">
+            <AuthControls email={user.email ?? "Signed in"} />
             <div className="flex items-center justify-center [&_button]:!w-[28px] [&_button]:!h-[28px] [&_button]:!bg-[#2c2b28] [&_button]:!rounded-full [&_svg]:!w-3.5 [&_svg]:!h-3.5 [&_svg]:!text-white [&_button]:!border-0">
               <ThemeToggle />
             </div>
@@ -47,13 +53,9 @@ export default async function PayrollPage() {
       </header>
 
       <main className="mx-auto max-w-[1920px] px-6 py-7 sm:px-8 flex-1 w-full">
-        <PayrollClient data={data} />
+        <WrapupClient data={data} />
       </main>
 
-      <footer className="w-full border-t border-[var(--border)] py-6 mt-auto">
-        <div className="mx-auto max-w-[1920px] px-6 sm:px-8 text-center text-[13px] font-medium text-[var(--text-muted)]">
-        </div>
-      </footer>
     </div>
   )
 }

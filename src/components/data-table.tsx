@@ -5,10 +5,12 @@ import { createEntityColorMaps, formatName, getEditorDotColor } from "@/lib/util
 import {
   ColumnDef,
   ColumnFiltersState,
+  SortingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import { useRouter } from "next/navigation"
@@ -36,7 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Loader2, Plus, RotateCcw, Search, X, Calendar } from "lucide-react"
+import { ChevronDown, Loader2, Plus, Search, X, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -59,7 +61,7 @@ interface DataTableProps {
 }
 
 
-const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { row: any, style?: React.CSSProperties, measureRef?: React.Ref<HTMLDivElement>, dataIndex?: number }) => {
+const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex, isSelected }: { row: any, style?: React.CSSProperties, measureRef?: React.Ref<HTMLDivElement>, dataIndex?: number, isSelected: boolean }) => {
   const selectCell = row.getVisibleCells().find((c: any) => c.column.id === 'select');
   const clientCell = row.getVisibleCells().find((c: any) => c.column.id === 'client');
   const subClientCell = row.getVisibleCells().find((c: any) => c.column.id === 'sub_client');
@@ -69,9 +71,12 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
   const startDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'start_date');
   const completeDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'complete_date');
   const linkCell = row.getVisibleCells().find((c: any) => c.column.id === 'link');
+  const priorityCell = row.getVisibleCells().find((c: any) => c.column.id === 'is_urgent');
+
+  const isUrgent = row.original.is_urgent;
 
   return (
-    <div ref={measureRef} data-index={dataIndex} style={style} className="rounded-xl theme-card p-4 shadow-sm relative overflow-hidden transition-all duration-200">
+    <div ref={measureRef} data-index={dataIndex} style={style} className={`theme-card p-4 shadow-sm relative overflow-hidden transition-all duration-200 ${isUrgent ? 'bg-red-500/10 dark:bg-red-900/20 border-l-[4px] border-l-red-500 rounded-l-none rounded-r-xl' : 'rounded-xl'}`}>
       {/* Title & Client tags */}
       <div className="flex items-start gap-3">
         {selectCell && row.original.status !== 'Complete' && (
@@ -80,7 +85,8 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-[16px] font-bold text-[var(--text-primary)] leading-snug">
+          <div className="text-[16px] font-bold text-[var(--text-primary)] leading-snug flex items-center gap-2">
+            {priorityCell && flexRender(priorityCell.column.columnDef.cell, priorityCell.getContext())}
             {videoTitleCell && flexRender(videoTitleCell.column.columnDef.cell, videoTitleCell.getContext())}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -122,22 +128,26 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex }: { r
   )
 })
 
-const MemoizedDesktopRow = React.memo(({ row, isLast, index }: { row: any, isLast: boolean, index: number }) => (
-  <TableRow
-    data-state={row.getIsSelected() && "selected"}
-    className={`transition-colors duration-150 hover:bg-[var(--row-hover)] dark:hover:bg-white/10 ${
-      index % 2 === 0 ? "bg-[var(--surface-card)]" : "bg-[var(--row-alt)]"
-    } ${
-      !isLast ? "border-b border-[var(--border-soft)]" : "border-0"
-    }`}
-  >
-    {row.getVisibleCells().map((cell: any) => (
-      <TableCell key={cell.id} className="px-[16px] py-[13px] text-[13.5px]">
-        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-      </TableCell>
-    ))}
-  </TableRow>
-))
+const MemoizedDesktopRow = React.memo(({ row, isLast, index, isSelected }: { row: any, isLast: boolean, index: number, isSelected: boolean }) => {
+  const isUrgent = row.original.is_urgent;
+  return (
+    <TableRow
+      data-state={row.getIsSelected() && "selected"}
+      className={`transition-colors duration-150 hover:bg-[var(--row-hover)] dark:hover:bg-white/10 ${
+        isUrgent ? "bg-red-500/10 dark:bg-red-900/20" :
+        index % 2 === 0 ? "bg-[var(--surface-card)]" : "bg-[var(--row-alt)]"
+      } ${
+        !isLast ? "border-b border-[var(--border-soft)]" : "border-0"
+      }`}
+    >
+      {row.getVisibleCells().map((cell: any, cellIndex: number) => (
+        <TableCell key={cell.id} className={`px-[16px] py-[13px] text-[13.5px] ${isUrgent && cellIndex === 0 ? "border-l-[3px] border-l-red-500" : ""}`}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+})
 
 export function DataTable({ columns, data }: DataTableProps) {
   const router = useRouter()
@@ -151,11 +161,13 @@ export function DataTable({ columns, data }: DataTableProps) {
   }, [data])
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: "is_urgent", desc: true }])
   const [rowSelection, setRowSelection] = React.useState({})
   const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
   const [editorMenuOpen, setEditorMenuOpen] = React.useState(false)
   const [statusMenuOpen, setStatusMenuOpen] = React.useState(false)
   const [clientMenuOpen, setClientMenuOpen] = React.useState(false)
+  const [priorityMenuOpen, setPriorityMenuOpen] = React.useState(false)
   const [hiddenEditors, setHiddenEditors] = React.useState<string[]>([])
   const [hiddenEditorsLoaded, setHiddenEditorsLoaded] = React.useState(false)
 
@@ -191,6 +203,10 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [duration, setDuration] = React.useState("")
   const [isAdding, setIsAdding] = React.useState(false)
   const [isIdleExpanded, setIsIdleExpanded] = React.useState(false)
+  const [mutationError, setMutationError] = React.useState("")
+  const [isBulkCompleting, setIsBulkCompleting] = React.useState(false)
+  const [isAddSheetOpen, setIsAddSheetOpen] = React.useState(false)
+  const mutationVersions = React.useRef(new Map<string, number>())
 
   // Unique fields for datalist autocomplete
   const uniqueEditors = React.useMemo(() => {
@@ -256,19 +272,29 @@ export function DataTable({ columns, data }: DataTableProps) {
   const table = useReactTable({
     data: tableData,
     columns,
+    getRowId: (row) => row.id,
+    enableRowSelection: (row) => !row.original.payroll_locked,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
     state: {
       columnFilters,
       rowSelection,
+      sorting,
     },
     meta: {
       colorMaps,
-            updateData: async (rowIndex: number, columnIdOrUpdates: string | Record<string, any>, value?: any) => {
-        const row = tableData[rowIndex]
+            updateData: async (rowId: string, columnIdOrUpdates: string | Record<string, any>, value?: any) => {
+        const row = tableData.find(task => task.id === rowId)
+        if (!row) return
+        setMutationError("")
+        const previousRow = row
+        const nextVersion = (mutationVersions.current.get(row.id) ?? 0) + 1
+        mutationVersions.current.set(row.id, nextVersion)
         
         let updates: any = {}
         if (typeof columnIdOrUpdates === 'string') {
@@ -281,6 +307,7 @@ export function DataTable({ columns, data }: DataTableProps) {
         if (updates.status) {
           if (updates.status === 'Complete' && row.status !== 'Complete') {
             updates.complete_date = new Date().toLocaleDateString("en-CA") // format as YYYY-MM-DD in local time
+            updates.is_urgent = false // Clear urgent status when complete
             
             // Trigger celebration animation!
             setTimeout(() => {
@@ -293,12 +320,24 @@ export function DataTable({ columns, data }: DataTableProps) {
         
         // Optimistic UI Update
         setTableData(old => {
-          const newData = [...old]
-          newData[rowIndex] = { ...newData[rowIndex], ...updates }
-          return newData
+          return old.map(task => task.id === row.id ? { ...task, ...updates } : task)
         })
         
-        await supabase.from('video_tasks').update(updates).eq('id', row.id)
+        const { error } = await supabase
+          .from('video_tasks')
+          .update(updates)
+          .eq('id', row.id)
+          .eq('payroll_locked', false)
+          .select('id')
+          .single()
+        if (error) {
+          console.error("Error updating video task:", error)
+          if (mutationVersions.current.get(row.id) === nextVersion) {
+            setTableData(old => old.map(task => task.id === previousRow.id ? previousRow : task))
+          }
+          setMutationError("This video could not be updated. It may be wrapup-locked or unavailable.")
+          return
+        }
         router.refresh()
       }
     }
@@ -325,78 +364,22 @@ export function DataTable({ columns, data }: DataTableProps) {
     setHiddenEditors([])
   }
 
-  const [isResetting, setIsResetting] = React.useState(false)
-
-  const handleResetData = async () => {
-    if (!window.confirm("Are you sure you want to delete all data and seed random tasks?")) return
-    setIsResetting(true)
-    try {
-      const { data: allIds } = await supabase.from('video_tasks').select('id')
-      if (allIds?.length) {
-        await supabase.from('video_tasks').delete().in('id', allIds.map(d => d.id))
-      }
-      
-      const sampleClients = ['TechCorp', 'MediaCo', 'Innovate LLC', 'Studio X', 'Designify', 'Streamline'];
-      const sampleSubClients = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Project Y', 'Campaign Z', 'Launch 2026'];
-      const sampleEditors = ['Abhishek', 'Pranjya', 'Aakash', 'Vighnesh', 'Harshit', 'Ekta', 'Anjali'];
-      const sampleStatuses = ['In progress', 'Revision', 'Complete'];
-
-      const randomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-      const randomDate = () => {
-          const d = new Date(new Date().getFullYear(), new Date().getMonth(), Math.floor(Math.random() * 28) + 1);
-          return d.toISOString().split('T')[0];
-      };
-
-      const rows = [];
-      for (let i = 0; i < 20; i++) {
-          const status = randomItem(sampleStatuses);
-          const start_date = randomDate();
-          let complete_date = null;
-          if (status === 'Complete') {
-              complete_date = randomDate();
-              if (complete_date < start_date) {
-                  complete_date = start_date;
-              }
-          }
-          
-          rows.push({
-              client: randomItem(sampleSubClients),
-              sub_client: randomItem(sampleClients),
-              video_title: `Video Project ${Math.floor(Math.random() * 1000)}`,
-              editor: randomItem(sampleEditors),
-              start_date: start_date,
-              complete_date: complete_date,
-              status: status,
-              payroll_locked: Math.random() > 0.8
-          });
-      }
-      const { data: newTasks, error } = await supabase.from('video_tasks').insert(rows).select()
-      if (!error && newTasks) {
-         setTableData(newTasks)
-         window.location.reload()
-      }
-    } finally {
-      setIsResetting(false)
-    }
-  }
-
-  const handleQuickAdd = async (e: React.FormEvent) => {
+  const handleQuickAdd = async (e: React.FormEvent): Promise<boolean> => {
     e.preventDefault()
-    if (!title || !editor) return
+    if (!title || !editor) return false
 
     if (startDay && completeDay) {
       const d1 = new Date(startDay)
       const d2 = new Date(completeDay)
       if (d1.getUTCMonth() !== d2.getUTCMonth() || d1.getUTCFullYear() !== d2.getUTCFullYear()) {
         alert("Start Date and Complete Date must belong to the same month.")
-        return
+        return false
       }
     }
 
     setIsAdding(true)
+    setMutationError("")
     const parsedComplete = completeDay || null
-    const localToday = new Date().toLocaleDateString("en-CA")
-
     const payload = {
       client: subClient.trim() || "",
       sub_client: client.trim() || null,
@@ -408,7 +391,13 @@ export function DataTable({ columns, data }: DataTableProps) {
       status: parsedComplete ? 'Complete' : 'In progress',
     }
 
-    await supabase.from('video_tasks').insert([payload])
+    const { error } = await supabase.from('video_tasks').insert([payload])
+    if (error) {
+      console.error("Error adding video task:", error)
+      setMutationError("This video could not be added. Please try again.")
+      setIsAdding(false)
+      return false
+    }
     
     setClient("")
     setSubClient("")
@@ -418,26 +407,39 @@ export function DataTable({ columns, data }: DataTableProps) {
     setCompleteDay("")
     setIsAdding(false)
     router.refresh()
+    return true
   }
 
   const handleBulkComplete = async () => {
+    if (isBulkCompleting) return
     const selectedRows = table.getFilteredSelectedRowModel().rows
     const ids = selectedRows.map(r => r.original.id)
     
     if (ids.length === 0) return
     
-    await supabase
+    setIsBulkCompleting(true)
+    setMutationError("")
+    const { error } = await supabase
       .from('video_tasks')
       .update({ 
         status: 'Complete', 
-        complete_date: new Date().toLocaleDateString("en-CA") 
+        complete_date: new Date().toLocaleDateString("en-CA"),
+        is_urgent: false
       })
       .in('id', ids)
+      .eq('payroll_locked', false)
+    if (error) {
+      console.error("Error completing video tasks:", error)
+      setMutationError("Some selected videos could not be completed. Locked videos were not changed.")
+      setIsBulkCompleting(false)
+      return
+    }
       
     // Trigger celebration animation!
     celebrateDelivery(document.getElementById('delivery-stage'))
       
     setRowSelection({})
+    setIsBulkCompleting(false)
     router.refresh()
   }
 
@@ -450,6 +452,11 @@ export function DataTable({ columns, data }: DataTableProps) {
 
   return (
     <div className="relative">
+      {mutationError && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+          {mutationError}
+        </div>
+      )}
       {/* The invisible stage for the delivery animation to overlay securely */}
       <div id="delivery-stage" className="absolute top-16 left-0 right-0 z-50 pointer-events-none"></div>
 
@@ -474,14 +481,6 @@ export function DataTable({ columns, data }: DataTableProps) {
               Board
             </button>
           </div>
-          <Button
-            onClick={handleResetData}
-            disabled={isResetting}
-            variant="outline"
-            className="h-[36px] px-3 text-[13px] hidden sm:flex items-center gap-2 font-bold shadow-sm border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:hover:bg-red-900/20"
-          >
-            {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />} Reset Data
-          </Button>
         </div>
       </div>
 
@@ -491,7 +490,7 @@ export function DataTable({ columns, data }: DataTableProps) {
           <span className="text-[var(--text-primary)] font-bold">{tableData.length} <span className="font-medium text-[var(--text-secondary)]">Videos</span></span>
           <span className="text-[var(--text-primary)] font-bold">{completedCount} <span className="font-medium text-[var(--text-secondary)]">Completed</span></span>
           <span className="text-[var(--text-primary)] font-bold">{inProgressCount} <span className="font-medium text-[var(--text-secondary)]">In Progress</span></span>
-          <span className="text-[var(--text-primary)] font-bold">{revisionCount} <span className="font-medium text-[var(--text-secondary)]">Pending</span></span>
+          <span className="text-[var(--text-primary)] font-bold">{revisionCount} <span className="font-medium text-[var(--text-secondary)]">Revision</span></span>
         </div>
       </div>
 
@@ -547,21 +546,21 @@ export function DataTable({ columns, data }: DataTableProps) {
           >
             Editor : {editorFilter || "All"}
             {editorFilter && (
-              <span 
+              <button
+                type="button"
+                aria-label="Clear editor filter"
                 className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
                 onClick={(e) => {
                   e.stopPropagation()
                   table.getColumn("editor")?.setFilterValue("")
                 }}
-              >
-                ✕
-              </span>
+              >✕</button>
             )}
             {!editorFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
           </button>
 
           {editorMenuOpen && (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+            <div role="menu" aria-label="Editor filter options" className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
               <button
                 type="button"
                 className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
@@ -613,12 +612,12 @@ export function DataTable({ columns, data }: DataTableProps) {
           >
             Status : {statusFilter || "All"}
             {statusFilter && (
-              <span
+              <button
+                type="button"
+                aria-label="Clear status filter"
                 className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
                 onClick={(e) => { e.stopPropagation(); table.getColumn("status")?.setFilterValue("") }}
-              >
-                ✕
-              </span>
+              >✕</button>
             )}
             {!statusFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
           </button>
@@ -654,12 +653,12 @@ export function DataTable({ columns, data }: DataTableProps) {
           >
             Client : {clientFilter || "All"}
             {clientFilter && (
-              <span
+              <button
+                type="button"
+                aria-label="Clear client filter"
                 className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
                 onClick={(e) => { e.stopPropagation(); table.getColumn("client")?.setFilterValue("") }}
-              >
-                ✕
-              </span>
+              >✕</button>
             )}
             {!clientFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
           </button>
@@ -686,6 +685,44 @@ export function DataTable({ columns, data }: DataTableProps) {
             </div>
           )}
         </div>
+
+        <div className="relative">
+          <button
+            type="button"
+            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
+            onClick={() => setPriorityMenuOpen(isOpen => !isOpen)}
+          >
+            Priority : {(table.getColumn("is_urgent")?.getFilterValue() as boolean) === true ? "Urgent only" : "All"}
+            {(table.getColumn("is_urgent")?.getFilterValue() as boolean) === true && (
+              <button
+                type="button"
+                aria-label="Clear priority filter"
+                className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
+                onClick={(e) => { e.stopPropagation(); table.getColumn("is_urgent")?.setFilterValue(undefined) }}
+              >✕</button>
+            )}
+            {(table.getColumn("is_urgent")?.getFilterValue() as boolean) !== true && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
+          </button>
+
+          {priorityMenuOpen && (
+            <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[180px] rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+              <button
+                type="button"
+                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                onClick={() => { table.getColumn("is_urgent")?.setFilterValue(undefined); setPriorityMenuOpen(false) }}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium text-red-500 hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                onClick={() => { table.getColumn("is_urgent")?.setFilterValue(true); setPriorityMenuOpen(false) }}
+              >
+                Urgent only
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <datalist id="editor-suggestions">
@@ -699,7 +736,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       </datalist>
 
       {viewMode === 'board' ? (
-        <BoardView data={table.getCoreRowModel().rows.map(r => r.original)} colorMaps={colorMaps} />
+        <BoardView data={table.getFilteredRowModel().rows.map(r => r.original)} colorMaps={colorMaps} />
       ) : (
       <>
         {/* Mobile View (Cards) */}
@@ -711,6 +748,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                    key={row.id} 
                    row={row} 
                    dataIndex={index}
+                   isSelected={row.getIsSelected()}
                  />
                ))
             ) : (
@@ -824,6 +862,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   row={row}
                   index={index}
                   isLast={index === rows.length - 1}
+                  isSelected={row.getIsSelected()}
                 />
               ))
             ) : (
@@ -909,19 +948,20 @@ export function DataTable({ columns, data }: DataTableProps) {
 
       {/* Mobile Add Task FAB & Sheet */}
       <div className="md:hidden fixed bottom-6 right-4 z-40">
-        <Sheet>
-          <SheetTrigger className="btn-primary flex items-center justify-center h-14 w-14 rounded-full shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all p-0">
-            <Plus className="h-6 w-6" />
+        <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
+          <SheetTrigger aria-label="Add new video" className="btn-primary flex items-center justify-center h-14 w-14 rounded-full shadow-xl shadow-black/20 hover:scale-105 active:scale-95 transition-all p-0 focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2">
+            <Plus className="h-6 w-6" aria-hidden="true" />
           </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-[32px] p-6 pb-12 outline-none">
+          <SheetContent side="bottom" className="safe-area-bottom max-h-[90dvh] overflow-y-auto rounded-t-[32px] p-6 pb-12 outline-none">
             <SheetHeader className="mb-6">
               <SheetTitle className="text-left text-[18px] font-bold text-[var(--text-primary)]">Add new video</SheetTitle>
             </SheetHeader>
             
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Client</label>
+              <label htmlFor="mobile-client" className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Client</label>
                 <Input 
+                id="mobile-client"
                   placeholder="Client..." 
                   list="client-suggestions"
                   value={client} onChange={e => setClient(e.target.value)}
@@ -929,8 +969,9 @@ export function DataTable({ columns, data }: DataTableProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Subclient</label>
+                <label htmlFor="mobile-subclient" className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Subclient</label>
                 <Input
+                  id="mobile-subclient"
                   placeholder="Subclient..."
                   list="subclient-suggestions"
                   value={subClient} onChange={e => setSubClient(e.target.value)}
@@ -938,16 +979,18 @@ export function DataTable({ columns, data }: DataTableProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Title</label>
+                <label htmlFor="mobile-title" className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Title</label>
                 <Input 
+                  id="mobile-title"
                   placeholder="Video Title..." 
                   value={title} onChange={e => setTitle(e.target.value)}
                   className="h-[34px] rounded-lg bg-[var(--row-hover)] border-[var(--border-soft)] px-4 text-[14px] shadow-sm focus-visible:bg-[var(--surface-page)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Editor</label>
+                <label htmlFor="mobile-editor" className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Editor</label>
                 <Input 
+                  id="mobile-editor"
                   placeholder="Editor..." 
                   list="editor-suggestions"
                   value={editor} onChange={e => setEditor(e.target.value)}
@@ -956,8 +999,9 @@ export function DataTable({ columns, data }: DataTableProps) {
               </div>
               <div className="flex gap-4">
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Start Date</label>
+                  <label htmlFor="mobile-start-date" className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Start Date</label>
                   <Input 
+                    id="mobile-start-date"
                     type="text"
                     placeholder="Date"
                     onFocus={e => { e.target.type = "date"; e.target.showPicker?.(); }}
@@ -968,8 +1012,9 @@ export function DataTable({ columns, data }: DataTableProps) {
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
-                  <label className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Complete Date</label>
+                  <label htmlFor="mobile-complete-date" className="text-[11px] font-bold text-[var(--text-primary)]/70 uppercase tracking-wider ml-1">Complete Date</label>
                   <Input 
+                    id="mobile-complete-date"
                     type="text"
                     placeholder="Date"
                     onFocus={e => { e.target.type = "date"; e.target.showPicker?.(); }}
@@ -983,9 +1028,8 @@ export function DataTable({ columns, data }: DataTableProps) {
               
               <div className="pt-2">
                 <Button 
-                  onClick={(e) => {
-                     handleQuickAdd(e)
-                     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+                  onClick={async (e) => {
+                    if (await handleQuickAdd(e)) setIsAddSheetOpen(false)
                   }}
                   disabled={!title || !editor || isAdding}
                   className="btn-primary h-[34px] w-full text-[13px] disabled:opacity-30"
@@ -1008,6 +1052,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             <div className="w-px h-4 bg-white/20 dark:bg-white/5"></div>
             <button 
               onClick={handleBulkComplete}
+              disabled={isBulkCompleting}
               className="text-[13px] font-bold text-[#ffdf59] hover:text-[#fffdf2] transition-colors"
             >
               Mark Complete
