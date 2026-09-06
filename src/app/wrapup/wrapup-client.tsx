@@ -154,13 +154,21 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
     Object.entries(byEditor)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .forEach(([editor, tasks]) => {
-        text += `*${editor}* (${tasks.length})\n`
+        if (editorFilter === "All") {
+          text += `*${editor}* (${tasks.length})\n`
+        }
+        
         tasks.forEach(t => {
-          const clientStr = t.client ? `${t.sub_client} - ${t.client}` : t.sub_client
-          const date = t.complete_date 
-            ? new Date(t.complete_date.length === 10 ? t.complete_date + "T12:00:00Z" : t.complete_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
-            : ""
-          text += `• ${clientStr}: ${t.video_title} _(${date})_\n`
+          let clientParts = []
+          if (clientFilter === "All" && t.sub_client) clientParts.push(t.sub_client)
+          if (subClientFilter === "All" && t.client) clientParts.push(t.client)
+          
+          const clientStr = clientParts.join(" - ")
+          if (clientStr) {
+            text += `• ${clientStr}: ${t.video_title}\n`
+          } else {
+            text += `• ${t.video_title}\n`
+          }
         })
         text += `\n`
       })
