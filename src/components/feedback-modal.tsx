@@ -2,13 +2,7 @@
 
 import * as React from "react"
 import { MessageSquare, Bug, Lightbulb, X, Check, Loader2 } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-import { Database } from "@/types/database"
-
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { submitFeedback } from "@/app/actions/feedback"
 
 export function FeedbackModal() {
   const [isOpen, setIsOpen] = React.useState(false)
@@ -37,7 +31,7 @@ export function FeedbackModal() {
 
     setIsSubmitting(true)
     
-    const { error } = await supabase.from('feedback').insert({
+    const result = await submitFeedback({
       type,
       name: name.trim() || null,
       description: description.trim()
@@ -45,7 +39,7 @@ export function FeedbackModal() {
 
     setIsSubmitting(false)
 
-    if (!error) {
+    if (result.success) {
       setShowSuccess(true)
       setTimeout(() => {
         setIsOpen(false)
@@ -53,7 +47,7 @@ export function FeedbackModal() {
         setDescription("")
       }, 1500)
     } else {
-      console.error("Error submitting feedback:", error)
+      console.error("Error submitting feedback:", result.error)
       alert("Something went wrong. Please try again.")
     }
   }
