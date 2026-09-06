@@ -759,7 +759,7 @@ export function DataTable({ columns, data }: DataTableProps) {
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Input 
-                  placeholder="minutes" 
+                  placeholder="duration" 
                   value={duration} onChange={e => setDuration(e.target.value)}
                   className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] tabular-nums"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}

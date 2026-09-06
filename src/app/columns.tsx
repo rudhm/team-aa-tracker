@@ -407,7 +407,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineTextEdit 
           value={task.duration}
           locked={task.payroll_locked}
-          placeholder="minutes"
+          placeholder="duration"
           className="text-[12.5px] text-[var(--text-secondary)] font-medium tabular-nums"
           emptyContent="—"
           onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'duration', val)}
