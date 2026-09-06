@@ -15,7 +15,7 @@ export function BoardView({ data, colorMaps }: BoardViewProps) {
         const columnTasks = data.filter(task => task.status === status)
         
         return (
-          <section key={status} aria-labelledby={`board-${status.replace(/\s+/g, "-").toLowerCase()}`} className="flex-shrink-0 w-[85vw] sm:w-72 snap-center rounded-[24px] bg-[var(--surface-card)] p-4 shadow-sm border border-[var(--border)]">
+          <section key={status} aria-labelledby={`board-${status.replace(/\s+/g, "-").toLowerCase()}`} className="flex-shrink-0 w-[85vw] sm:w-auto sm:flex-1 sm:min-w-[320px] snap-center rounded-[24px] bg-[var(--surface-card)] p-4 shadow-sm border border-[var(--border)]">
             <div className="mb-4 flex items-center justify-between px-2">
               <h3 id={`board-${status.replace(/\s+/g, "-").toLowerCase()}`} className="text-[13px] font-bold text-[var(--text-primary)]">{status === "Complete" ? "Completed" : status}</h3>
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface-card-2)] text-[11px] font-semibold text-[var(--text-primary)]">

@@ -407,7 +407,7 @@ export const columns: ColumnDef<VideoTask>[] = [
         <InlineTextEdit 
           value={task.duration}
           locked={task.payroll_locked}
-          placeholder="00:00"
+          placeholder="minutes"
           className="text-[12.5px] text-[var(--text-secondary)] font-medium tabular-nums"
           emptyContent="—"
           onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'duration', val)}
@@ -530,7 +530,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           <DropdownMenuTrigger className="focus:outline-none">
             <StatusBadge status={status} isLocked={false} />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[var(--border-soft)] bg-[var(--surface-page)] p-1.5 shadow-lg">
+          <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[var(--border-soft)] bg-[#F5EFDD]/85 dark:bg-[#0E0E11]/85 backdrop-blur-xl p-1.5 shadow-lg">
             {STATUSES.map((s) => (
               <DropdownMenuItem
                 key={s}

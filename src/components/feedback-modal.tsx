@@ -56,7 +56,7 @@ export function FeedbackModal() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 left-8 md:left-10 z-40 flex items-center justify-center gap-2 rounded-full bg-[var(--surface-card)] border border-[var(--border-soft)] px-4 py-3 text-[14px] font-semibold text-[var(--text-primary)] shadow-[0_6px_20px_rgba(0,0,0,0.15)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.5)] transition-all hover:bg-[var(--surface-card-2)] hover:scale-105"
+        className="fixed bottom-8 left-8 md:left-10 z-40 flex items-center justify-center gap-2 rounded-full bg-white/70 dark:bg-[#18181C]/70 backdrop-blur-md border border-[var(--border-soft)] px-4 py-3 text-[14px] font-semibold text-[var(--text-primary)] shadow-[0_6px_20px_rgba(0,0,0,0.15)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.5)] transition-all hover:bg-white/90 dark:hover:bg-[#1E1E23]/90 hover:scale-105"
         aria-label="Send Feedback"
       >
         <MessageSquare className="h-5 w-5 text-[var(--theme-accent)]" />
@@ -64,8 +64,8 @@ export function FeedbackModal() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity">
-          <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-[var(--surface-page)] p-6 shadow-2xl border border-[var(--border)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity">
+          <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-[#F5EFDD]/85 dark:bg-[#0E0E11]/85 backdrop-blur-2xl p-6 shadow-2xl border border-[var(--border)]">
             
             <button 
               onClick={() => setIsOpen(false)}

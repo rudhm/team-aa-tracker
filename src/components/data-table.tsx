@@ -28,6 +28,11 @@ function useIsMobile() {
 }
 import { supabase } from "@/lib/supabase"
 import { VideoTask } from "@/app/columns"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import {
   Table,
@@ -48,8 +53,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
-import { BoardView } from "@/components/board-view"
-import { LayoutGrid, List } from "lucide-react"
+
 
 import { celebrateDelivery } from "@/lib/delivery-celebration"
 
@@ -163,11 +167,7 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "is_urgent", desc: true }])
   const [rowSelection, setRowSelection] = React.useState({})
-  const [viewMode, setViewMode] = React.useState<'table' | 'board'>('table')
-  const [editorMenuOpen, setEditorMenuOpen] = React.useState(false)
-  const [statusMenuOpen, setStatusMenuOpen] = React.useState(false)
-  const [clientMenuOpen, setClientMenuOpen] = React.useState(false)
-  const [priorityMenuOpen, setPriorityMenuOpen] = React.useState(false)
+  const [openFilter, setOpenFilter] = React.useState<'editor' | 'status' | 'client' | 'priority' | null>(null)
   const [hiddenEditors, setHiddenEditors] = React.useState<string[]>([])
   const [hiddenEditorsLoaded, setHiddenEditorsLoaded] = React.useState(false)
 
@@ -191,7 +191,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       window.removeEventListener('resize', checkScroll)
       clearTimeout(timeoutId)
     }
-  }, [tableData, viewMode, isMobile])
+  }, [tableData, isMobile])
   
   // Quick-Add State
   const [client, setClient] = React.useState("")
@@ -463,25 +463,6 @@ export function DataTable({ columns, data }: DataTableProps) {
       {/* Top Bar: Title & Actions */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="text-xl font-bold text-[var(--text-primary)]">All Videos</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* View Toggle */}
-          <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface-card-2)] p-[3px] gap-[2px]">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex h-[30px] items-center justify-center px-[10px] rounded-[6px] text-[13px] font-semibold transition-colors ${viewMode === 'table' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
-            >
-              <List className="mr-[6px] h-4 w-4" />
-              Table
-            </button>
-            <button
-              onClick={() => setViewMode('board')}
-              className={`flex h-[30px] items-center justify-center px-[10px] rounded-[6px] text-[13px] font-semibold transition-colors ${viewMode === 'board' ? 'bg-[var(--theme-accent)] text-[#241a05]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
-            >
-              <LayoutGrid className="mr-[6px] h-4 w-4" />
-              Board
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Stats Strip */}
@@ -538,12 +519,8 @@ export function DataTable({ columns, data }: DataTableProps) {
           />
         </div>
 
-        <div className="relative">
-          <button
-            type="button"
-            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
-            onClick={() => setEditorMenuOpen(isOpen => !isOpen)}
-          >
+        <DropdownMenu open={openFilter === 'editor'} onOpenChange={(open) => setOpenFilter(open ? 'editor' : null)}>
+          <DropdownMenuTrigger className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]">
             Editor : {editorFilter || "All"}
             {editorFilter && (
               <button
@@ -553,176 +530,154 @@ export function DataTable({ columns, data }: DataTableProps) {
                 onClick={(e) => {
                   e.stopPropagation()
                   table.getColumn("editor")?.setFilterValue("")
+                  setOpenFilter(null)
                 }}
               >✕</button>
             )}
             {!editorFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
-          </button>
+          </DropdownMenuTrigger>
 
-          {editorMenuOpen && (
-            <div role="menu" aria-label="Editor filter options" className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
-              <button
-                type="button"
-                className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                onClick={() => { table.getColumn("editor")?.setFilterValue(""); setEditorMenuOpen(false); }}
-              >
-                All Editors
-              </button>
-              {visibleEditors.map(editorName => (
-                <div key={editorName} className="flex items-center group w-full">
-                  <button
-                    type="button"
-                    className={`flex-1 flex h-8 items-center gap-2 rounded-l-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
-                    onClick={() => { table.getColumn("editor")?.setFilterValue(editorName); setEditorMenuOpen(false); }}
-                  >
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editorName) }} />
-                    {editorName}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleHideEditor(editorName);
-                    }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all"
-                    title="Hide Editor"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-              {hiddenEditorCount > 0 && (
+          <DropdownMenuContent align="start" className="z-50 max-h-[280px] w-full min-w-[230px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+            <button
+              type="button"
+              className={`flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${!editorFilter ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+              onClick={() => { table.getColumn("editor")?.setFilterValue(""); setOpenFilter(null); }}
+            >
+              All Editors
+            </button>
+            {visibleEditors.map(editorName => (
+              <div key={editorName} className="flex items-center group w-full">
                 <button
                   type="button"
-                  onClick={handleRestoreHiddenEditors}
-                  className="mt-2 w-full flex items-center justify-center h-7 rounded-md text-[11px] font-semibold text-[var(--theme-accent)] hover:bg-[var(--surface-card-2)] transition-colors"
+                  className={`flex-1 flex h-8 items-center gap-2 rounded-l-lg px-3 text-left font-medium transition-colors hover:bg-[#F3F5EE] dark:hover:bg-white/10 ${editorFilter === editorName ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                  onClick={() => { table.getColumn("editor")?.setFilterValue(editorName); setOpenFilter(null); }}
                 >
-                  Restore {hiddenEditorCount} hidden editor{hiddenEditorCount !== 1 ? 's' : ''}
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editorName) }} />
+                  {editorName}
                 </button>
-              )}
-            </div>
-          )}
-        </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleHideEditor(editorName);
+                  }}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-all"
+                  title="Hide Editor"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+            {hiddenEditorCount > 0 && (
+              <button
+                type="button"
+                onClick={handleRestoreHiddenEditors}
+                className="mt-2 w-full flex items-center justify-center h-7 rounded-md text-[11px] font-semibold text-[var(--theme-accent)] hover:bg-[var(--surface-card-2)] transition-colors"
+              >
+                Restore {hiddenEditorCount} hidden editor{hiddenEditorCount !== 1 ? 's' : ''}
+              </button>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <div className="relative">
-          <button
-            type="button"
-            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
-            onClick={() => setStatusMenuOpen(isOpen => !isOpen)}
-          >
+        <DropdownMenu open={openFilter === 'status'} onOpenChange={(open) => setOpenFilter(open ? 'status' : null)}>
+          <DropdownMenuTrigger className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]">
             Status : {statusFilter || "All"}
             {statusFilter && (
               <button
                 type="button"
                 aria-label="Clear status filter"
                 className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
-                onClick={(e) => { e.stopPropagation(); table.getColumn("status")?.setFilterValue("") }}
+                onClick={(e) => { e.stopPropagation(); table.getColumn("status")?.setFilterValue(""); setOpenFilter(null); }}
               >✕</button>
             )}
             {!statusFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
-          </button>
-
-          {statusMenuOpen && (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[180px] rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="z-50 w-full min-w-[180px] rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+            <button
+              type="button"
+              className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+              onClick={() => { table.getColumn("status")?.setFilterValue(""); setOpenFilter(null) }}
+            >
+              All Statuses
+            </button>
+            {STATUS_FILTERS.map(s => (
               <button
+                key={s}
                 type="button"
-                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
-                onClick={() => { table.getColumn("status")?.setFilterValue(""); setStatusMenuOpen(false) }}
+                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                onClick={() => { table.getColumn("status")?.setFilterValue(s); setOpenFilter(null) }}
               >
-                All Statuses
+                {s}
               </button>
-              {STATUS_FILTERS.map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium hover:bg-[#F3F5EE] dark:hover:bg-white/10"
-                  onClick={() => { table.getColumn("status")?.setFilterValue(s); setStatusMenuOpen(false) }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <div className="relative">
-          <button
-            type="button"
-            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
-            onClick={() => setClientMenuOpen(isOpen => !isOpen)}
-          >
+        <DropdownMenu open={openFilter === 'client'} onOpenChange={(open) => setOpenFilter(open ? 'client' : null)}>
+          <DropdownMenuTrigger className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]">
             Client : {clientFilter || "All"}
             {clientFilter && (
               <button
                 type="button"
                 aria-label="Clear client filter"
                 className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
-                onClick={(e) => { e.stopPropagation(); table.getColumn("client")?.setFilterValue("") }}
+                onClick={(e) => { e.stopPropagation(); table.getColumn("client")?.setFilterValue(""); setOpenFilter(null); }}
               >✕</button>
             )}
             {!clientFilter && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
-          </button>
-
-          {clientMenuOpen && (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-50 max-h-[280px] w-full min-w-[200px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="z-50 max-h-[280px] w-full min-w-[200px] overflow-y-auto rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+            <button
+              type="button"
+              className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+              onClick={() => { table.getColumn("client")?.setFilterValue(""); setOpenFilter(null) }}
+            >
+              All Clients
+            </button>
+            {uniqueClients.map(c => (
               <button
+                key={c}
                 type="button"
-                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
-                onClick={() => { table.getColumn("client")?.setFilterValue(""); setClientMenuOpen(false) }}
+                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+                onClick={() => { table.getColumn("client")?.setFilterValue(c); setOpenFilter(null) }}
               >
-                All Clients
+                {c}
               </button>
-              {uniqueClients.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium hover:bg-[#F3F5EE] dark:hover:bg-white/10"
-                  onClick={() => { table.getColumn("client")?.setFilterValue(c); setClientMenuOpen(false) }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <div className="relative">
-          <button
-            type="button"
-            className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]"
-            onClick={() => setPriorityMenuOpen(isOpen => !isOpen)}
-          >
+        <DropdownMenu open={openFilter === 'priority'} onOpenChange={(open) => setOpenFilter(open ? 'priority' : null)}>
+          <DropdownMenuTrigger className="flex items-center gap-[8px] bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full py-[7px] pl-[14px] pr-[8px] text-[13px] text-[var(--text-primary)]">
             Priority : {(table.getColumn("is_urgent")?.getFilterValue() as boolean) === true ? "Urgent only" : "All"}
             {(table.getColumn("is_urgent")?.getFilterValue() as boolean) === true && (
               <button
                 type="button"
                 aria-label="Clear priority filter"
                 className="w-[18px] h-[18px] rounded-full bg-[#2C2C33] text-[var(--text-muted)] flex items-center justify-center text-[11px] cursor-pointer ml-1 hover:text-white"
-                onClick={(e) => { e.stopPropagation(); table.getColumn("is_urgent")?.setFilterValue(undefined) }}
+                onClick={(e) => { e.stopPropagation(); table.getColumn("is_urgent")?.setFilterValue(undefined); setOpenFilter(null); }}
               >✕</button>
             )}
             {(table.getColumn("is_urgent")?.getFilterValue() as boolean) !== true && <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-50" />}
-          </button>
-
-          {priorityMenuOpen && (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[180px] rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
-              <button
-                type="button"
-                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
-                onClick={() => { table.getColumn("is_urgent")?.setFilterValue(undefined); setPriorityMenuOpen(false) }}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium text-red-500 hover:bg-[#F3F5EE] dark:hover:bg-white/10"
-                onClick={() => { table.getColumn("is_urgent")?.setFilterValue(true); setPriorityMenuOpen(false) }}
-              >
-                Urgent only
-              </button>
-            </div>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="z-50 w-full min-w-[180px] rounded-xl border border-[var(--border)] bg-white p-1.5 text-[13px] shadow-lg dark:bg-[#161b22]">
+            <button
+              type="button"
+              className="flex h-8 w-full items-center rounded-lg px-3 text-left font-semibold hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+              onClick={() => { table.getColumn("is_urgent")?.setFilterValue(undefined); setOpenFilter(null) }}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              className="flex h-8 w-full items-center rounded-lg px-3 text-left font-medium text-red-500 hover:bg-[#F3F5EE] dark:hover:bg-white/10"
+              onClick={() => { table.getColumn("is_urgent")?.setFilterValue(true); setOpenFilter(null) }}
+            >
+              Urgent only
+            </button>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <datalist id="editor-suggestions">
@@ -735,9 +690,6 @@ export function DataTable({ columns, data }: DataTableProps) {
         {uniqueSubClients.map(c => <option key={c} value={c} />)}
       </datalist>
 
-      {viewMode === 'board' ? (
-        <BoardView data={table.getFilteredRowModel().rows.map(r => r.original)} colorMaps={colorMaps} />
-      ) : (
       <>
         {/* Mobile View (Cards) */}
         {!isMobile ? null : (
@@ -766,7 +718,7 @@ export function DataTable({ columns, data }: DataTableProps) {
             <TableRow className="border-b border-[var(--border)] hover:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
                 headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="py-[12px] px-[16px] text-[11.5px] font-bold uppercase tracking-[.03em] text-[var(--text-muted)] sticky top-0 z-10 bg-[var(--surface-card)]">
+                  <TableHead key={header.id} className="py-[12px] px-[16px] text-[11.5px] font-bold uppercase tracking-[.03em] text-[var(--text-muted)] sticky top-0 z-10 bg-white/85 dark:bg-[#18181C]/85 backdrop-blur-md">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))
@@ -807,7 +759,7 @@ export function DataTable({ columns, data }: DataTableProps) {
               </TableCell>
               <TableCell className="px-[16px] py-[8px]">
                 <Input 
-                  placeholder="00:00" 
+                  placeholder="minutes" 
                   value={duration} onChange={e => setDuration(e.target.value)}
                   className="h-[30px] rounded-[6px] border border-[var(--border-soft)] bg-[var(--surface-page)] px-[10px] text-[12.5px] shadow-sm focus-visible:ring-1 focus-visible:ring-[var(--theme-accent)] focus-visible:border-transparent transition-all placeholder:text-[var(--text-faint)] tabular-nums"
                   onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd(e) }}
@@ -944,7 +896,6 @@ export function DataTable({ columns, data }: DataTableProps) {
       </div>
       )}
       </>
-      )}
 
       {/* Mobile Add Task FAB & Sheet */}
       <div className="md:hidden fixed bottom-6 right-4 z-40">
@@ -1043,7 +994,7 @@ export function DataTable({ columns, data }: DataTableProps) {
       </div>
 
       {/* Floating Bulk Action Bar */}
-      {selectedCount > 0 && viewMode === 'table' && (
+      {selectedCount > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in zoom-in-95 duration-200 w-[90vw] md:w-auto flex justify-center">
           <div className="flex items-center gap-4 rounded-full theme-header px-6 py-3 shadow-2xl border border-[var(--border)]">
             <span className="text-[13px] font-medium text-white/80">
