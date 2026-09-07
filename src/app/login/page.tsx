@@ -82,7 +82,7 @@ export default function LoginPage() {
           )}
           <Button type="submit" disabled={isSubmitting} className="btn-primary h-10 w-full">
             {isSubmitting && <MorphingInfinity className="h-4 w-4" />}
-            {isSubmitting ? "Sending magic link..." : "Sign in"}
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </section>
