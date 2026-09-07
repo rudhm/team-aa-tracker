@@ -3,7 +3,6 @@ import { columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AuthControls } from "@/components/auth-controls"
-import { WipeDataButton } from "@/components/wipe-data-button"
 
 export const revalidate = 0 // Disable caching to always fetch the latest data
 
@@ -64,7 +63,6 @@ export default async function Page() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <WipeDataButton />
             <AuthControls email={user.email ?? "Signed in"} />
             <div className="flex items-center justify-center [&_button]:!w-[28px] [&_button]:!h-[28px] [&_button]:!bg-[#2c2b28] [&_button]:!rounded-full [&_svg]:!w-3.5 [&_svg]:!h-3.5 [&_svg]:!text-white [&_button]:!border-0">
               <ThemeToggle />
