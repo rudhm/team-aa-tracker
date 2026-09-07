@@ -5,8 +5,36 @@ import { VideoTask } from "@/app/columns"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Download, Lock, Loader2, Copy, Check, ChevronDown, ChevronRight } from "lucide-react"
+import { Download, Lock, Loader2, Copy, Check, ChevronDown, ChevronRight, History } from "lucide-react"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { createEntityColor, createEntityColorMaps, formatName } from "@/lib/utils"
+
+const renderChanges = (oldData: any, newData: any) => {
+  if (!oldData && newData) return <div className="text-[12px] text-emerald-600 font-medium">Task created</div>
+  if (oldData && !newData) return <div className="text-[12px] text-red-600 font-medium">Task deleted</div>
+  
+  const changes = []
+  const ignoreKeys = ['id', 'created_at', 'updated_at', 'payroll_locked']
+  
+  for (const key in newData) {
+    if (ignoreKeys.includes(key)) continue
+    const oldVal = oldData[key]
+    const newVal = newData[key]
+    
+    if (oldVal !== newVal) {
+      changes.push(
+        <div key={key} className="text-[12px]">
+          <span className="font-semibold text-[var(--text-secondary)]">{key}: </span>
+          <span className="line-through opacity-60 mr-1">{oldVal || 'none'}</span>
+          <span className="text-[var(--text-primary)] font-medium">➝ {newVal || 'none'}</span>
+        </div>
+      )
+    }
+  }
+  
+  if (changes.length === 0) return <div className="text-[12px] text-[var(--text-secondary)] italic">No visible changes</div>
+  return <div className="space-y-1">{changes}</div>
+}
 
 export function WrapupClient({ data }: { data: VideoTask[] }) {
   const router = useRouter()
@@ -20,6 +48,10 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
   const [copied, setCopied] = React.useState(false)
   const [copyError, setCopyError] = React.useState("")
   const [collapsedEditors, setCollapsedEditors] = React.useState<Record<string, boolean>>({})
+  
+  const [isHistoryOpen, setIsHistoryOpen] = React.useState(false)
+  const [auditLogs, setAuditLogs] = React.useState<any[]>([])
+  const [isLoadingHistory, setIsLoadingHistory] = React.useState(false)
 
   const toggleEditor = (ed: string) => {
     setCollapsedEditors(prev => ({ ...prev, [ed]: !prev[ed] }))
@@ -60,6 +92,33 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
   const uniqueClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.sub_client).filter(Boolean))).sort() as string[], [currentMonthData])
   const uniqueSubClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.client).filter(Boolean))).sort(), [currentMonthData])
   const uniqueEditors = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => formatName(t.editor)).filter(Boolean))).sort(), [currentMonthData])
+
+  const loadHistory = React.useCallback(async () => {
+    if (currentMonthData.length === 0) {
+      setAuditLogs([])
+      return
+    }
+    setIsLoadingHistory(true)
+    const ids = currentMonthData.map(t => t.id)
+    // Fetch logs up to 100 for this month's tasks
+    const { data, error } = await supabase
+      .from('task_audit_logs')
+      .select('*')
+      .in('task_id', ids)
+      .order('created_at', { ascending: false })
+      .limit(100)
+    
+    if (!error && data) {
+      setAuditLogs(data)
+    }
+    setIsLoadingHistory(false)
+  }, [currentMonthData])
+
+  React.useEffect(() => {
+    if (isHistoryOpen) {
+      loadHistory()
+    }
+  }, [isHistoryOpen, loadHistory])
 
   const filteredMonthData = React.useMemo(() => {
     return currentMonthData.filter(t => {
@@ -246,6 +305,64 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline"
+                className="h-[34px] w-full sm:w-auto rounded-lg border-[var(--border-strong)] bg-transparent px-4 text-[12px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-page)]"
+              >
+                <History className="mr-2 h-4 w-4 text-[var(--text-secondary)]" />
+                History
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle>Version History</SheetTitle>
+                <div className="text-sm text-[var(--text-secondary)]">
+                  Tracking changes for {formatMonth(selectedMonth)}
+                </div>
+              </SheetHeader>
+              
+              <div className="space-y-6">
+                {isLoadingHistory ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-[var(--text-secondary)]" />
+                  </div>
+                ) : auditLogs.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-[var(--text-secondary)]">
+                    No history found for this month's tasks.
+                  </div>
+                ) : (
+                  auditLogs.map((log) => {
+                    const task = currentMonthData.find(t => t.id === log.task_id)
+                    const title = task?.video_title || "Unknown Task"
+                    
+                    return (
+                      <div key={log.id} className="relative pl-6 pb-6 border-l border-[var(--border)] last:border-0 last:pb-0">
+                        <div className="absolute left-[-5px] top-1 h-2.5 w-2.5 rounded-full bg-[var(--theme-accent)] shadow-sm"></div>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[13px] font-bold text-[var(--text-primary)]">{title}</span>
+                            <span className="text-[11px] font-medium text-[var(--text-secondary)] bg-[var(--surface-page)] px-2 py-0.5 rounded-md border border-[var(--border-soft)]">
+                              {log.operation}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-[var(--text-secondary)] mb-2 flex justify-between">
+                            <span>{new Date(log.created_at).toLocaleString()}</span>
+                            <span>{log.changed_by_email || 'Unknown User'}</span>
+                          </div>
+                          <div className="bg-[var(--surface-page)] border border-[var(--border-soft)] rounded-lg p-3">
+                            {renderChanges(log.old_data, log.new_data)}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <Button 
             onClick={copyToClipboard}
             variant="outline"
