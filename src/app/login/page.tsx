@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { MorphingInfinity } from "@/components/loading-ui/morphing-infinity"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { supabase } from "@/lib/supabase"
@@ -81,8 +81,8 @@ export default function LoginPage() {
             </p>
           )}
           <Button type="submit" disabled={isSubmitting} className="btn-primary h-10 w-full">
-            {isSubmitting && <Loader2 className="animate-spin" />}
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isSubmitting && <MorphingInfinity className="h-4 w-4" />}
+            {isSubmitting ? "Sending magic link..." : "Sign in"}
           </Button>
         </form>
       </section>

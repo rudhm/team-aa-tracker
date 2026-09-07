@@ -164,10 +164,11 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
           if (subClientFilter === "All" && t.client) clientParts.push(t.client)
           
           const clientStr = clientParts.join(" - ")
+          const titleStr = t.duration ? `${t.video_title} (${t.duration})` : t.video_title
           if (clientStr) {
-            text += `• ${clientStr}: ${t.video_title}\n`
+            text += `• ${clientStr}: ${titleStr}\n`
           } else {
-            text += `• ${t.video_title}\n`
+            text += `• ${titleStr}\n`
           }
         })
         text += `\n`

@@ -57,7 +57,7 @@ export function InlineTextEdit({
   placeholder = "",
   listId,
   className = "",
-  emptyContent = "—",
+  emptyContent = <span className="text-3xl font-bold opacity-40">—</span>,
   style,
   prefix,
   truncate = false,
@@ -129,7 +129,7 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate, isStartDate 
   const [isEditing, setIsEditing] = useState(false)
   const [dateStr, setDateStr] = useState("")
 
-  const displayValue = value ? new Date(value).toLocaleDateString("en-US", { timeZone: 'UTC', month: "short", day: "numeric" }) : "—"
+  const displayValue = value ? new Date(value).toLocaleDateString("en-US", { timeZone: 'UTC', month: "short", day: "numeric" }) : <span className="text-3xl font-bold opacity-40">—</span>
 
   const startEdit = () => {
      if (locked) return
@@ -349,7 +349,6 @@ export const columns: ColumnDef<VideoTask>[] = [
             locked={task.payroll_locked}
             listId="client-suggestions"
             className={`font-bold text-[13.8px] ${task.sub_client ? 'text-[var(--text-primary)]' : 'text-[var(--text-faint)]'}`}
-            emptyContent="—"
             onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'sub_client', val.trim() || null)}
           />
         </div>
@@ -375,7 +374,6 @@ export const columns: ColumnDef<VideoTask>[] = [
             : "text-[13px] text-[var(--text-faint)]"
           }
           style={subClientColor}
-          emptyContent="—"
           onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'client', val.trim() || "")}
         />
       )
@@ -409,7 +407,6 @@ export const columns: ColumnDef<VideoTask>[] = [
           locked={task.payroll_locked}
           placeholder="duration"
           className="text-[12.5px] text-[var(--text-secondary)] font-medium tabular-nums"
-          emptyContent="—"
           onUpdate={(val) => table.options.meta?.updateData(row.original.id, 'duration', val)}
         />
       )
@@ -429,7 +426,6 @@ export const columns: ColumnDef<VideoTask>[] = [
           locked={task.payroll_locked}
           listId="editor-suggestions"
           className={`text-[13px] font-semibold ${formattedName ? 'text-[var(--text-primary)]' : 'text-[var(--text-faint)]'}`}
-          emptyContent="—"
           prefix={formattedName ? (
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
           ) : undefined}

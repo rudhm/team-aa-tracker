@@ -43,7 +43,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Loader2, Plus, Search, X, Calendar } from "lucide-react"
+import { ChevronDown, Plus, Search, X, Calendar } from "lucide-react"
+import { MorphingInfinity } from "@/components/loading-ui/morphing-infinity"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -208,6 +209,11 @@ export function DataTable({ columns, data }: DataTableProps) {
   const [isBulkCompleting, setIsBulkCompleting] = React.useState(false)
   const [isAddSheetOpen, setIsAddSheetOpen] = React.useState(false)
   const mutationVersions = React.useRef(new Map<string, number>())
+  
+  const [currentMonth, setCurrentMonth] = React.useState("")
+  React.useEffect(() => {
+    setCurrentMonth(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", month: "long", year: "numeric" }))
+  }, [])
 
   // Unique fields for datalist autocomplete
   const uniqueEditors = React.useMemo(() => {
@@ -464,8 +470,20 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div id="delivery-stage" className="absolute top-16 left-0 right-0 z-50 pointer-events-none"></div>
 
       {/* Top Bar: Title & Actions */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="text-xl font-bold text-[var(--text-primary)]">All Videos</div>
+      <div className="relative flex items-center justify-between mb-4 flex-wrap gap-3 min-h-[32px]">
+        <div className="flex items-center gap-3 text-xl font-bold text-[var(--text-primary)]">
+          All Videos
+        </div>
+        {currentMonth && (
+          <h2 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-bold tracking-tight uppercase leading-none text-[var(--theme-accent)] pointer-events-none hidden sm:block mt-1">
+            {currentMonth}
+          </h2>
+        )}
+        {currentMonth && (
+          <h2 className="text-3xl font-bold tracking-tight uppercase leading-none text-[var(--theme-accent)] sm:hidden">
+            {currentMonth}
+          </h2>
+        )}
       </div>
 
       {/* Stats Strip */}
@@ -856,7 +874,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                         disabled={!title || !editor || isAdding}
                         className="bg-[var(--theme-accent)] text-[#241a05] hover:bg-[#F2CD60] h-7 w-16 text-[12px] font-bold shadow-sm disabled:opacity-40 disabled:hover:bg-[var(--theme-accent)] transition-all"
                       >
-                        {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                        {isAdding ? <MorphingInfinity className="h-4 w-4 mr-1" /> : "Save"}
                       </Button>
                     </TableCell>
                   )
@@ -950,6 +968,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                 {pageSize} / page
               </option>
             ))}
+            <option value={100000}>all</option>
           </select>
         </div>
       </div>
@@ -1045,7 +1064,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   disabled={!title || !editor || isAdding}
                   className="btn-primary h-[34px] w-full text-[13px] disabled:opacity-30"
                 >
-                  {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Video"}
+                  {isAdding ? <MorphingInfinity className="h-5 w-5 mr-2" /> : "Save Video"}
                 </Button>
               </div>
             </div>
