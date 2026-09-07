@@ -26,9 +26,9 @@ function MorphingInfinity(props: React.ComponentProps<"svg">) {
       {...props}
     >
       <motion.path
-        d={circleA}
+        d={infinity}
         animate={{
-          d: [circleA, infinity, circleB, infinity, circleA],
+          d: [infinity, circleB, infinity, circleA, infinity],
         }}
         transition={{
           duration: 3,
