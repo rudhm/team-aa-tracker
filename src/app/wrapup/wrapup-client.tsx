@@ -311,12 +311,12 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
                 <Button 
                   variant="outline"
                   className="h-[34px] w-full sm:w-auto rounded-lg border-[var(--border-strong)] bg-transparent px-4 text-[12px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-page)]"
-                />
+                >
+                  <History className="mr-2 h-4 w-4 text-[var(--text-secondary)]" />
+                  History
+                </Button>
               }
-            >
-              <History className="mr-2 h-4 w-4 text-[var(--text-secondary)]" />
-              History
-            </SheetTrigger>
+            />
             <SheetContent className="w-full sm:max-w-md overflow-y-auto">
               <SheetHeader className="mb-6">
                 <SheetTitle>Version History</SheetTitle>
