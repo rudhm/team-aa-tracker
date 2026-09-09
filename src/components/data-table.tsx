@@ -763,7 +763,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
                     </TableCell>
                   )
                 }
-                if (column.id === 'sub_client') {
+                if (column.id === 'client') {
                   return (
                     <TableCell key={column.id} className="px-[16px] py-[8px]">
                       <Input 
@@ -775,7 +775,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
                     </TableCell>
                   )
                 }
-                if (column.id === 'client') {
+                if (column.id === 'sub_client') {
                   return (
                     <TableCell key={column.id} className="px-[16px] py-[8px]">
                       <Input
