@@ -173,6 +173,27 @@ export type Database = {
         }
         Relationships: []
       }
+      predefined_clients: {
+        Row: {
+          id: string
+          name: string
+          type: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          type: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          type?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

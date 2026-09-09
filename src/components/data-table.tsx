@@ -63,6 +63,7 @@ const HIDDEN_EDITORS_STORAGE_KEY = "team-aa-hidden-editors"
 interface DataTableProps {
   columns: ColumnDef<VideoTask, any>[]
   data: VideoTask[]
+  predefinedClients?: { id: string, name: string, type: string }[]
 }
 
 
@@ -154,7 +155,7 @@ const MemoizedDesktopRow = React.memo(({ row, isLast, index, isSelected }: { row
   )
 })
 
-export function DataTable({ columns, data }: DataTableProps) {
+export function DataTable({ columns, data, predefinedClients = [] }: DataTableProps) {
   const router = useRouter()
   const isMobile = useIsMobile()
   const scrollRef = React.useRef<HTMLDivElement>(null)
@@ -218,8 +219,9 @@ export function DataTable({ columns, data }: DataTableProps) {
   // Unique fields for datalist autocomplete
   const uniqueEditors = React.useMemo(() => {
     const editors = new Set(data.map(d => formatName(d.editor)).filter(Boolean))
+    predefinedClients.filter(p => p.type === 'editor').forEach(p => editors.add(p.name))
     return Array.from(editors)
-  }, [data])
+  }, [data, predefinedClients])
 
   React.useEffect(() => {
     try {
@@ -260,13 +262,15 @@ export function DataTable({ columns, data }: DataTableProps) {
 
   const uniqueClients = React.useMemo(() => {
     const clients = new Set(data.map(d => d.sub_client).filter(Boolean))
+    predefinedClients.filter(p => p.type === 'client').forEach(p => clients.add(p.name))
     return Array.from(clients) as string[]
-  }, [data])
+  }, [data, predefinedClients])
 
   const uniqueSubClients = React.useMemo(() => {
     const subClients = new Set(data.map(d => d.client).filter((subClient): subClient is string => Boolean(subClient)))
+    predefinedClients.filter(p => p.type === 'sub_client').forEach(p => subClients.add(p.name))
     return Array.from(subClients)
-  }, [data])
+  }, [data, predefinedClients])
 
   const colorMaps = React.useMemo(() => {
     return createEntityColorMaps({

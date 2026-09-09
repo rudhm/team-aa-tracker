@@ -28,6 +28,10 @@ export default async function Page() {
   if (!user) return null
   const data = await getData()
   
+  // Fetch predefined clients
+  const { data: predefinedClientsData } = await supabase.from('predefined_clients').select('*')
+  const predefinedClients = predefinedClientsData || []
+  
   // Get current date in IST (Asia/Kolkata)
   const nowStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
   const now = new Date(nowStr);
@@ -67,6 +71,9 @@ export default async function Page() {
             <div className="flex items-center justify-center [&_button]:!w-[28px] [&_button]:!h-[28px] [&_button]:!bg-[#2c2b28] [&_button]:!rounded-full [&_svg]:!w-3.5 [&_svg]:!h-3.5 [&_svg]:!text-white [&_button]:!border-0">
               <ThemeToggle />
             </div>
+            <a href="/clients" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
+              Manage
+            </a>
             <a href="/wrapup" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
               Wrap-up →
             </a>
@@ -76,7 +83,7 @@ export default async function Page() {
 
       {/* Main content */}
       <main className="mx-auto max-w-[1920px] px-6 sm:px-8 py-7 w-full flex-1">
-        <DataTable columns={columns} data={filteredData} />
+        <DataTable columns={columns} data={filteredData} predefinedClients={predefinedClients} />
       </main>
 
     </div>
