@@ -398,7 +398,7 @@ export const columns: ColumnDef<VideoTask>[] = [
   },
   {
     accessorKey: "duration",
-    header: "Length",
+    header: "Duration",
     cell: ({ row, table }) => {
       const task = row.original
       return (
