@@ -6,6 +6,7 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
+  Row,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -16,9 +17,14 @@ import {
 import { useRouter } from "next/navigation"
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState(false)
+  // Initialize from the current matchMedia state to avoid a synchronous setState in effect
+  const [isMobile, setIsMobile] = React.useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 768px)").matches : false
+  )
   React.useEffect(() => {
     const mql = window.matchMedia("(max-width: 768px)")
+    // Sync in case the value changed between first render and effect run
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobile(mql.matches)
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
     mql.addEventListener("change", handler)
@@ -61,23 +67,24 @@ import { celebrateDelivery } from "@/lib/delivery-celebration"
 const HIDDEN_EDITORS_STORAGE_KEY = "team-aa-hidden-editors"
 
 interface DataTableProps {
-  columns: ColumnDef<VideoTask, any>[]
+  columns: ColumnDef<VideoTask, unknown>[]
   data: VideoTask[]
   predefinedClients?: { id: string, name: string, type: string }[]
 }
 
 
-const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex, isSelected }: { row: any, style?: React.CSSProperties, measureRef?: React.Ref<HTMLDivElement>, dataIndex?: number, isSelected: boolean }) => {
-  const selectCell = row.getVisibleCells().find((c: any) => c.column.id === 'select');
-  const clientCell = row.getVisibleCells().find((c: any) => c.column.id === 'client');
-  const subClientCell = row.getVisibleCells().find((c: any) => c.column.id === 'sub_client');
-  const statusCell = row.getVisibleCells().find((c: any) => c.column.id === 'status');
-  const videoTitleCell = row.getVisibleCells().find((c: any) => c.column.id === 'video_title');
-  const editorCell = row.getVisibleCells().find((c: any) => c.column.id === 'editor');
-  const startDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'start_date');
-  const completeDateCell = row.getVisibleCells().find((c: any) => c.column.id === 'complete_date');
-  const linkCell = row.getVisibleCells().find((c: any) => c.column.id === 'link');
-  const priorityCell = row.getVisibleCells().find((c: any) => c.column.id === 'is_urgent');
+const MemoizedMobileRow = React.memo(function MemoizedMobileRow({ row, style, measureRef, dataIndex }: { row: Row<VideoTask>, style?: React.CSSProperties, measureRef?: React.Ref<HTMLDivElement>, dataIndex?: number }) {
+  const cells = row.getVisibleCells()
+  const selectCell = cells.find((c) => c.column.id === 'select');
+  const clientCell = cells.find((c) => c.column.id === 'client');
+  const subClientCell = cells.find((c) => c.column.id === 'sub_client');
+  const statusCell = cells.find((c) => c.column.id === 'status');
+  const videoTitleCell = cells.find((c) => c.column.id === 'video_title');
+  const editorCell = cells.find((c) => c.column.id === 'editor');
+  const startDateCell = cells.find((c) => c.column.id === 'start_date');
+  const completeDateCell = cells.find((c) => c.column.id === 'complete_date');
+  const linkCell = cells.find((c) => c.column.id === 'link');
+  const priorityCell = cells.find((c) => c.column.id === 'is_urgent');
 
   const isUrgent = row.original.is_urgent;
 
@@ -134,7 +141,7 @@ const MemoizedMobileRow = React.memo(({ row, style, measureRef, dataIndex, isSel
   )
 })
 
-const MemoizedDesktopRow = React.memo(({ row, isLast, index, isSelected }: { row: any, isLast: boolean, index: number, isSelected: boolean }) => {
+const MemoizedDesktopRow = React.memo(function MemoizedDesktopRow({ row, isLast, index }: { row: Row<VideoTask>, isLast: boolean, index: number }) {
   const isUrgent = row.original.is_urgent;
   return (
     <TableRow
@@ -146,7 +153,7 @@ const MemoizedDesktopRow = React.memo(({ row, isLast, index, isSelected }: { row
         !isLast ? "border-b border-[var(--border-soft)]" : "border-0"
       }`}
     >
-      {row.getVisibleCells().map((cell: any, cellIndex: number) => (
+      {row.getVisibleCells().map((cell, cellIndex: number) => (
         <TableCell key={cell.id} className={`px-[16px] py-[13px] text-[13.5px] ${isUrgent && cellIndex === 0 ? "border-l-[3px] border-l-red-500" : ""}`}>
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
@@ -253,7 +260,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
     const busyEditors = new Set(
       data.filter(d => d.status === "In progress").map(d => formatName(d.editor)).filter(Boolean)
     )
-    return visibleEditors.filter(editor => !busyEditors.has(editor)).sort()
+    return visibleEditors.filter(editorName => !busyEditors.has(editorName)).sort()
   }, [data, visibleEditors])
 
   const hiddenEditorCount = React.useMemo(() => {
@@ -280,6 +287,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
     })
   }, [tableData])
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: tableData,
     columns,
@@ -299,7 +307,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
     },
     meta: {
       colorMaps,
-            updateData: async (rowId: string, columnIdOrUpdates: string | Record<string, any>, value?: any) => {
+            updateData: async (rowId: string, columnIdOrUpdates: string | Record<string, unknown>, value?: unknown) => {
         const row = tableData.find(task => task.id === rowId)
         if (!row) return
         setMutationError("")
@@ -307,11 +315,11 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
         const nextVersion = (mutationVersions.current.get(row.id) ?? 0) + 1
         mutationVersions.current.set(row.id, nextVersion)
         
-        let updates: any = {}
+        let updates: Record<string, unknown> = {}
         if (typeof columnIdOrUpdates === 'string') {
           updates[columnIdOrUpdates] = value
         } else {
-          updates = columnIdOrUpdates
+          updates = { ...columnIdOrUpdates }
         }
         
         // Auto-set complete_date when status flips to Complete
@@ -336,7 +344,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
         
         const { error } = await supabase
           .from('video_tasks')
-          .update(updates)
+          .update(updates as import("@/types/database").Database['public']['Tables']['video_tasks']['Update'])
           .eq('id', row.id)
           .eq('payroll_locked', false)
           .select('id')
@@ -383,7 +391,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
       const d1 = new Date(startDay)
       const d2 = new Date(completeDay)
       if (d1.getUTCMonth() !== d2.getUTCMonth() || d1.getUTCFullYear() !== d2.getUTCFullYear()) {
-        alert("Start Date and Complete Date must belong to the same month.")
+        setMutationError("Start Date and Complete Date must be in the same month.")
         return false
       }
     }
@@ -506,13 +514,13 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
         <div className="flex items-center gap-[6px] flex-wrap">
           {availableEditors.length > 0 ? (
             <>
-              {availableEditors.slice(0, isIdleExpanded ? undefined : 5).map(editor => (
+              {availableEditors.slice(0, isIdleExpanded ? undefined : 5).map(edName => (
                 <div
-                  key={editor}
+                  key={edName}
                   className="flex items-center gap-1.5 bg-[var(--surface-card-2)] border border-[var(--border)] rounded-full px-2.5 py-1 text-[12px] font-semibold text-[var(--text-primary)] shadow-sm"
                 >
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(editor) }} />
-                  {editor}
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getEditorDotColor(edName) }} />
+                  {edName}
                 </div>
               ))}
               {availableEditors.length > 5 && (
@@ -725,7 +733,6 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
                    key={row.id} 
                    row={row} 
                    dataIndex={index}
-                   isSelected={row.getIsSelected()}
                  />
                ))
             ) : (
@@ -896,7 +903,6 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
                   row={row}
                   index={index}
                   isLast={index === rows.length - 1}
-                  isSelected={row.getIsSelected()}
                 />
               ))
             ) : (

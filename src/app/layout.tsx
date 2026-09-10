@@ -13,8 +13,15 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Team AA Videos",
-  description: "Manage and track videos",
+  title: {
+    default: "Team AA Videos",
+    template: "%s | Team AA Videos",
+  },
+  description: "Internal video tracking and monthly payroll wrap-up tool for Team AA Studios.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

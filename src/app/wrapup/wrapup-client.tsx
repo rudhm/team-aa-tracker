@@ -9,9 +9,20 @@ import { Download, Lock, Loader2, Copy, Check, ChevronDown, ChevronRight, Histor
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { createEntityColor, createEntityColorMaps, formatName } from "@/lib/utils"
 
-const renderChanges = (oldData: any, newData: any) => {
+interface AuditLog {
+  id: string
+  task_id: string
+  operation: string
+  old_data: Record<string, unknown> | null
+  new_data: Record<string, unknown> | null
+  created_at: string
+  changed_by_email: string | null
+}
+
+const renderChanges = (oldData: Record<string, unknown> | null, newData: Record<string, unknown> | null) => {
   if (!oldData && newData) return <div className="text-[12px] text-emerald-600 font-medium">Task created</div>
   if (oldData && !newData) return <div className="text-[12px] text-red-600 font-medium">Task deleted</div>
+  if (!oldData || !newData) return null
   
   const changes = []
   const ignoreKeys = ['id', 'created_at', 'updated_at', 'payroll_locked']
@@ -25,8 +36,8 @@ const renderChanges = (oldData: any, newData: any) => {
       changes.push(
         <div key={key} className="text-[12px]">
           <span className="font-semibold text-[var(--text-secondary)]">{key}: </span>
-          <span className="line-through opacity-60 mr-1">{oldVal || 'none'}</span>
-          <span className="text-[var(--text-primary)] font-medium">➝ {newVal || 'none'}</span>
+          <span className="line-through opacity-60 mr-1">{String(oldVal ?? 'none')}</span>
+          <span className="text-[var(--text-primary)] font-medium">➝ {String(newVal ?? 'none')}</span>
         </div>
       )
     }
@@ -50,17 +61,12 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
   const [collapsedEditors, setCollapsedEditors] = React.useState<Record<string, boolean>>({})
   
   const [isHistoryOpen, setIsHistoryOpen] = React.useState(false)
-  const [auditLogs, setAuditLogs] = React.useState<any[]>([])
+  const [auditLogs, setAuditLogs] = React.useState<AuditLog[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = React.useState(false)
 
   const toggleEditor = (ed: string) => {
     setCollapsedEditors(prev => ({ ...prev, [ed]: !prev[ed] }))
   }
-  React.useEffect(() => {
-    setClientFilter("All")
-    setSubClientFilter("All")
-    setEditorFilter("All")
-  }, [selectedMonth])
 
   // Group data by YYYY-MM
   const months = React.useMemo(() => {
@@ -79,15 +85,22 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
     return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]))
   }, [data])
 
-  React.useEffect(() => {
-    if (months.length > 0 && !selectedMonth) {
-      setSelectedMonth(months[0][0])
-    }
-  }, [months, selectedMonth])
+  // Track the initial month separately so we can detect the "not yet set" state
+  // without using an effect that calls setState synchronously.
+  const initialMonth = React.useMemo(() => months[0]?.[0] ?? "", [months])
+  const effectiveMonth = selectedMonth || initialMonth
+
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month)
+    // Reset filters whenever the user picks a different month
+    setClientFilter("All")
+    setSubClientFilter("All")
+    setEditorFilter("All")
+  }
 
   const currentMonthData = React.useMemo(() => {
-    return months.find(m => m[0] === selectedMonth)?.[1] || []
-  }, [months, selectedMonth])
+    return months.find(m => m[0] === effectiveMonth)?.[1] || []
+  }, [months, effectiveMonth])
 
   const uniqueClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.sub_client).filter(Boolean))).sort() as string[], [currentMonthData])
   const uniqueSubClients = React.useMemo(() => Array.from(new Set(currentMonthData.map(t => t.client).filter(Boolean))).sort(), [currentMonthData])
@@ -101,22 +114,25 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
     setIsLoadingHistory(true)
     const ids = currentMonthData.map(t => t.id)
     // Fetch logs up to 100 for this month's tasks
-    const { data, error } = await supabase
+    const { data: logData, error } = await supabase
       .from('task_audit_logs')
       .select('*')
       .in('task_id', ids)
       .order('created_at', { ascending: false })
       .limit(100)
     
-    if (!error && data) {
-      setAuditLogs(data)
+    if (!error && logData) {
+      setAuditLogs(logData as AuditLog[])
     }
     setIsLoadingHistory(false)
   }, [currentMonthData])
 
+  // Load history whenever the sheet is opened — async fetch, setState happens
+  // inside an async callback so it does not trigger cascading renders.
   React.useEffect(() => {
     if (isHistoryOpen) {
-      loadHistory()
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      void loadHistory()
     }
   }, [isHistoryOpen, loadHistory])
 
@@ -191,7 +207,7 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.setAttribute("href", url)
-    link.setAttribute("download", `Wrap-up_${selectedMonth}.csv`)
+    link.setAttribute("download", `Wrap-up_${effectiveMonth}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -201,7 +217,7 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
   const copyToClipboard = () => {
     if (filteredMonthData.length === 0) return
     
-    let text = `*Monthly Wrap - ${formatMonth(selectedMonth)}*\nTotal Videos: ${filteredMonthData.length}\n\n`
+    let text = `*Monthly Wrap - ${formatMonth(effectiveMonth)}*\nTotal Videos: ${filteredMonthData.length}\n\n`
     
     const byEditor = filteredMonthData.reduce((acc, task) => {
       const ed = formatName(task.editor) || "Unassigned"
@@ -218,7 +234,7 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
         }
         
         tasks.forEach(t => {
-          let clientParts = []
+          const clientParts = []
           if (clientFilter === "All" && t.sub_client) clientParts.push(t.sub_client)
           if (subClientFilter === "All" && t.client) clientParts.push(t.client)
           
@@ -268,8 +284,8 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
           <div className="relative w-full sm:w-auto">
             <select 
               className="h-[34px] w-full appearance-none rounded-lg bg-[var(--surface-page)] border border-[var(--border)] pl-4 pr-10 text-[13px] font-bold text-[var(--text-primary)] focus-visible:outline-none"
-              value={selectedMonth}
-              onChange={e => setSelectedMonth(e.target.value)}
+              value={effectiveMonth}
+              onChange={e => handleMonthChange(e.target.value)}
             >
               {months.length === 0 && <option value="">No data</option>}
               {months.map(([monthKey]) => (
@@ -321,7 +337,7 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
               <SheetHeader className="mb-6">
                 <SheetTitle>Version History</SheetTitle>
                 <div className="text-sm text-[var(--text-secondary)]">
-                  Tracking changes for {formatMonth(selectedMonth)}
+                  Tracking changes for {formatMonth(effectiveMonth)}
                 </div>
               </SheetHeader>
               
@@ -332,7 +348,7 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
                   </div>
                 ) : auditLogs.length === 0 ? (
                   <div className="text-center py-8 text-sm text-[var(--text-secondary)]">
-                    No history found for this month's tasks.
+                    No history found for this month&apos;s tasks.
                   </div>
                 ) : (
                   auditLogs.map((log) => {
@@ -382,7 +398,7 @@ export function WrapupClient({ data }: { data: VideoTask[] }) {
             CSV
           </Button>
 
-          {new Date().getDate() >= 1 && new Date().getDate() <= 5 && selectedMonth < `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, '0')}` && (
+          {new Date().getDate() >= 1 && new Date().getDate() <= 5 && effectiveMonth < `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, '0')}` && (
             isMonthLocked ? (
               <span className="inline-flex h-[34px] w-full sm:w-auto justify-center items-center rounded-lg py-[3px] px-[10px] text-[12px] font-semibold bg-[#E2F8EB] text-emerald-700">
                 <Lock className="mr-2 h-4 w-4" /> Locked

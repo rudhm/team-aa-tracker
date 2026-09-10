@@ -3,6 +3,8 @@ import { columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AuthControls } from "@/components/auth-controls"
+import { redirect } from "next/navigation"
+import Link from "next/link"
 
 export const revalidate = 0 // Disable caching to always fetch the latest data
 
@@ -25,7 +27,7 @@ async function getData() {
 export default async function Page() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  if (!user) redirect("/login")
   const data = await getData()
   
   // Fetch predefined clients
@@ -56,9 +58,9 @@ export default async function Page() {
       <header className="sticky top-0 z-40 bg-[#181715]/80 dark:bg-black/80 backdrop-blur-md text-white border-b border-[var(--border)]">
         <div className="mx-auto flex h-[56px] max-w-[1920px] items-center justify-between px-6 sm:px-8">
           <div className="flex items-center gap-[14px]">
-            <a href="/" className="text-[15px] font-semibold text-white no-underline">
+            <Link href="/" className="text-[15px] font-semibold text-white no-underline">
               Team <span className="text-[var(--theme-accent)]">AA</span> Studios
-            </a>
+            </Link>
             <div className="w-px h-4 bg-[#3a3936] hidden sm:block"></div>
             <div className="text-[#8f8c86] text-[14px] hidden sm:block">DASHBOARD</div>
             <div className="w-px h-4 bg-[#3a3936] hidden sm:block"></div>
@@ -71,12 +73,12 @@ export default async function Page() {
             <div className="flex items-center justify-center [&_button]:!w-[28px] [&_button]:!h-[28px] [&_button]:!bg-[#2c2b28] [&_button]:!rounded-full [&_svg]:!w-3.5 [&_svg]:!h-3.5 [&_svg]:!text-white [&_button]:!border-0">
               <ThemeToggle />
             </div>
-            <a href="/clients" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
+            <Link href="/clients" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
               Manage
-            </a>
-            <a href="/wrapup" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
+            </Link>
+            <Link href="/wrapup" className="text-[var(--theme-accent)] font-semibold text-[14px] no-underline">
               Wrap-up →
-            </a>
+            </Link>
           </div>
         </div>
       </header>

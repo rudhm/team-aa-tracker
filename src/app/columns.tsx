@@ -9,8 +9,9 @@ import type { Database } from "@/types/database"
 export type VideoTask = Database["public"]["Tables"]["video_tasks"]["Row"]
 
 declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    updateData: (rowId: string, columnIdOrUpdates: string | Record<string, any>, value?: any) => Promise<void>
+    updateData: (rowId: string, columnIdOrUpdates: string | Record<string, unknown>, value?: unknown) => Promise<void>
     colorMaps?: EntityColorMaps
   }
 }
@@ -31,7 +32,7 @@ function isValidVideoUrl(value: string) {
   }
 }
 
-function StatusBadge({ status, isLocked }: { status: string, isLocked: boolean }) {
+function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; text: string; sdot: string }> = {
     "Complete":    { bg: "bg-[#E2F8EB] dark:bg-[#173822]", text: "text-emerald-800 dark:text-emerald-200", sdot: "bg-[#3FA75B]" },
     "In progress": { bg: "bg-[#FEE2E2] dark:bg-[#451A1A]", text: "text-red-800 dark:text-red-200", sdot: "bg-[#EF4444]" },
@@ -128,12 +129,14 @@ export function InlineTextEdit({
 export function InlineDayEdit({ value, locked, onUpdate, otherDate, isStartDate = false }: { value: string | null, locked: boolean, onUpdate: (val: string | null) => void, otherDate?: string | null, isStartDate?: boolean }) {
   const [isEditing, setIsEditing] = useState(false)
   const [dateStr, setDateStr] = useState("")
+  const [validationError, setValidationError] = useState("")
 
   const displayValue = value ? new Date(value).toLocaleDateString("en-US", { timeZone: 'UTC', month: "short", day: "numeric" }) : <span className="text-3xl font-bold opacity-40">—</span>
 
   const startEdit = () => {
      if (locked) return
      setIsEditing(true)
+     setValidationError("")
      if (value && value.length >= 10) {
         setDateStr(value.substring(0, 10))
      } else {
@@ -142,22 +145,20 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate, isStartDate 
   }
 
   const saveEdit = () => {
-     setIsEditing(false)
      if (dateStr && otherDate) {
        const d1 = new Date(dateStr)
        const d2 = new Date(otherDate)
        if ((isStartDate && d1 > d2) || (!isStartDate && d1 < d2)) {
-         alert(isStartDate ? "Start Date cannot be later than Complete Date." : "Complete Date cannot be earlier than Start Date.")
-         setDateStr(value?.substring(0, 10) || "")
+         setValidationError(isStartDate ? "Start Date cannot be later than Complete Date." : "Complete Date cannot be earlier than Start Date.")
          return
        }
        if (d1.getUTCMonth() !== d2.getUTCMonth() || d1.getUTCFullYear() !== d2.getUTCFullYear()) {
-         alert("Start Date and Complete Date must belong to the same month.")
-         setDateStr(value?.substring(0, 10) || "")
+         setValidationError("Start Date and Complete Date must be in the same month.")
          return
        }
      }
-     
+     setIsEditing(false)
+     setValidationError("")
      if (dateStr) {
        onUpdate(dateStr)
      } else {
@@ -167,15 +168,23 @@ export function InlineDayEdit({ value, locked, onUpdate, otherDate, isStartDate 
 
   if (isEditing) {
      return (
-       <input
-         type="date"
-         autoFocus
-         className="h-7 w-full max-w-[130px] rounded-md bg-[var(--surface-page)] border border-[var(--border-soft)] px-2 text-[12px] text-[var(--text-primary)] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 [&::-webkit-calendar-picker-indicator]:dark:invert"
-         value={dateStr}
-         onChange={e => setDateStr(e.target.value)}
-         onBlur={saveEdit}
-         onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
-       />
+       <div className="flex flex-col gap-1">
+         <input
+           type="date"
+           autoFocus
+           className={`h-7 w-full max-w-[130px] rounded-md bg-[var(--surface-page)] border px-2 text-[12px] text-[var(--text-primary)] shadow-sm outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 [&::-webkit-calendar-picker-indicator]:dark:invert ${validationError ? 'border-red-400' : 'border-[var(--border-soft)]'}`}
+           value={dateStr}
+           onChange={e => { setDateStr(e.target.value); setValidationError("") }}
+           onBlur={saveEdit}
+           onKeyDown={e => {
+             if (e.key === 'Enter') saveEdit()
+             if (e.key === 'Escape') { setIsEditing(false); setValidationError("") }
+           }}
+         />
+         {validationError && (
+           <span role="alert" className="text-[11px] text-red-500 font-medium max-w-[200px] leading-tight">{validationError}</span>
+         )}
+       </div>
      )
   }
 
@@ -462,7 +471,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           otherDate={task.start_date}
           onUpdate={(val) => {
             // If they manually set a complete date, we should also auto-flip status to Complete!
-            const updates: any = { complete_date: val }
+            const updates: Record<string, unknown> = { complete_date: val }
             if (val && task.status !== 'Complete') updates.status = 'Complete'
             if (!val && task.status === 'Complete') updates.status = 'In progress'
             table.options.meta?.updateData(row.original.id, updates)
@@ -518,13 +527,13 @@ export const columns: ColumnDef<VideoTask>[] = [
       const status = task.status
 
       if (task.payroll_locked) {
-        return <StatusBadge status={status} isLocked={true} />
+        return <StatusBadge status={status} />
       }
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
-            <StatusBadge status={status} isLocked={false} />
+            <StatusBadge status={status} />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-36 rounded-2xl border-[var(--border-soft)] bg-[#F5EFDD]/85 dark:bg-[#0E0E11]/85 backdrop-blur-xl p-1.5 shadow-lg">
             {STATUSES.map((s) => (
@@ -558,7 +567,7 @@ export const columns: ColumnDef<VideoTask>[] = [
           locked={task.payroll_locked} 
           isCompleted={isCompleted}
           onUpdate={async (newLink, newStatus) => {
-            const updates: any = { link: newLink }
+            const updates: Record<string, unknown> = { link: newLink }
             if (newStatus) updates.status = newStatus
             await table.options.meta?.updateData(row.original.id, updates)
           }} 

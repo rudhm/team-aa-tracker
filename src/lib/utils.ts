@@ -10,16 +10,6 @@ export function formatName(name: string | null | undefined) {
   return name.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
 }
 
-const EDITOR_COLORS = [
-  '#9333EA', // Purple
-  '#2563EB', // Blue
-  '#EAB308', // Yellow
-  '#E11D48', // Rose
-  '#059669', // Emerald
-  '#D97706', // Amber
-  '#0284C7', // Light Blue
-  '#4F46E5', // Indigo
-]
 
 export function getEditorDotColor(name: string | null | undefined): string {
   if (!name) return '#9CA3AF'

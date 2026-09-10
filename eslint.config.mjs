@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Root-level scratch/test scripts — not part of the application
+    "check-today.js",
+    "test-api.mjs",
+    "test-fetch.js",
+    "test-update.js",
+    "test-update2.js",
+    "quickadd.txt",
+    "quickadd-full.txt",
   ]),
 ]);
 

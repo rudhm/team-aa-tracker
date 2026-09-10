@@ -6,19 +6,17 @@ import { submitFeedback } from "@/app/actions/feedback"
 
 export function FeedbackModal() {
   const [isOpen, setIsOpen] = React.useState(false)
-  const [type, setType] = React.useState<'Bug report' | 'Feature idea'>('Bug report')
+  // Initialize type from localStorage to avoid setState-in-effect
+  const [type, setType] = React.useState<'Bug report' | 'Feature idea'>(() => {
+    if (typeof window === 'undefined') return 'Bug report'
+    const saved = localStorage.getItem("team-aa-feedback-type")
+    return (saved === 'Bug report' || saved === 'Feature idea') ? saved : 'Bug report'
+  })
   const [name, setName] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [showSuccess, setShowSuccess] = React.useState(false)
-  
-  // Track last used type in local storage
-  React.useEffect(() => {
-    const savedType = localStorage.getItem("team-aa-feedback-type")
-    if (savedType === 'Bug report' || savedType === 'Feature idea') {
-      setType(savedType)
-    }
-  }, [])
+  const [submitError, setSubmitError] = React.useState("")
   
   const handleTypeChange = (newType: 'Bug report' | 'Feature idea') => {
     setType(newType)
@@ -30,6 +28,7 @@ export function FeedbackModal() {
     if (!description.trim()) return
 
     setIsSubmitting(true)
+    setSubmitError("")
     
     const result = await submitFeedback({
       type,
@@ -45,10 +44,11 @@ export function FeedbackModal() {
         setIsOpen(false)
         setShowSuccess(false)
         setDescription("")
+        setSubmitError("")
       }, 1500)
     } else {
       console.error("Error submitting feedback:", result.error)
-      alert("Something went wrong. Please try again.")
+      setSubmitError("Something went wrong. Please try again.")
     }
   }
 
@@ -141,6 +141,9 @@ export function FeedbackModal() {
                   </div>
                 </div>
 
+                {submitError && (
+                  <p role="alert" className="text-sm text-red-600 dark:text-red-400 text-center">{submitError}</p>
+                )}
                 <button
                   type="submit"
                   disabled={!description.trim() || isSubmitting}

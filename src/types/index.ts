@@ -16,4 +16,4 @@ export interface Task {
   price: string | number;
 }
 
-export interface AddTaskInput extends Omit<Task, 'rowIndex'> {}
+export type AddTaskInput = Omit<Task, 'rowIndex'>
