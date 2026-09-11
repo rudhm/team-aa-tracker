@@ -5,6 +5,8 @@ import { Resend } from "resend"
 
 export async function processTaskNotification(taskId: string) {
   const resendApiKey = process.env.RESEND_API_KEY
+  console.log("processTaskNotification called for taskId:", taskId)
+  console.log("RESEND_API_KEY present:", !!resendApiKey)
   if (!resendApiKey) return // Graceful skip if Resend is not configured
 
   const supabase = await createSupabaseServerClient()
@@ -16,6 +18,8 @@ export async function processTaskNotification(taskId: string) {
     .eq("id", taskId)
     .single()
 
+  console.log("Task fetched:", task?.video_title, "Editor:", task?.editor, "Error:", taskError?.message)
+
   if (taskError || !task || !task.editor) return
 
   // 2. Fetch the editor's email
@@ -23,10 +27,11 @@ export async function processTaskNotification(taskId: string) {
     .from("predefined_clients")
     .select("email")
     .eq("type", "editor")
-    .eq("name", task.editor)
+    .ilike("name", task.editor)
     .single()
 
   const editorEmail = editorData?.email
+  console.log("Editor email fetched:", editorEmail)
   if (!editorEmail) return // No email for this editor, graceful skip
 
   const resend = new Resend(resendApiKey)
