@@ -359,7 +359,13 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
           return
         }
         router.refresh()
-        processTaskNotification(row.id).catch(console.error)
+        processTaskNotification(row.id).then(res => {
+          if (res?.emailError) {
+            setMutationError(`Task updated, but email notification failed: ${res.emailError}`)
+            // Auto-clear after a few seconds so it's not permanently stuck
+            setTimeout(() => setMutationError(""), 5000)
+          }
+        }).catch(console.error)
       }
     }
   })
@@ -422,7 +428,12 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
     }
     
     if (data) {
-      processTaskNotification(data.id).catch(console.error)
+      processTaskNotification(data.id).then(res => {
+        if (res?.emailError) {
+          setMutationError(`Task saved, but email notification failed: ${res.emailError}`)
+          setTimeout(() => setMutationError(""), 5000)
+        }
+      }).catch(console.error)
     }
     
     setClient("")
