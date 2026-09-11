@@ -19,44 +19,62 @@ function Section({
   title: string
   entries: Entry[]
   type: 'client' | 'sub_client' | 'editor'
-  onAdd: (name: string, type: 'client' | 'sub_client' | 'editor') => void
+  onAdd: (name: string, type: 'client' | 'sub_client' | 'editor', email?: string) => void
   onDelete: (id: string) => void
   isAdding: boolean
 }) {
   const [name, setName] = React.useState("")
+  const [email, setEmail] = React.useState("")
   const [localError, setLocalError] = React.useState("")
 
   const handleAdd = () => {
     const trimmed = name.trim()
     if (!trimmed) return
     setLocalError("")
-    onAdd(trimmed, type)
+    onAdd(trimmed, type, type === 'editor' ? email : undefined)
     setName("")
+    setEmail("")
   }
 
   return (
     <div className="bg-white dark:bg-[#161b22] p-6 rounded-xl shadow-sm border border-[var(--border)]">
       <h2 className="text-[15px] font-bold mb-4 text-[var(--text-primary)]">{title}</h2>
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={name}
-          onChange={e => { setName(e.target.value); setLocalError("") }}
-          placeholder={`Add ${title.toLowerCase()}…`}
-          className="flex-1 h-9 rounded-md border border-[var(--border)] px-3 text-sm focus:ring-1 focus:ring-[var(--theme-accent)] outline-none bg-[var(--surface-page)]"
-          onKeyDown={e => {
-            if (e.key === 'Enter' && name.trim()) {
-              handleAdd()
-            }
-          }}
-        />
-        <button
-          onClick={handleAdd}
-          disabled={isAdding || !name.trim()}
-          className="bg-[var(--theme-accent)] text-[#241a05] px-4 h-9 rounded-md text-sm font-bold disabled:opacity-50 hover:bg-[#F2CD60] transition-colors"
-        >
-          Add
-        </button>
+      <div className="flex flex-col gap-2 mb-4">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={name}
+            onChange={e => { setName(e.target.value); setLocalError("") }}
+            placeholder={`Add ${title.toLowerCase()}…`}
+            className="flex-1 h-9 rounded-md border border-[var(--border)] px-3 text-sm focus:ring-1 focus:ring-[var(--theme-accent)] outline-none bg-[var(--surface-page)]"
+            onKeyDown={e => {
+              if (e.key === 'Enter' && name.trim()) {
+                handleAdd()
+              }
+            }}
+          />
+          <button
+            onClick={handleAdd}
+            disabled={isAdding || !name.trim()}
+            className="bg-[var(--theme-accent)] text-[#241a05] px-4 h-9 rounded-md text-sm font-bold disabled:opacity-50 hover:bg-[#F2CD60] transition-colors"
+          >
+            Add
+          </button>
+        </div>
+        {type === 'editor' && (
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Email (optional)"
+            className="w-full h-9 rounded-md border border-[var(--border)] px-3 text-sm focus:ring-1 focus:ring-[var(--theme-accent)] outline-none bg-[var(--surface-page)] mt-1"
+            onKeyDown={e => {
+              if (e.key === 'Enter' && name.trim()) {
+                handleAdd()
+              }
+            }}
+          />
+        )}
       </div>
       {localError && (
         <p role="alert" className="text-sm text-red-600 dark:text-red-400 mb-2">{localError}</p>
@@ -87,12 +105,12 @@ export default function ClientsPageClient({ initialEntries }: { initialEntries: 
   const [isAdding, setIsAdding] = React.useState(false)
   const [globalError, setGlobalError] = React.useState("")
 
-  const handleAdd = async (name: string, type: 'client' | 'sub_client' | 'editor') => {
+  const handleAdd = async (name: string, type: 'client' | 'sub_client' | 'editor', email?: string) => {
     setIsAdding(true)
     setGlobalError("")
     const { data, error } = await supabase
       .from('predefined_clients')
-      .insert([{ name: name.trim(), type }])
+      .insert([{ name: name.trim(), type, email: email?.trim() || null }])
       .select()
     if (error) {
       setGlobalError("Failed to add entry: " + error.message)

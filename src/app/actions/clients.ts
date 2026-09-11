@@ -18,7 +18,7 @@ async function requireAuth() {
   return supabase
 }
 
-export async function addPredefinedClient(name: string, type: 'client' | 'sub_client' | 'editor') {
+export async function addPredefinedClient(name: string, type: 'client' | 'sub_client' | 'editor', email?: string) {
   const supabase = await requireAuth()
 
   // Server-side input validation
@@ -32,10 +32,11 @@ export async function addPredefinedClient(name: string, type: 'client' | 'sub_cl
   if (trimmedName.length > 200) {
     return { success: false, error: "Name is too long (max 200 characters)." }
   }
+  const trimmedEmail = email?.trim() || null
 
   const { data, error } = await supabase
     .from('predefined_clients')
-    .insert([{ name: trimmedName, type }])
+    .insert([{ name: trimmedName, type, email: trimmedEmail }])
     .select()
 
   if (error) {

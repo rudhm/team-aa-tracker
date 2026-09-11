@@ -63,6 +63,7 @@ import {
 
 
 import { celebrateDelivery } from "@/lib/delivery-celebration"
+import { processTaskNotification } from "@/app/actions/notifications"
 
 const HIDDEN_EDITORS_STORAGE_KEY = "team-aa-hidden-editors"
 
@@ -358,6 +359,7 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
           return
         }
         router.refresh()
+        processTaskNotification(row.id).catch(console.error)
       }
     }
   })
@@ -411,12 +413,16 @@ export function DataTable({ columns, data, predefinedClients = [] }: DataTablePr
       is_urgent: isUrgentAdd,
     }
 
-    const { error } = await supabase.from('video_tasks').insert([payload])
+    const { data, error } = await supabase.from('video_tasks').insert([payload]).select('id').single()
     if (error) {
       console.error("Error adding video task:", error)
       setMutationError("This video could not be added. Please try again.")
       setIsAdding(false)
       return false
+    }
+    
+    if (data) {
+      processTaskNotification(data.id).catch(console.error)
     }
     
     setClient("")

@@ -119,6 +119,8 @@ export type Database = {
           is_urgent: boolean
           link: string | null
           no_of_revisions: number | null
+          notified_editor: string | null
+          notified_urgent: boolean | null
           payroll_locked: boolean
           price: number | null
           raw_video_link: string | null
@@ -141,6 +143,8 @@ export type Database = {
           is_urgent?: boolean
           link?: string | null
           no_of_revisions?: number | null
+          notified_editor?: string | null
+          notified_urgent?: boolean | null
           payroll_locked?: boolean
           price?: number | null
           raw_video_link?: string | null
@@ -163,6 +167,8 @@ export type Database = {
           is_urgent?: boolean
           link?: string | null
           no_of_revisions?: number | null
+          notified_editor?: string | null
+          notified_urgent?: boolean | null
           payroll_locked?: boolean
           price?: number | null
           raw_video_link?: string | null
@@ -178,18 +184,21 @@ export type Database = {
           id: string
           name: string
           type: string
+          email: string | null
           created_at: string
         }
         Insert: {
           id?: string
           name: string
           type: string
+          email?: string | null
           created_at?: string
         }
         Update: {
           id?: string
           name?: string
           type?: string
+          email?: string | null
           created_at?: string
         }
         Relationships: []
